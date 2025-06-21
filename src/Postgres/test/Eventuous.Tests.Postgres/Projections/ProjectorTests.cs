@@ -1,3 +1,4 @@
+using Eventuous.Postgresql;
 using Eventuous.Postgresql.Projections;
 using Eventuous.Postgresql.Subscriptions;
 using Eventuous.Sut.App;
@@ -10,7 +11,7 @@ using Assert = TUnit.Assertions.Assert;
 namespace Eventuous.Tests.Postgres.Projections;
 
 public class ProjectorTests() {
-    readonly SubscriptionFixture<PostgresAllStreamSubscription, PostgresAllStreamSubscriptionOptions, TestProjector> _fixture = new(_ => { });
+    readonly SubscriptionFixture<PostgresStore, PostgresAllStreamSubscription, PostgresAllStreamSubscriptionOptions, TestProjector> _fixture = new(_ => { });
 
     const string Schema = """
                           create table if not exists __schema__.bookings (
