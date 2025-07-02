@@ -11,16 +11,9 @@ using StreamSubscription = Eventuous.EventStore.Subscriptions.StreamSubscription
 namespace Eventuous.Tests.EventStore.Subscriptions;
 
 public sealed class StreamSubscriptionDeletedEventsTests {
-    readonly StoreFixture         _fixture;
-    readonly ILoggerFactory       _loggerFactory;
-    readonly LoggingEventListener _listener;
-
-    public StreamSubscriptionDeletedEventsTests() {
-        _fixture       = new(LogLevel.Information);
-        _loggerFactory = LoggingExtensions.GetLoggerFactory();
-        _listener      = new(_loggerFactory);
-        _fixture.TypeMapper.RegisterKnownEventTypes(typeof(BookingEvents.BookingImported).Assembly);
-    }
+    StoreFixture         _fixture = null!;
+    ILoggerFactory       _loggerFactory = null!;
+    LoggingEventListener _listener = null!;
 
     [Test]
     [Category("Special cases")]
@@ -28,12 +21,6 @@ public sealed class StreamSubscriptionDeletedEventsTests {
         var    service        = new BookingService(_fixture.EventStore);
         var    categoryStream = new StreamName("$ce-Booking");
         ulong? startPosition  = null;
-
-        // try {
-        //     var last = await _fixture.Client.ReadStreamAsync(Direction.Backwards, categoryStream, StreamPosition.End, 1, cancellationToken: Current.CancellationToken)
-        //         .ToArrayAsync(Current.CancellationToken);
-        //     startPosition = last[0].OriginalEventNumber;
-        // } catch (StreamNotFoundException) { }
 
         const int produceCount = 20;
         const int deleteCount  = 5;
@@ -86,7 +73,7 @@ public sealed class StreamSubscriptionDeletedEventsTests {
 
         var actual = handler.Processed.Select(x => x.Stream.GetId()).ToList();
         log.LogInformation("Actual:\n {Join}", string.Join("\n", actual));
-        actual.Should().BeEquivalentTo(expected);
+        await Assert.That(actual).IsEquivalentTo(expected);
 
         return;
 
@@ -109,22 +96,19 @@ public sealed class StreamSubscriptionDeletedEventsTests {
         }
     }
 
-    [After(Test)]
-    public async ValueTask DisposeAsync() {
-        await _fixture.DisposeAsync();
-        await CastAndDispose(_loggerFactory);
-        await CastAndDispose(_listener);
-
-        return;
-
-        static async ValueTask CastAndDispose(IDisposable resource) {
-            if (resource is IAsyncDisposable resourceAsyncDisposable)
-                await resourceAsyncDisposable.DisposeAsync();
-            else
-                resource.Dispose();
-        }
+    [Before(Test)]
+    public Task Setup() {
+        _fixture       = new(LogLevel.Information);
+        _loggerFactory = LoggingExtensions.GetLoggerFactory();
+        _listener      = new(_loggerFactory);
+        _fixture.TypeMapper.RegisterKnownEventTypes(typeof(BookingEvents.BookingImported).Assembly);
+        return _fixture.InitializeAsync();
     }
 
-    [Before(Test)]
-    public Task InitializeAsync() => _fixture.InitializeAsync();
+    [After(Test)]
+    public async ValueTask Cleanup() {
+        await _fixture.DisposeAsync();
+        _loggerFactory.Dispose();
+        _listener.Dispose();
+    }
 }

@@ -33,7 +33,7 @@ public class ProjectorTests() {
 
         await using var connection = await ConnectionFactory.GetConnection(_fixture.ConnectionString, cancellationToken);
 
-        var select = $"SELECT * FROM {_fixture.SchemaName}.Bookings where BookingId = @BookingId";
+        var select = $"SELECT CheckInDate, Price FROM {_fixture.SchemaName}.Bookings where BookingId = @BookingId";
 
         foreach (var command in commands) {
             await ValidateProjectedObject(connection, command);
@@ -46,8 +46,8 @@ public class ProjectorTests() {
             cmd.Parameters.AddWithValue("@BookingId", command.BookingId);
             await using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
             await reader.ReadAsync(cancellationToken);
-            reader["CheckinDate"].Should().Be(command.CheckIn.ToDateTimeUnspecified());
-            reader["Price"].Should().Be(command.Price);
+            await Assert.That(reader["CheckinDate"]).IsEqualTo(command.CheckIn.ToDateTimeUnspecified());
+            await Assert.That(reader.GetDecimal(1)).IsEqualTo((decimal)command.Price);
         }
     }
 
