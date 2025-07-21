@@ -52,4 +52,5 @@ async Task InitialiseSchema(IHost webApplication) {
     var schema = store.Schema;
     var ds     = webApplication.Services.GetRequiredService<NpgsqlDataSource>();
     await schema.CreateSchema(ds, webApplication.Services.GetRequiredService<ILogger<Schema>>());
+    await ds.ReloadTypesAsync();
 }
