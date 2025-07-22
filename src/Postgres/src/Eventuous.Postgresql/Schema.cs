@@ -63,6 +63,7 @@ public class Schema(string schema = Schema.DefaultSchema) {
         }
 
         await transaction.CommitAsync(cancellationToken).NoContext();
+        await dataSource.ReloadTypesAsync(cancellationToken).NoContext();
         log?.LogInformation("Database schema initialized");
     }
 }
