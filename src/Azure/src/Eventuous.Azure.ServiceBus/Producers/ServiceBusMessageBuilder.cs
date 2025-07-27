@@ -3,8 +3,7 @@ using Eventuous.Producers;
 
 namespace Eventuous.Azure.ServiceBus.Producers;
 
-internal class ServiceBusMessageBuilder
-{
+internal class ServiceBusMessageBuilder {
     private static readonly HashSet<string> ReservedAttributes = new(StringComparer.OrdinalIgnoreCase)
         {
             MetaTags.MessageId,
@@ -17,8 +16,7 @@ internal class ServiceBusMessageBuilder
     private readonly ServiceBusMessageAttributes attributes;
     private readonly Action<string>? setActivityMessageType;
 
-    internal ServiceBusMessageBuilder(IEventSerializer serializer, string streamName, ServiceBusMessageAttributes attributes, ServiceBusProduceOptions? options = null, Action<string>? setActivityMessageType = null)
-    {
+    internal ServiceBusMessageBuilder(IEventSerializer serializer, string streamName, ServiceBusMessageAttributes attributes, ServiceBusProduceOptions? options = null, Action<string>? setActivityMessageType = null) {
         this.serializer = serializer;
         this.streamName = streamName;
         this.options = options;
@@ -33,13 +31,11 @@ internal class ServiceBusMessageBuilder
     /// </summary>
     /// <param name="message"></param>
     /// <returns></returns>
-    internal ServiceBusMessage CreateServiceBusMessage(ProducedMessage message)
-    {
+    internal ServiceBusMessage CreateServiceBusMessage(ProducedMessage message) {
         var (messageType, contentType, payload) = serializer.SerializeEvent(message.Message);
         setActivityMessageType?.Invoke(messageType);
 
-        var serviceBusMessage = new ServiceBusMessage(payload)
-        {
+        var serviceBusMessage = new ServiceBusMessage(payload) {
             ContentType = contentType,
             MessageId = message.MessageId.ToString(),
             Subject = options?.Subject,
@@ -49,8 +45,7 @@ internal class ServiceBusMessageBuilder
             ReplyTo = options?.ReplyTo
         };
 
-        foreach (var property in GetCustomApplicationProperties(message, messageType))
-        {
+        foreach (var property in GetCustomApplicationProperties(message, messageType)) {
             serviceBusMessage.ApplicationProperties.Add(property);
         }
 

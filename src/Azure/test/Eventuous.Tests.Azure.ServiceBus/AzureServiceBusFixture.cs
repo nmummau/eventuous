@@ -14,7 +14,7 @@ public class AzureServiceBusFixture : IAsyncInitializer, IAsyncDisposable {
     public ServiceBusClient Client { get; private set; } = null!;
     public string ConnectionString { get; private set; } = null!;
     public ServiceBusContainer Container { get; }
-    
+
     public AzureServiceBusFixture() {
         Container = new ServiceBusBuilder()
             .WithImage("mcr.microsoft.com/azure-messaging/servicebus-emulator:latest")
@@ -22,7 +22,7 @@ public class AzureServiceBusFixture : IAsyncInitializer, IAsyncDisposable {
             .Build();
     }
 
-      public async Task InitializeAsync() {
+    public async Task InitializeAsync() {
         await Container.StartAsync();
 
         ConnectionString = Container.GetConnectionString();

@@ -8,8 +8,7 @@ namespace Eventuous.Azure.ServiceBus.Subscriptions;
 /// <summary>
 /// Represents a Service Bus subscription that processes messages from a queue or topic.
 /// </summary>
-public class ServiceBusSubscription : EventSubscription<ServiceBusSubscriptionOptions>
-{
+public class ServiceBusSubscription : EventSubscription<ServiceBusSubscriptionOptions> {
     private readonly ServiceBusClient client;
     private readonly Func<ProcessErrorEventArgs, Task> defaultErrorHandler;
     private ServiceBusProcessor? processor;
@@ -23,8 +22,7 @@ public class ServiceBusSubscription : EventSubscription<ServiceBusSubscriptionOp
     /// <param name="loggerFactory"></param>
     /// <param name="eventSerializer"></param>
     public ServiceBusSubscription(ServiceBusClient client, ServiceBusSubscriptionOptions options, ConsumePipe consumePipe, ILoggerFactory? loggerFactory, IEventSerializer? eventSerializer) :
-     base(options, consumePipe, loggerFactory, eventSerializer)
-    {
+     base(options, consumePipe, loggerFactory, eventSerializer) {
         this.client = client;
         this.defaultErrorHandler = Options.ErrorHandler ?? DefaultErrorHandler;
     }
@@ -35,16 +33,14 @@ public class ServiceBusSubscription : EventSubscription<ServiceBusSubscriptionOp
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
-    protected override ValueTask Subscribe(CancellationToken cancellationToken)
-    {
+    protected override ValueTask Subscribe(CancellationToken cancellationToken) {
         processor = Options.QueueOrTopic.MakeProcessor(client, Options);
         processor.ProcessMessageAsync += HandleMessage;
 
         processor.ProcessErrorAsync += defaultErrorHandler;
         return new ValueTask(processor.StartProcessingAsync(cancellationToken));
 
-        async Task HandleMessage(ProcessMessageEventArgs arg)
-        {
+        async Task HandleMessage(ProcessMessageEventArgs arg) {
             CancellationToken ct = arg.CancellationToken;
             if (ct.IsCancellationRequested) return;
             var msg = arg.Message;
@@ -76,13 +72,10 @@ public class ServiceBusSubscription : EventSubscription<ServiceBusSubscriptionOp
                 ct
             );
 
-            try
-            {
+            try {
                 await Handler(ctx);
                 await arg.CompleteMessageAsync(msg, ct);
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 await arg.AbandonMessageAsync(msg, null, ct); // Abandoning the message will make it available for reprocessing, or dead letter it?
                 await defaultErrorHandler(new(ex, ServiceBusErrorSource.Abandon, arg.FullyQualifiedNamespace, arg.EntityPath, arg.Identifier, arg.CancellationToken));
                 Log.ErrorLog?.Log(ex, "Error processing message: {MessageId}", msg.MessageId);
@@ -90,8 +83,7 @@ public class ServiceBusSubscription : EventSubscription<ServiceBusSubscriptionOp
         }
     }
 
-    private IEnumerable<KeyValuePair<string, object>> MessageProperties(ServiceBusReceivedMessage msg)
-    {
+    private IEnumerable<KeyValuePair<string, object>> MessageProperties(ServiceBusReceivedMessage msg) {
         var attributes = Options.Attributes;
         if (msg.CorrelationId is not null)
             yield return new KeyValuePair<string, object>(attributes.CorrelationId, msg.CorrelationId);
@@ -108,8 +100,7 @@ public class ServiceBusSubscription : EventSubscription<ServiceBusSubscriptionOp
     private static Metadata? AsMeta(IEnumerable<KeyValuePair<string, object>> applicationProperties) =>
         new(applicationProperties.ToDictionary(pair => pair.Key, pair => (object?)pair.Value));
 
-    private async Task DefaultErrorHandler(ProcessErrorEventArgs arg)
-    {
+    private async Task DefaultErrorHandler(ProcessErrorEventArgs arg) {
         // Log the error
         Log.ErrorLog?.Log(arg.Exception, "Error processing message: {Identifier}", arg.Identifier);
 
@@ -122,8 +113,7 @@ public class ServiceBusSubscription : EventSubscription<ServiceBusSubscriptionOp
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    protected override ValueTask Unsubscribe(CancellationToken cancellationToken)
-    {
+    protected override ValueTask Unsubscribe(CancellationToken cancellationToken) {
         return new ValueTask(processor?.StopProcessingAsync(cancellationToken) ?? Task.CompletedTask);
     }
 }

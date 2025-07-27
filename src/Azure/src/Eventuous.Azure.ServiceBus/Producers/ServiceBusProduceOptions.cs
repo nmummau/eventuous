@@ -3,8 +3,7 @@ namespace Eventuous.Azure.ServiceBus.Producers;
 /// <summary>
 /// Represents options for producing messages to Azure Service Bus.
 /// </summary>
-public class ServiceBusProduceOptions
-{
+public class ServiceBusProduceOptions {
     /// <summary>
     /// Gets or sets the subject of the message.
     /// </summary>

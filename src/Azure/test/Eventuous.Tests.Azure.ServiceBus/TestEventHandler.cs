@@ -5,8 +5,7 @@ using Hypothesist.Builders;
 
 namespace Eventuous.Tests.Azure.ServiceBus;
 
-public class TestEventHandler(TimeSpan? delay = null) : BaseEventHandler
-{
+public class TestEventHandler(TimeSpan? delay = null) : BaseEventHandler {
     readonly TimeSpan _delay = delay ?? TimeSpan.Zero;
 
     public int Count { get; private set; }
@@ -15,8 +14,7 @@ public class TestEventHandler(TimeSpan? delay = null) : BaseEventHandler
 
     public On<object> AssertThat() => Hypothesis.On(_observer);
 
-    public override async ValueTask<EventHandlingStatus> HandleEvent(IMessageConsumeContext context)
-    {
+    public override async ValueTask<EventHandlingStatus> HandleEvent(IMessageConsumeContext context) {
         await Task.Delay(_delay);
         object data = context.Message!;
         _messages.Add(data);

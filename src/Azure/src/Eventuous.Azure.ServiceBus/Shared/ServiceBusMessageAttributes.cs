@@ -3,8 +3,7 @@ namespace Eventuous.Azure.ServiceBus.Shared;
 /// <summary>
 /// The attribute names used in <see cref="Metadata"/> to map to Service Bus message properties.
 /// </summary>
-public class ServiceBusMessageAttributes
-{
+public class ServiceBusMessageAttributes {
     /// <summary>
     /// The event type attribute name.
     /// </summary>

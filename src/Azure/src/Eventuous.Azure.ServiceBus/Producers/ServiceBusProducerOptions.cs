@@ -5,8 +5,7 @@ namespace Eventuous.Azure.ServiceBus.Producers;
 /// <summary>
 /// Options for configuring a Service Bus producer, including the target queue or topic, sender options, and message attributes.
 /// </summary>
-public class ServiceBusProducerOptions
-{
+public class ServiceBusProducerOptions {
     /// <summary>
     /// Gets or sets the name of the queue or topic to which messages will be sent.
     /// </summary>

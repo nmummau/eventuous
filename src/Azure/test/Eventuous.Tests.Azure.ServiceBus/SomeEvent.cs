@@ -1,10 +1,8 @@
 namespace Eventuous.Tests.Azure.ServiceBus;
 
 [EventType("V1.SomeEvent")]
-public record SomeEvent
-{
-    static SomeEvent()
-    {
+public record SomeEvent {
+    static SomeEvent() {
         TypeMap.RegisterKnownEventTypes(typeof(SomeEvent).Assembly);
     }
     public string Id { get; set; } = Guid.NewGuid().ToString();
