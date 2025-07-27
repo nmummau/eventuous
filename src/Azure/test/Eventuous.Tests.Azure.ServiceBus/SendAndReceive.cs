@@ -4,16 +4,9 @@ using Eventuous.Producers;
 
 namespace Eventuous.Tests.Azure.ServiceBus;
 
-[ClassDataSource<AzureServiceBusFixture>]
 [NotInParallel]
+[TopicAndQueueSource]
 public class SendAndReceive {
-    public const string QueueName = "queue.1";
-    public const string TopicName = "topic.1";
-    /// <summary>
-    /// This is strange. The 'subscription.1' in the emulator has a content type filter. we populate
-    /// the content type but it still gets filtered out. So we use 'subscription.3' which has no filters.
-    /// </summary>
-    public const string SubscriptionName = "subscription.3";
     public static CancellationToken TestCancellationToken => TestContext.Current!.CancellationToken;
     private ServiceBusProducer producer = null!;
     private ServiceBusSubscription subscription = null!;
@@ -22,26 +15,25 @@ public class SendAndReceive {
     private readonly TestEventHandler handler = new();
     private readonly AzureServiceBusFixture fixture;
 
-    protected ServiceBusProducerOptions ServiceBusProducerOptions => new() {
-        QueueOrTopicName = QueueName
-    };
+    private readonly StreamName streamName;
+    private readonly ServiceBusProducerOptions serviceBusProducerOptions;
+    private readonly ServiceBusSubscriptionOptions serviceBusSubscriptionOptions;
 
-    protected ServiceBusSubscriptionOptions ServiceBusSubscriptionOptions => new() {
-        QueueOrTopic = new Queue(QueueName),
-        SubscriptionId = SubscriptionName
-    };
-
-    protected StreamName StreamName => new(QueueName);
-
-    public SendAndReceive(AzureServiceBusFixture fixture) {
+    public SendAndReceive(AzureServiceBusFixture fixture,
+     ServiceBusProducerOptions producerOptions,
+     ServiceBusSubscriptionOptions subscriptionOptions
+     ) {
+        streamName = new(producerOptions.QueueOrTopicName);
         correlationId = Guid.NewGuid().ToString();
         metadata = new Metadata().With(MetaTags.CorrelationId, correlationId);
+        serviceBusProducerOptions = producerOptions;
+        serviceBusSubscriptionOptions = subscriptionOptions;
         this.fixture = fixture;
     }
 
     [Test]
     public async Task SingleMessage() {
-        await producer.Produce(StreamName, SomeEvent.Create(), metadata, cancellationToken: TestCancellationToken);
+        await producer.Produce(streamName, SomeEvent.Create(), metadata, cancellationToken: TestCancellationToken);
 
         // Assert
         await handler.AssertThat()
@@ -55,7 +47,7 @@ public class SendAndReceive {
     public async Task LoadsOfMessages() {
         var count = 200;
         var events = Enumerable.Range(0, count).Select(SomeEvent.Create).ToList();
-        await producer.Produce(StreamName, events, metadata, cancellationToken: TestCancellationToken);
+        await producer.Produce(streamName, events, metadata, cancellationToken: TestCancellationToken);
 
         // Assert
         await handler.AssertThat()
@@ -82,8 +74,8 @@ public class SendAndReceive {
 
     [Before(Test)]
     public async Task StartProducerAndSubscription() {
-        producer = fixture.CreateProducer(ServiceBusProducerOptions);
-        subscription = fixture.CreateSubscription(ServiceBusSubscriptionOptions, handler, correlationId);
+        producer = fixture.CreateProducer(serviceBusProducerOptions);
+        subscription = fixture.CreateSubscription(serviceBusSubscriptionOptions, handler, correlationId);
 
         await producer.StartAsync(TestCancellationToken);
         await subscription.Subscribe(id => { }, (id, reason, ex) => { }, TestCancellationToken);
