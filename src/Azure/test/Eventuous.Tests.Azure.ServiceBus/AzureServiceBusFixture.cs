@@ -37,7 +37,6 @@ public class AzureServiceBusFixture : IAsyncInitializer, IAsyncDisposable {
         await Container.DisposeAsync();
     }
 
-
     public ServiceBusProducer CreateProducer(ServiceBusProducerOptions options) =>
         new(
             Client,

@@ -44,7 +44,7 @@ public class ServiceBusSubscription : EventSubscription<ServiceBusSubscriptionOp
             CancellationToken ct = arg.CancellationToken;
             if (ct.IsCancellationRequested) return;
             var msg = arg.Message;
-            var eventType = msg.ApplicationProperties[Options.AttributeNames.EventType].ToString()
+            var eventType = msg.ApplicationProperties[Options.AttributeNames.MessageType].ToString()
                 ?? throw new InvalidOperationException("Event type is missing in message properties");
             var contentType = msg.ContentType;
             // Should this be a stream name? or topic or something

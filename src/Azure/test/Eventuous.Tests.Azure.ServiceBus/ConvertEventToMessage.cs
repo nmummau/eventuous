@@ -1,4 +1,5 @@
 using Eventuous.Azure.ServiceBus.Producers;
+using Eventuous.Azure.ServiceBus.Shared;
 namespace Eventuous.Tests.Azure.ServiceBus;
 
 public class ConvertEventToMessage {
@@ -18,7 +19,6 @@ public class ConvertEventToMessage {
                 Name = "Test Event"
             },
             new Metadata {
-                [MetaTags.MessageId] = "12345",
                 [MetaTags.CorrelationId] = "correlation-id",
                 [MetaTags.CausationId] = "causation-id",
                 ["AAA"] = 1111
@@ -78,5 +78,53 @@ public class ConvertEventToMessage {
     [Arguments("BBB", "12345")]
     public async Task ApplicationPropertiesHasAttributes(string propertyName, object expectedValue) {
         await Assert.That(message.ApplicationProperties[propertyName]).IsEqualTo(expectedValue);
+    }
+
+    public class WithMessagePropertiesInMetaData {
+        private readonly ServiceBusMessage message;
+
+        public WithMessagePropertiesInMetaData() {
+            var attributeNames = new ServiceBusMessageAttributeNames();
+            var builder = new ServiceBusMessageBuilder(DefaultEventSerializer.Instance, "test-stream", attributeNames, new ServiceBusProduceOptions());
+            message = builder.CreateServiceBusMessage(new Producers.ProducedMessage(
+                new SomeEvent {
+                    Id = "event-id",
+                    Name = "Test Event"
+                },
+                new Metadata {
+                    [attributeNames.MessageId] = "12345",
+                    [attributeNames.CorrelationId] = "correlation-id",
+                    [attributeNames.CausationId] = "causation-id",
+                    [attributeNames.ReplyTo] = "test-reply-to",
+                    [attributeNames.Subject] = "test-subject",
+                    [attributeNames.To] = "test-to",
+                },
+                new()));
+        }
+
+        [Test]
+        public async Task MessageId() {
+            await Assert.That(message.MessageId).IsEqualTo("12345");
+        }
+
+        [Test]
+        public async Task Subject() {
+            await Assert.That(message.Subject).IsEqualTo("test-subject");
+        }
+
+        [Test]
+        public async Task To() {
+            await Assert.That(message.To).IsEqualTo("test-to");
+        }
+
+        [Test]
+        public async Task ReplyTo() {
+            await Assert.That(message.ReplyTo).IsEqualTo("test-reply-to");
+        }
+
+        [Test]
+        public async Task CorrelationId() {
+            await Assert.That(message.CorrelationId).IsEqualTo("correlation-id");
+        }
     }
 }
