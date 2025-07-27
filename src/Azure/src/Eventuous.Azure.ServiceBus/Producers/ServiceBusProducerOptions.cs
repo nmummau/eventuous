@@ -19,5 +19,5 @@ public class ServiceBusProducerOptions {
     /// <summary>
     /// Gets the attributes to be applied to outgoing Service Bus messages.
     /// </summary>
-    public ServiceBusMessageAttributes Attributes { get; init; } = new();
+    public ServiceBusMessageAttributeNames AttributeNames { get; init; } = new();
 }

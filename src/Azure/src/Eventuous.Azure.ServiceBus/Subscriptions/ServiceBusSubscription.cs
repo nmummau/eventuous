@@ -44,11 +44,11 @@ public class ServiceBusSubscription : EventSubscription<ServiceBusSubscriptionOp
             CancellationToken ct = arg.CancellationToken;
             if (ct.IsCancellationRequested) return;
             var msg = arg.Message;
-            var eventType = msg.ApplicationProperties[Options.Attributes.EventType].ToString()
+            var eventType = msg.ApplicationProperties[Options.AttributeNames.EventType].ToString()
                 ?? throw new InvalidOperationException("Event type is missing in message properties");
             var contentType = msg.ContentType;
             // Should this be a stream name? or topic or something
-            var streamName = msg.ApplicationProperties[Options.Attributes.StreamName].ToString()
+            var streamName = msg.ApplicationProperties[Options.AttributeNames.StreamName].ToString()
                 ?? throw new InvalidOperationException("Stream name is missing in message properties");
 
             Logger.Current = Log;
@@ -84,7 +84,7 @@ public class ServiceBusSubscription : EventSubscription<ServiceBusSubscriptionOp
     }
 
     private IEnumerable<KeyValuePair<string, object>> MessageProperties(ServiceBusReceivedMessage msg) {
-        var attributes = Options.Attributes;
+        var attributes = Options.AttributeNames;
         if (msg.CorrelationId is not null)
             yield return new KeyValuePair<string, object>(attributes.CorrelationId, msg.CorrelationId);
         if (msg.ReplyTo is not null)

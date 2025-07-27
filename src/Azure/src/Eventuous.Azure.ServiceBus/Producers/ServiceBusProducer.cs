@@ -32,7 +32,7 @@ public class ServiceBusProducer : BaseProducer<ServiceBusProduceOptions>, IHoste
         this.log = log;
         this.sender = client.CreateSender(options.QueueOrTopicName, options.SenderOptions);
         this.serializer = serializer ?? DefaultEventSerializer.Instance;
-        this.messageBatchBuilder = new ServiceBusMessageBatchBuilder(sender, this.serializer, options.Attributes, SetActivityMessageType);
+        this.messageBatchBuilder = new ServiceBusMessageBatchBuilder(sender, this.serializer, options.AttributeNames, SetActivityMessageType);
         log?.LogInformation("ServiceBusProducer created for {QueueOrTopicName}", options.QueueOrTopicName);
     }
 
@@ -95,7 +95,7 @@ public class ServiceBusProducer : BaseProducer<ServiceBusProduceOptions>, IHoste
         var serviceBusMessage = new ServiceBusMessageBuilder(
             serializer,
             stream,
-            this.options.Attributes,
+            this.options.AttributeNames,
             options,
             SetActivityMessageType
         ).CreateServiceBusMessage(message);

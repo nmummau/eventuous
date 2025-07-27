@@ -13,10 +13,10 @@ internal class ServiceBusMessageBuilder {
     private readonly IEventSerializer serializer;
     private readonly string streamName;
     private readonly ServiceBusProduceOptions? options;
-    private readonly ServiceBusMessageAttributes attributes;
+    private readonly ServiceBusMessageAttributeNames attributes;
     private readonly Action<string>? setActivityMessageType;
 
-    internal ServiceBusMessageBuilder(IEventSerializer serializer, string streamName, ServiceBusMessageAttributes attributes, ServiceBusProduceOptions? options = null, Action<string>? setActivityMessageType = null) {
+    internal ServiceBusMessageBuilder(IEventSerializer serializer, string streamName, ServiceBusMessageAttributeNames attributes, ServiceBusProduceOptions? options = null, Action<string>? setActivityMessageType = null) {
         this.serializer = serializer;
         this.streamName = streamName;
         this.options = options;

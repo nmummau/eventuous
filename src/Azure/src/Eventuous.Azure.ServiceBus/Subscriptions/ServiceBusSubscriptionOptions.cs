@@ -20,7 +20,7 @@ public record ServiceBusSubscriptionOptions : SubscriptionOptions {
     /// <summary>
     /// Gets the message attributes for Service Bus messages.
     /// </summary>
-    public ServiceBusMessageAttributes Attributes { get; init; } = new();
+    public ServiceBusMessageAttributeNames AttributeNames { get; init; } = new();
 
     /// <summary>
     /// Gets the error handler delegate for processing errors.

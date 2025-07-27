@@ -6,11 +6,11 @@ namespace Eventuous.Azure.ServiceBus.Producers;
 
 internal class ServiceBusMessageBatchBuilder {
     private readonly IEventSerializer serializer;
-    private readonly ServiceBusMessageAttributes attributes;
+    private readonly ServiceBusMessageAttributeNames attributes;
     private readonly Action<string>? setActivityMessageType;
     private readonly ServiceBusSender sender;
 
-    internal ServiceBusMessageBatchBuilder(ServiceBusSender sender, IEventSerializer serializer, Shared.ServiceBusMessageAttributes attributes, Action<string>? setActivityMessageType) {
+    internal ServiceBusMessageBatchBuilder(ServiceBusSender sender, IEventSerializer serializer, Shared.ServiceBusMessageAttributeNames attributes, Action<string>? setActivityMessageType) {
         this.sender = sender;
         this.serializer = serializer;
         this.attributes = attributes;
