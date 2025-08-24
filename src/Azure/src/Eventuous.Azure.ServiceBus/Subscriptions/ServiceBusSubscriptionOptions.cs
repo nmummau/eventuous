@@ -1,3 +1,6 @@
+// Copyright (C) Eventuous HQ OÜ. All rights reserved
+// Licensed under the Apache License, Version 2.0.
+
 using Eventuous.Azure.ServiceBus.Shared;
 using Eventuous.Subscriptions;
 
@@ -51,9 +54,8 @@ public record Queue(string Name) : IQueueOrTopic {
     /// <param name="client">The Service Bus client.</param>
     /// <param name="options">The subscription options.</param>
     /// <returns>A configured <see cref="ServiceBusProcessor"/> for the queue.</returns>
-    public ServiceBusProcessor MakeProcessor(ServiceBusClient client, ServiceBusSubscriptionOptions options) {
-        return client.CreateProcessor(Name, options.ProcessorOptions);
-    }
+    public ServiceBusProcessor MakeProcessor(ServiceBusClient client, ServiceBusSubscriptionOptions options) 
+        => client.CreateProcessor(Name, options.ProcessorOptions);
 }
 
 /// <summary>
@@ -66,9 +68,8 @@ public record Topic(string Name) : IQueueOrTopic {
     /// <param name="client">The Service Bus client.</param>
     /// <param name="options">The subscription options.</param>
     /// <returns>A configured <see cref="ServiceBusProcessor"/> for the topic.</returns>
-    public ServiceBusProcessor MakeProcessor(ServiceBusClient client, ServiceBusSubscriptionOptions options) {
-        return client.CreateProcessor(Name, options.SubscriptionId, options.ProcessorOptions);
-    }
+    public ServiceBusProcessor MakeProcessor(ServiceBusClient client, ServiceBusSubscriptionOptions options) 
+        => client.CreateProcessor(Name, options.SubscriptionId, options.ProcessorOptions);
 }
 
 /// <summary>
@@ -81,7 +82,6 @@ public record TopicAndSubscription(string Name, string Subscription) : IQueueOrT
     /// <param name="client">The Service Bus client.</param>
     /// <param name="options">The subscription options.</param>
     /// <returns>A configured <see cref="ServiceBusProcessor"/> for the topic and subscription.</returns>
-    public ServiceBusProcessor MakeProcessor(ServiceBusClient client, ServiceBusSubscriptionOptions options) {
-        return client.CreateProcessor(Name, Subscription, options.ProcessorOptions);
-    }
+    public ServiceBusProcessor MakeProcessor(ServiceBusClient client, ServiceBusSubscriptionOptions options)
+        => client.CreateProcessor(Name, Subscription, options.ProcessorOptions);
 }

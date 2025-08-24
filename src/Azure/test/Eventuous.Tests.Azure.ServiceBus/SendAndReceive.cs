@@ -7,36 +7,34 @@ namespace Eventuous.Tests.Azure.ServiceBus;
 [NotInParallel]
 [TopicAndQueueSource]
 public class SendAndReceive {
-    public static CancellationToken TestCancellationToken => TestContext.Current!.CancellationToken;
-    private ServiceBusProducer producer = null!;
-    private ServiceBusSubscription subscription = null!;
-    private readonly string correlationId;
-    private readonly Metadata metadata;
-    private readonly TestEventHandler handler = new();
-    private readonly AzureServiceBusFixture fixture;
+    static CancellationToken TestCancellationToken => TestContext.Current!.CancellationToken;
 
-    private readonly StreamName streamName;
-    private readonly ServiceBusProducerOptions serviceBusProducerOptions;
-    private readonly ServiceBusSubscriptionOptions serviceBusSubscriptionOptions;
+    ServiceBusProducer     _producer     = null!;
+    ServiceBusSubscription _subscription = null!;
 
-    public SendAndReceive(AzureServiceBusFixture fixture,
-     ServiceBusProducerOptions producerOptions,
-     ServiceBusSubscriptionOptions subscriptionOptions
-     ) {
-        streamName = new(producerOptions.QueueOrTopicName);
-        correlationId = Guid.NewGuid().ToString();
-        metadata = new Metadata().With(MetaTags.CorrelationId, correlationId);
-        serviceBusProducerOptions = producerOptions;
-        serviceBusSubscriptionOptions = subscriptionOptions;
-        this.fixture = fixture;
+    readonly string                        _correlationId;
+    readonly Metadata                      _metadata;
+    readonly TestEventHandler              _handler = new();
+    readonly AzureServiceBusFixture        _fixture;
+    readonly StreamName                    _streamName;
+    readonly ServiceBusProducerOptions     _serviceBusProducerOptions;
+    readonly ServiceBusSubscriptionOptions _serviceBusSubscriptionOptions;
+
+    public SendAndReceive(AzureServiceBusFixture fixture, ServiceBusProducerOptions producerOptions, ServiceBusSubscriptionOptions subscriptionOptions) {
+        _streamName                    = new(producerOptions.QueueOrTopicName);
+        _correlationId                 = Guid.NewGuid().ToString();
+        _metadata                      = new Metadata().With(MetaTags.CorrelationId, _correlationId);
+        _serviceBusProducerOptions     = producerOptions;
+        _serviceBusSubscriptionOptions = subscriptionOptions;
+        this._fixture                  = fixture;
     }
 
     [Test]
     public async Task SingleMessage() {
-        await producer.Produce(streamName, SomeEvent.Create(), metadata, cancellationToken: TestCancellationToken);
+        await _producer.Produce(_streamName, SomeEvent.Create(), _metadata, cancellationToken: TestCancellationToken);
 
         // Assert
-        await handler.AssertThat()
+        await _handler.AssertThat()
             .Timebox(TimeSpan.FromSeconds(1))
             .Single()
             .Match(evt => evt is SomeEvent)
@@ -45,18 +43,19 @@ public class SendAndReceive {
 
     [Test]
     public async Task LoadsOfMessages() {
-        var count = 200;
+        const int count = 200;
+
         var events = Enumerable.Range(0, count).Select(SomeEvent.Create).ToList();
-        await producer.Produce(streamName, events, metadata, cancellationToken: TestCancellationToken);
+        await _producer.Produce(_streamName, events, _metadata, cancellationToken: TestCancellationToken);
 
         // Assert
-        await handler.AssertThat()
+        await _handler.AssertThat()
             .Timebox(TimeSpan.FromSeconds(10))
             .Exactly(count)
             .Match(evt => evt is SomeEvent)
             .Validate(TestCancellationToken);
 
-        var handledMessageIds = handler.Messages
+        var handledMessageIds = _handler.Messages
             .OfType<SomeEvent>()
             .Select(m => m.Id)
             .Order()
@@ -66,18 +65,18 @@ public class SendAndReceive {
 
     [After(Test)]
     public async ValueTask CleanUpProducerAndSubscription() {
-        await producer.StopAsync(TestCancellationToken);
-        await subscription.Unsubscribe(id => { }, TestCancellationToken);
-        await subscription.DisposeAsync();
-        await producer.DisposeAsync();
+        await _producer.StopAsync(TestCancellationToken);
+        await _subscription.Unsubscribe(id => { }, TestCancellationToken);
+        await _subscription.DisposeAsync();
+        await _producer.DisposeAsync();
     }
 
     [Before(Test)]
     public async Task StartProducerAndSubscription() {
-        producer = fixture.CreateProducer(serviceBusProducerOptions);
-        subscription = fixture.CreateSubscription(serviceBusSubscriptionOptions, handler, correlationId);
+        _producer     = _fixture.CreateProducer(_serviceBusProducerOptions);
+        _subscription = _fixture.CreateSubscription(_serviceBusSubscriptionOptions, _handler, _correlationId);
 
-        await producer.StartAsync(TestCancellationToken);
-        await subscription.Subscribe(id => { }, (id, reason, ex) => { }, TestCancellationToken);
+        await _producer.StartAsync(TestCancellationToken);
+        await _subscription.Subscribe(id => { }, (id, reason, ex) => { }, TestCancellationToken);
     }
 }

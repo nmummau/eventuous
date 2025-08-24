@@ -1,20 +1,24 @@
+// Copyright (C) Eventuous HQ OÜ. All rights reserved
+// Licensed under the Apache License, Version 2.0.
+
 using System.Runtime.CompilerServices;
-using Eventuous.Azure.ServiceBus.Shared;
 using Eventuous.Producers;
 
 namespace Eventuous.Azure.ServiceBus.Producers;
 
-internal class ServiceBusMessageBatchBuilder {
-    private readonly IEventSerializer serializer;
-    private readonly ServiceBusMessageAttributeNames attributes;
-    private readonly Action<string>? setActivityMessageType;
-    private readonly ServiceBusSender sender;
+using Shared;
+
+class ServiceBusMessageBatchBuilder {
+    readonly IEventSerializer                _serializer;
+    readonly ServiceBusMessageAttributeNames _attributes;
+    readonly Action<string>?                 _setActivityMessageType;
+    readonly ServiceBusSender                _sender;
 
     internal ServiceBusMessageBatchBuilder(ServiceBusSender sender, IEventSerializer serializer, Shared.ServiceBusMessageAttributeNames attributes, Action<string>? setActivityMessageType) {
-        this.sender = sender;
-        this.serializer = serializer;
-        this.attributes = attributes;
-        this.setActivityMessageType = setActivityMessageType;
+        this._sender                 = sender;
+        this._serializer             = serializer;
+        this._attributes             = attributes;
+        this._setActivityMessageType = setActivityMessageType;
     }
 
     /// <summary>
@@ -29,25 +33,34 @@ internal class ServiceBusMessageBatchBuilder {
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     internal async IAsyncEnumerable<(ServiceBusMessageBatch, IList<ProducedMessage>)> CreateMessageBatches(
-            IEnumerable<ProducedMessage> messages,
-            StreamName stream,
-            ServiceBusProduceOptions? options,
-            [EnumeratorCancellation] CancellationToken cancellationToken = default) {
-        var messageBuilder = new ServiceBusMessageBuilder(serializer, stream, attributes, options, setActivityMessageType);
+            IEnumerable<ProducedMessage>               messages,
+            StreamName                                 stream,
+            ServiceBusProduceOptions?                  options,
+            [EnumeratorCancellation] CancellationToken cancellationToken = default
+        ) {
         using var enumerator = messages.GetEnumerator();
-        bool notDone = enumerator.MoveNext();
+
+        var messageBuilder = new ServiceBusMessageBuilder(_serializer, stream, _attributes, options, _setActivityMessageType);
+        var notDone        = enumerator.MoveNext();
+
         while (notDone) {
-            using var batch = await sender.CreateMessageBatchAsync(cancellationToken);
+            using var batch = await _sender.CreateMessageBatchAsync(cancellationToken);
+
             var produced = new List<ProducedMessage>();
+
             while (batch.TryAddMessage(messageBuilder.CreateServiceBusMessage(enumerator.Current))) {
                 produced.Add(enumerator.Current);
                 notDone = enumerator.MoveNext();
-                if (!notDone)
+
+                if (!notDone) {
                     break;
+                }
             }
+
             if (cancellationToken.IsCancellationRequested) {
                 yield break;
             }
+
             yield return (batch, produced);
         }
     }

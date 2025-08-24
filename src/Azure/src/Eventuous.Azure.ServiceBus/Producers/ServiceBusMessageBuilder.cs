@@ -1,22 +1,31 @@
-using Eventuous.Azure.ServiceBus.Shared;
+// Copyright (C) Eventuous HQ OÜ. All rights reserved
+// Licensed under the Apache License, Version 2.0.
+
 using Eventuous.Producers;
 
 namespace Eventuous.Azure.ServiceBus.Producers;
 
-internal class ServiceBusMessageBuilder {
+using Shared;
 
-    private readonly IEventSerializer serializer;
-    private readonly string streamName;
-    private readonly ServiceBusProduceOptions? options;
-    private readonly ServiceBusMessageAttributeNames attributes;
-    private readonly Action<string>? setActivityMessageType;
+class ServiceBusMessageBuilder {
+    readonly IEventSerializer                _serializer;
+    readonly string                          _streamName;
+    readonly ServiceBusProduceOptions?       _options;
+    readonly ServiceBusMessageAttributeNames _attributes;
+    readonly Action<string>?                 _setActivityMessageType;
 
-    internal ServiceBusMessageBuilder(IEventSerializer serializer, string streamName, ServiceBusMessageAttributeNames attributes, ServiceBusProduceOptions? options = null, Action<string>? setActivityMessageType = null) {
-        this.serializer = serializer;
-        this.streamName = streamName;
-        this.options = options;
-        this.attributes = attributes;
-        this.setActivityMessageType = setActivityMessageType;
+    internal ServiceBusMessageBuilder(
+            IEventSerializer                serializer,
+            string                          streamName,
+            ServiceBusMessageAttributeNames attributes,
+            ServiceBusProduceOptions?       options                = null,
+            Action<string>?                 setActivityMessageType = null
+        ) {
+        _serializer             = serializer;
+        _streamName             = streamName;
+        _options                = options;
+        _attributes             = attributes;
+        _setActivityMessageType = setActivityMessageType;
     }
 
     /// <summary>
@@ -27,21 +36,23 @@ internal class ServiceBusMessageBuilder {
     /// <param name="message"></param>
     /// <returns></returns>
     internal ServiceBusMessage CreateServiceBusMessage(ProducedMessage message) {
-        var (messageType, contentType, payload) = serializer.SerializeEvent(message.Message);
-        setActivityMessageType?.Invoke(messageType);
+        var (messageType, contentType, payload) = _serializer.SerializeEvent(message.Message);
+        _setActivityMessageType?.Invoke(messageType);
 
         var metadata = message.Metadata;
+
         var serviceBusMessage = new ServiceBusMessage(payload) {
-            ContentType = contentType,
-            MessageId = metadata?.GetValueOrDefault(attributes.MessageId, message.MessageId)?.ToString(),
-            Subject = metadata?.GetValueOrDefault(attributes.Subject, options?.Subject)?.ToString(),
-            TimeToLive = options?.TimeToLive ?? TimeSpan.MaxValue,
+            ContentType   = contentType,
+            MessageId     = metadata?.GetValueOrDefault(_attributes.MessageId, message.MessageId)?.ToString(),
+            Subject       = metadata?.GetValueOrDefault(_attributes.Subject, _options?.Subject)?.ToString(),
+            TimeToLive    = _options?.TimeToLive ?? TimeSpan.MaxValue,
             CorrelationId = message.Metadata?.GetCorrelationId(),
-            To = metadata?.GetValueOrDefault(attributes.To, options?.To)?.ToString(),
-            ReplyTo = metadata?.GetValueOrDefault(attributes.ReplyTo, options?.ReplyTo)?.ToString()
+            To            = metadata?.GetValueOrDefault(_attributes.To, _options?.To)?.ToString(),
+            ReplyTo       = metadata?.GetValueOrDefault(_attributes.ReplyTo, _options?.ReplyTo)?.ToString()
         };
 
-        var reservedAttributes = attributes.ReservedNames();
+        var reservedAttributes = _attributes.ReservedNames();
+
         foreach (var property in GetCustomApplicationProperties(message, messageType, reservedAttributes)) {
             serviceBusMessage.ApplicationProperties.Add(property);
         }
@@ -49,17 +60,10 @@ internal class ServiceBusMessageBuilder {
         return serviceBusMessage;
     }
 
-    private IEnumerable<KeyValuePair<string, object>> GetCustomApplicationProperties(
-        ProducedMessage message,
-         string messageType,
-         HashSet<string> reservedAttributes) =>
-     (message.Metadata ?? [])
+    IEnumerable<KeyValuePair<string, object>> GetCustomApplicationProperties(ProducedMessage message, string messageType, HashSet<string> reservedAttributes) =>
+        (message.Metadata ?? [])
         .Concat(message.AdditionalHeaders ?? [])
-        .Concat(
-        [
-            new (attributes.MessageType, messageType),
-            new (attributes.StreamName, streamName),
-        ])
+        .Concat([new(_attributes.MessageType, messageType), new(_attributes.StreamName, _streamName)])
         .Where(pair => !reservedAttributes.Contains(pair.Key))
         .Where(pair => pair.Value is not null)
         .Select(pair => new KeyValuePair<string, object>(pair.Key, pair.Value!));

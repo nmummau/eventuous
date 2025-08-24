@@ -1,6 +1,9 @@
-using Eventuous.Azure.ServiceBus.Shared;
+// Copyright (C) Eventuous HQ OÜ. All rights reserved
+// Licensed under the Apache License, Version 2.0.
 
 namespace Eventuous.Azure.ServiceBus.Producers;
+
+using Shared;
 
 /// <summary>
 /// Options for configuring a Service Bus producer, including the target queue or topic, sender options, and message attributes.

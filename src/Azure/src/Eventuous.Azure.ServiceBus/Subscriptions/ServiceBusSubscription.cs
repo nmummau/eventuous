@@ -1,3 +1,6 @@
+// Copyright (C) Eventuous HQ OÜ. All rights reserved
+// Licensed under the Apache License, Version 2.0.
+
 using Eventuous.Subscriptions;
 using Eventuous.Subscriptions.Context;
 using Eventuous.Subscriptions.Filters;
@@ -9,22 +12,22 @@ namespace Eventuous.Azure.ServiceBus.Subscriptions;
 /// Represents a Service Bus subscription that processes messages from a queue or topic.
 /// </summary>
 public class ServiceBusSubscription : EventSubscription<ServiceBusSubscriptionOptions> {
-    private readonly ServiceBusClient client;
-    private readonly Func<ProcessErrorEventArgs, Task> defaultErrorHandler;
-    private ServiceBusProcessor? processor;
+    readonly ServiceBusClient                  _client;
+    readonly Func<ProcessErrorEventArgs, Task> _defaultErrorHandler;
+    ServiceBusProcessor?                       _processor;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ServiceBusSubscription"/> class.
     /// </summary>
-    /// <param name="client"></param>
-    /// <param name="options"></param>
-    /// <param name="consumePipe"></param>
-    /// <param name="loggerFactory"></param>
-    /// <param name="eventSerializer"></param>
+    /// <param name="client">Service Bus client</param>
+    /// <param name="options">Service Bus subscription options</param>
+    /// <param name="consumePipe">Consume pipe instance</param>
+    /// <param name="loggerFactory">Logger factory (optional)</param>
+    /// <param name="eventSerializer">Event serializer (optional)</param>
     public ServiceBusSubscription(ServiceBusClient client, ServiceBusSubscriptionOptions options, ConsumePipe consumePipe, ILoggerFactory? loggerFactory, IEventSerializer? eventSerializer) :
-     base(options, consumePipe, loggerFactory, eventSerializer) {
-        this.client = client;
-        this.defaultErrorHandler = Options.ErrorHandler ?? DefaultErrorHandler;
+        base(options, consumePipe, loggerFactory, eventSerializer) {
+        _client              = client;
+        _defaultErrorHandler = Options.ErrorHandler ?? DefaultErrorHandler;
     }
 
     /// <summary>
@@ -34,28 +37,34 @@ public class ServiceBusSubscription : EventSubscription<ServiceBusSubscriptionOp
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
     protected override ValueTask Subscribe(CancellationToken cancellationToken) {
-        processor = Options.QueueOrTopic.MakeProcessor(client, Options);
-        processor.ProcessMessageAsync += HandleMessage;
+        _processor = Options.QueueOrTopic.MakeProcessor(_client, Options);
 
-        processor.ProcessErrorAsync += defaultErrorHandler;
-        return new ValueTask(processor.StartProcessingAsync(cancellationToken));
+        _processor.ProcessMessageAsync += HandleMessage;
+        _processor.ProcessErrorAsync   += _defaultErrorHandler;
+
+        return new(_processor.StartProcessingAsync(cancellationToken));
 
         async Task HandleMessage(ProcessMessageEventArgs arg) {
-            CancellationToken ct = arg.CancellationToken;
+            var ct = arg.CancellationToken;
+
             if (ct.IsCancellationRequested) return;
+
             var msg = arg.Message;
+
             var eventType = msg.ApplicationProperties[Options.AttributeNames.MessageType].ToString()
-                ?? throw new InvalidOperationException("Event type is missing in message properties");
+             ?? throw new InvalidOperationException("Event type is missing in message properties");
             var contentType = msg.ContentType;
+
             // Should this be a stream name? or topic or something
             var streamName = msg.ApplicationProperties[Options.AttributeNames.StreamName].ToString()
-                ?? throw new InvalidOperationException("Stream name is missing in message properties");
+             ?? throw new InvalidOperationException("Stream name is missing in message properties");
 
             Logger.Current = Log;
 
             var evt = DeserializeData(contentType, eventType, msg.Body, streamName);
 
             var applicationProperties = msg.ApplicationProperties.Concat(MessageProperties(msg));
+
             var ctx = new MessageConsumeContext(
                 msg.MessageId,
                 eventType,
@@ -77,30 +86,35 @@ public class ServiceBusSubscription : EventSubscription<ServiceBusSubscriptionOp
                 await arg.CompleteMessageAsync(msg, ct);
             } catch (Exception ex) {
                 await arg.AbandonMessageAsync(msg, null, ct); // Abandoning the message will make it available for reprocessing, or dead letter it?
-                await defaultErrorHandler(new(ex, ServiceBusErrorSource.Abandon, arg.FullyQualifiedNamespace, arg.EntityPath, arg.Identifier, arg.CancellationToken));
+                await _defaultErrorHandler(new(ex, ServiceBusErrorSource.Abandon, arg.FullyQualifiedNamespace, arg.EntityPath, arg.Identifier, arg.CancellationToken));
                 Log.ErrorLog?.Log(ex, "Error processing message: {MessageId}", msg.MessageId);
             }
         }
     }
 
-    private IEnumerable<KeyValuePair<string, object>> MessageProperties(ServiceBusReceivedMessage msg) {
+    IEnumerable<KeyValuePair<string, object>> MessageProperties(ServiceBusReceivedMessage msg) {
         var attributes = Options.AttributeNames;
+
         if (msg.CorrelationId is not null)
-            yield return new KeyValuePair<string, object>(attributes.CorrelationId, msg.CorrelationId);
+            yield return new(attributes.CorrelationId, msg.CorrelationId);
+
         if (msg.ReplyTo is not null)
-            yield return new KeyValuePair<string, object>(attributes.ReplyTo, msg.ReplyTo);
+            yield return new(attributes.ReplyTo, msg.ReplyTo);
+
         if (msg.Subject is not null)
-            yield return new KeyValuePair<string, object>(attributes.Subject, msg.Subject);
+            yield return new(attributes.Subject, msg.Subject);
+
         if (msg.To is not null)
-            yield return new KeyValuePair<string, object>(attributes.To, msg.To);
+            yield return new(attributes.To, msg.To);
+
         if (msg.MessageId is not null)
-            yield return new KeyValuePair<string, object>(attributes.MessageId, msg.MessageId);
+            yield return new(attributes.MessageId, msg.MessageId);
     }
 
-    private static Metadata? AsMeta(IEnumerable<KeyValuePair<string, object>> applicationProperties) =>
-        new(applicationProperties.ToDictionary(pair => pair.Key, pair => (object?)pair.Value));
+    static Metadata? AsMeta(IEnumerable<KeyValuePair<string, object>> applicationProperties) =>
+        new(applicationProperties.ToDictionary(pair => pair.Key, object? (pair) => pair.Value));
 
-    private async Task DefaultErrorHandler(ProcessErrorEventArgs arg) {
+    async Task DefaultErrorHandler(ProcessErrorEventArgs arg) {
         // Log the error
         Log.ErrorLog?.Log(arg.Exception, "Error processing message: {Identifier}", arg.Identifier);
 
@@ -113,7 +127,5 @@ public class ServiceBusSubscription : EventSubscription<ServiceBusSubscriptionOp
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    protected override ValueTask Unsubscribe(CancellationToken cancellationToken) {
-        return new ValueTask(processor?.StopProcessingAsync(cancellationToken) ?? Task.CompletedTask);
-    }
+    protected override ValueTask Unsubscribe(CancellationToken cancellationToken) => new(_processor?.StopProcessingAsync(cancellationToken) ?? Task.CompletedTask);
 }
