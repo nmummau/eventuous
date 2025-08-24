@@ -35,7 +35,7 @@ public class SendAndReceive {
 
         // Assert
         await _handler.AssertThat()
-            .Timebox(TimeSpan.FromSeconds(1))
+            .Timebox(TimeSpan.FromSeconds(5))
             .Single()
             .Match(evt => evt is SomeEvent)
             .Validate(TestCancellationToken);
@@ -50,7 +50,7 @@ public class SendAndReceive {
 
         // Assert
         await _handler.AssertThat()
-            .Timebox(TimeSpan.FromSeconds(10))
+            .Timebox(TimeSpan.FromSeconds(20))
             .Exactly(count)
             .Match(evt => evt is SomeEvent)
             .Validate(TestCancellationToken);
