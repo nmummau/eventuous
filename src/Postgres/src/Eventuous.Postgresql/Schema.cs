@@ -29,6 +29,7 @@ public class Schema(string schema = Schema.DefaultSchema) {
     public string GetCheckpointSql    => $"select position from {schema}.checkpoints where id=(@checkpointId)";
     public string AddCheckpointSql    => $"insert into {schema}.checkpoints (id) values (@checkpointId)";
     public string UpdateCheckpointSql => $"update {schema}.checkpoints set position=(@position) where id=(@checkpointId)";
+    public string TryInsertTombstone  => $"select {schema}.try_insert_tombstone(@_gap_position, @_stream_name, @_type, @_id)";
 
     static readonly Assembly Assembly = typeof(Schema).Assembly;
 
