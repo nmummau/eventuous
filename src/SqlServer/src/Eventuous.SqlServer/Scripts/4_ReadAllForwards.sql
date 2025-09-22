@@ -1,15 +1,21 @@
 CREATE OR ALTER PROCEDURE __schema__.read_all_forwards
-    @from_position bigint,
-    @count int
-    AS
+    @from_position BIGINT,
+    @count INT
+AS
 BEGIN
-    
-SELECT TOP (@count) 
-    MessageId, MessageType, StreamPosition, GlobalPosition,
-    JsonData, JsonMetadata, Created, StreamName
-FROM __schema__.Messages
-INNER JOIN __schema__.Streams ON Messages.StreamId = Streams.StreamId
-WHERE Messages.GlobalPosition >= @from_position
-ORDER BY Messages.GlobalPosition
+    SET NOCOUNT ON;
 
-END
+    SELECT TOP (@count)
+        m.MessageId,
+        m.MessageType,
+        m.StreamPosition,
+        m.GlobalPosition,
+        m.JsonData,
+        m.JsonMetadata,
+        m.Created,
+        s.StreamName
+    FROM __schema__.Messages m
+    JOIN __schema__.Streams s ON m.StreamId = s.StreamId
+    WHERE m.GlobalPosition >= @from_position
+    ORDER BY m.GlobalPosition;
+END;
