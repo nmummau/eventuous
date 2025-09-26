@@ -13,7 +13,7 @@ public static class SetupIndex {
             (_, _, _) => {
                 // Log.Warning("Elasticsearch exception encountered. Retrying in {TimeSpan}", span);
             });
-    
+
     public static async Task CreateIndexIfNecessary<T>(this IElasticClient client, IndexConfig config) where T : class {
         var lifecycleConfig = Ensure.NotNull(config.Lifecycle, nameof(config.Lifecycle));
         var templateConfig  = Ensure.NotNull(config.Template, nameof(config.Template));
