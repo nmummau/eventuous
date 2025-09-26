@@ -8,7 +8,7 @@ namespace Eventuous.Subscriptions.Filters.Partitioning;
 static class MurmurHash3 {
     const uint C1 = 0xCC9E2D51U;
     const uint C2 = 0x1B873593U;
-    
+
     const uint Seed = 0xc58f1a7b;
 
     const int CharSize = sizeof(char);
