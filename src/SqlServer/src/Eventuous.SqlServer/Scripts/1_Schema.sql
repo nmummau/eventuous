@@ -27,7 +27,7 @@ IF OBJECT_ID('__schema__.Messages', 'U') IS NULL
             GlobalPosition BIGINT IDENTITY (0,1) NOT NULL,
             JsonData       NVARCHAR(MAX)         NOT NULL,
             JsonMetadata   NVARCHAR(MAX)             NULL,
-            Created        DATETIME2                 NULL,
+            Created        DATETIME2             NOT NULL,
             CONSTRAINT PK_Events PRIMARY KEY CLUSTERED (GlobalPosition),
             CONSTRAINT FK_MessageStreamId FOREIGN KEY (StreamId) REFERENCES __schema__.Streams (StreamId),
             CONSTRAINT UQ_StreamIdAndStreamPosition UNIQUE NONCLUSTERED (StreamId, StreamPosition),
