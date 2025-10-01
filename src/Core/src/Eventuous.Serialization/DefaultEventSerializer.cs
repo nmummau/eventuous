@@ -8,12 +8,16 @@ namespace Eventuous;
 
 [PublicAPI]
 public class DefaultEventSerializer(JsonSerializerOptions options, ITypeMapper? typeMapper = null) : IEventSerializer {
-    public static IEventSerializer Instance { get; private set; } = new DefaultEventSerializer(new(JsonSerializerDefaults.Web));
+    static readonly JsonSerializerOptions Options = new(JsonSerializerDefaults.Web);
+
+    public static IEventSerializer Instance { get; private set; } = new DefaultEventSerializer(Options);
 
     readonly ITypeMapper _typeMapper = typeMapper ?? TypeMap.Instance;
 
     public static void SetDefaultSerializer(IEventSerializer serializer) => Instance = serializer;
 
+    [RequiresUnreferencedCode(IEventSerializer.SerializationUnreferencedCodeMessage)]
+    [RequiresDynamicCode(IEventSerializer.SerializationRequiresDynamicCodeMessage)]
     public DeserializationResult DeserializeEvent(ReadOnlySpan<byte> data, string eventType, string contentType) {
         var typeMapped = _typeMapper.TryGetType(eventType, out var dataType);
 
@@ -27,6 +31,8 @@ public class DefaultEventSerializer(JsonSerializerOptions options, ITypeMapper? 
             : new FailedToDeserialize(DeserializationError.PayloadEmpty);
     }
 
+    [RequiresUnreferencedCode(IEventSerializer.SerializationUnreferencedCodeMessage)]
+    [RequiresDynamicCode(IEventSerializer.SerializationRequiresDynamicCodeMessage)]
     public SerializationResult SerializeEvent(object evt)
         => new(_typeMapper.GetTypeName(evt), ContentType, JsonSerializer.SerializeToUtf8Bytes(evt, options));
 
