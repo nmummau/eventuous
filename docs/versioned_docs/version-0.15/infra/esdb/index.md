@@ -33,7 +33,7 @@ When running in production, you'd use a secure connection string, which contains
 Further, you need to tell Eventuous to use the `EsdbEventStore` for its aggregate store. We have a simple extension that allows you to do that:
 
 ```csharp
-services.AddAggregateStore<EsdbEventStore>();
+services.AddEventStore<EsdbEventStore>();
 ```
 
 When that's done, Eventuous would persist aggregates using EventStoreDB when you use the [command service](../../application/app-service.mdx).
