@@ -1,0 +1,68 @@
+services:
+
+  rabbitmq:
+    container_name: rmqdemo-rabbitmq
+    image: rabbitmq:management-alpine
+    ports:
+      - "5552:5552"
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rmqdemo-rabbitmq-data:/var/lib/rabbitmq
+      - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+      - ./rabbitmq/definitions.json:/etc/rabbitmq/definitions.json
+      - ./rabbitmq/enabled_plugins:/etc/rabbitmq/enabled_plugins
+    deploy:
+      restart_policy:
+        window: 5s
+    healthcheck:
+      test: [ "CMD", "rabbitmqctl", "status" ]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+  mongo:
+    container_name: rmqdemo-mongo
+    image: mongo
+    ports:
+      - '27017:27017'
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongoadmin
+      MONGO_INITDB_ROOT_PASSWORD: secret
+
+  zipkin:
+    image: openzipkin/zipkin
+    container_name: rmqdemo-zipkin
+    ports:
+      - "9411:9411"
+
+  prometheus:
+    container_name: rmqdemo-prometheus
+    image: prom/prometheus:v2.17.1
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+
+  grafana:
+    container_name: rmqdemo-grafana
+    image: grafana/grafana:6.7.2
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana/datasources.yml:/etc/grafana/provisioning/datasources/prometheus.yaml
+      - ./grafana/dashboards:/dashboards
+
+  seq:
+    image: datalust/seq:latest
+    container_name: rmqdemo-seq
+    environment:
+      - ACCEPT_EULA=Y
+    ports:
+      - "5341:80"
+
+volumes:
+  rmqdemo-rabbitmq-data:
+
+networks:
+  default:
+    name: eventuous-demo

@@ -1,0 +1,50 @@
+{
+    "bindings": [],
+    "exchanges": [],
+    "global_parameters": [],
+    "parameters": [],
+    "permissions": [
+      {
+        "configure": ".*",
+        "read": ".*",
+        "user": "guest",
+        "vhost": "/",
+        "write": ".*"
+      },
+      {
+        "configure": ".*",
+        "read": ".*",
+        "user": "guest",
+        "vhost": "wes_001",
+        "write": ".*"
+      }
+    ],
+    "policies": [],
+    "queues": [],
+    "rabbit_version": "3.11.15",
+    "rabbitmq_version": "3.11.15",
+    "topic_permissions": [],
+    "users": [
+      {
+        "hashing_algorithm": "rabbit_password_hashing_sha256",
+        "limits": {},
+        "name": "guest",
+        "password_hash": "cCaTG8lM/vaSqStAug/PcmiuZjwA6n4rpTFB5KUKirB2QdPS",
+        "tags": [
+          "administrator"
+        ]
+      }
+    ],
+    "vhosts": [
+      {
+        "limits": [],
+        "metadata": {
+          "description": "Default virtual host",
+          "tags": []
+        },
+        "name": "/"
+      },
+      { "name": "wes_001" }
+    ]
+  }
+  
