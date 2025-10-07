@@ -10,7 +10,9 @@ on:
 jobs:
   nuget:
     runs-on: [ self-hosted, type-cx42, type-cpx41, image-x86-app-docker-ce ]
-
+    env:
+      NUGET_PACKAGES: "/mnt/cache/.nuget/packages"
+      DOTNET_INSTALL_DIR: "/mnt/cache/.dotnet"
     steps:
       -
         name: Setup Python
