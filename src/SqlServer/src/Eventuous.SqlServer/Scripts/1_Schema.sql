@@ -32,7 +32,7 @@ IF OBJECT_ID('__schema__.Messages', 'U') IS NULL
             CONSTRAINT FK_MessageStreamId FOREIGN KEY (StreamId) REFERENCES __schema__.Streams (StreamId),
             CONSTRAINT UQ_StreamIdAndStreamPosition UNIQUE NONCLUSTERED (StreamId, StreamPosition),
             CONSTRAINT UQ_StreamIdAndMessageId UNIQUE NONCLUSTERED (StreamId, MessageId),
-            CONSTRAINT CK_StreamPositionGteZero CHECK (Messages.StreamPosition >= 0),
+            CONSTRAINT CK_StreamPositionGteZero CHECK (StreamPosition >= 0),
             CONSTRAINT CK_JsonDataIsJson CHECK (ISJSON(JsonData) = 1),
             CONSTRAINT CK_JsonMetadataIsJson CHECK (ISJSON(JsonMetadata) = 1),
             INDEX IDX_EventsStream (StreamId)
