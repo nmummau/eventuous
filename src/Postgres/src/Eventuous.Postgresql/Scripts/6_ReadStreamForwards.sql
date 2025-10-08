@@ -33,7 +33,7 @@ begin
                         m.json_data, m.json_metadata, m.created
         from __schema__.messages m 
         where m.stream_id = _stream_id and m.stream_position >= _from_position
-        order by m.global_position
+        order by m.stream_position
         limit _count;
 end;
 
