@@ -4,24 +4,39 @@ CREATE OR ALTER PROCEDURE __schema__.read_stream_forwards
     @count INT
 AS
 BEGIN
+    SET NOCOUNT ON;
 
-DECLARE @current_version int, @stream_id int
+    DECLARE
+        @current_version INT,
+        @stream_id INT;
 
-SELECT @current_version = Version, @stream_id = StreamId
-FROM __schema__.Streams
-WHERE StreamName = @stream_name
+    SELECT
+        @current_version = [Version],
+        @stream_id = StreamId
+    FROM __schema__.Streams
+    WHERE StreamName = @stream_name;
 
-IF @stream_id IS NULL
-    THROW 50001, 'StreamNotFound', 1;
+    IF @stream_id IS NULL
+    BEGIN
+        ;THROW 50001, 'StreamNotFound', 1;
+    END;
 
-IF @current_version < @from_position
-	RETURN
+    IF @current_version < @from_position
+    BEGIN
+        RETURN;
+    END;
 
-SELECT TOP (@count) 
-    MessageId, MessageType, StreamPosition, GlobalPosition,
-    JsonData, JsonMetadata, Created
-FROM __schema__.Messages
-WHERE StreamId = @stream_id AND StreamPosition >= @from_position
-ORDER BY Messages.GlobalPosition
+    SELECT TOP (@count)
+        MessageId,
+        MessageType,
+        StreamPosition,
+        GlobalPosition,
+        JsonData,
+        JsonMetadata,
+        Created
+    FROM __schema__.Messages
+    WHERE StreamId = @stream_id
+    AND StreamPosition >= @from_position
+    ORDER BY StreamPosition;
 
-END
+END;
