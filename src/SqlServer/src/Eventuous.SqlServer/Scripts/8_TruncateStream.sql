@@ -32,7 +32,7 @@ BEGIN
     END;
 
     DELETE m
-    FROM __schema__.[Messages] m
+    FROM __schema__.Messages m
     WHERE m.StreamId = @stream_id
     AND m.StreamPosition < @position;
 END;

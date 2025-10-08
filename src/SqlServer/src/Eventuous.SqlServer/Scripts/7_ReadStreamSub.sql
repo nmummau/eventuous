@@ -16,7 +16,7 @@ BEGIN
         JsonMetadata,
         Created,
         @stream_name StreamName
-    FROM __schema__.[Messages]
+    FROM __schema__.Messages
     WHERE StreamId = @stream_id
     AND StreamPosition >= @from_position
     ORDER BY GlobalPosition;

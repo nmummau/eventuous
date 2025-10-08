@@ -63,7 +63,7 @@ BEGIN
     SELECT TOP (1)
         @current_version = StreamPosition,
         @position = GlobalPosition
-    FROM __schema__.[Messages]
+    FROM __schema__.Messages
     WHERE StreamId = @stream_id
     ORDER BY GlobalPosition DESC;
 

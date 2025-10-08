@@ -34,7 +34,7 @@ BEGIN
         JsonData,
         JsonMetadata,
         Created
-    FROM __schema__.[Messages]
+    FROM __schema__.Messages
     WHERE StreamId = @stream_id
     AND StreamPosition <= @from_position
     ORDER BY StreamPosition DESC;
