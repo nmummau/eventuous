@@ -6,6 +6,7 @@ CREATE OR ALTER PROCEDURE __schema__.append_events
 AS
 BEGIN
     SET NOCOUNT ON;
+    SET XACT_ABORT ON;
 
     -- Note: This procedure is wrapped in a transaction by the caller. This explains why there is no explicit transaction here within the procedure.
 

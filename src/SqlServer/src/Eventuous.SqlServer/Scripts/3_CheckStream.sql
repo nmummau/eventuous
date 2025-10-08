@@ -6,6 +6,7 @@ CREATE OR ALTER PROCEDURE __schema__.check_stream
 AS
 BEGIN
     SET NOCOUNT ON;
+    SET XACT_ABORT ON;
 
     DECLARE @customErrorMessage NVARCHAR(200);
 

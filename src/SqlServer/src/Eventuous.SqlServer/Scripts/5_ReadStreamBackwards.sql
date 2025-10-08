@@ -5,6 +5,7 @@ CREATE OR ALTER PROCEDURE __schema__.read_stream_backwards
 AS
 BEGIN
     SET NOCOUNT ON;
+    SET XACT_ABORT ON;
 
     DECLARE
         @current_version INT,

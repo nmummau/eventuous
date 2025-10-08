@@ -6,6 +6,7 @@ CREATE OR ALTER PROCEDURE __schema__.read_stream_sub
     AS
 BEGIN
     SET NOCOUNT ON;
+    SET XACT_ABORT ON;
 
     SELECT TOP (@count)
         MessageId,

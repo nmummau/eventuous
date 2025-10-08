@@ -4,6 +4,7 @@ CREATE OR ALTER PROCEDURE __schema__.read_all_forwards
 AS
 BEGIN
     SET NOCOUNT ON;
+    SET XACT_ABORT ON;
 
     SELECT TOP (@count)
         m.MessageId,
