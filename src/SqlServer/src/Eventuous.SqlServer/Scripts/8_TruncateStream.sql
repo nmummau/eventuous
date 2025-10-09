@@ -29,7 +29,9 @@ BEGIN
 
     IF @expected_version != -2 AND @expected_version != @current_version
     BEGIN
-        ;THROW 50000, 'WrongExpectedVersion %, current version %', 1;
+        DECLARE @customMessage NVARCHAR(4000);
+        SELECT @customMessage = FORMATMESSAGE(N'WrongExpectedVersion %i, current version %i', @expected_version, @current_version);
+        ;THROW 50000, @customMessage, 1;
     END;
 
     DELETE m
