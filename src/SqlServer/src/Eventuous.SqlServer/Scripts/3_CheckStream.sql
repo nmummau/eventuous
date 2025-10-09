@@ -22,19 +22,16 @@ BEGIN
                 OR @expected_version = -1 -- NoStream
                 BEGIN
                     BEGIN TRY
+                        SET @current_version = -1
                         INSERT INTO [__schema__].Streams (
                             StreamName,
                             [Version]
                         ) VALUES (
                             @stream_name,
-                            -1
+                            @current_version
                         );
 
-                        SELECT
-                            @current_version = [Version],
-                            @stream_id = StreamId
-                        FROM [__schema__].Streams
-                        WHERE StreamName = @stream_name;
+                        SET @stream_id = SCOPE_IDENTITY();
                     END TRY
                     BEGIN CATCH
                         IF (ERROR_NUMBER() = 2627 OR ERROR_NUMBER() = 2601) AND (SELECT CHARINDEX(N'UQ_StreamName', ERROR_MESSAGE())) > 0
