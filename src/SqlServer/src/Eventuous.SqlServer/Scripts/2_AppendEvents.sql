@@ -58,6 +58,22 @@ BEGIN
             json_metadata,
             ISNULL(@created, SYSUTCDATETIME())
         FROM @messages;
+
+        UPDATE s
+        SET [Version] = @new_version
+        FROM __schema__.Streams s
+        WHERE s.StreamId = @stream_id
+        AND s.[Version] = @current_version;
+
+        IF @@ROWCOUNT = 0
+        BEGIN
+            DECLARE @streamUpdateErrorMessage NVARCHAR(4000) = CONCAT(
+                N'WrongExpectedVersion: concurrent update detected for stream ',
+                CAST(@stream_id AS NVARCHAR(20))
+            );
+            ;THROW 50000, @streamUpdateErrorMessage, 1;
+        END
+
     END TRY
     BEGIN CATCH
         DECLARE @errmsg NVARCHAR(2048) = ERROR_MESSAGE();
@@ -82,12 +98,6 @@ BEGIN
             ;THROW;
         END;
     END CATCH;
-
-    UPDATE s
-    SET [Version] = @new_version
-    FROM __schema__.Streams s
-    WHERE s.StreamId = @stream_id
-    AND s.[Version] = @current_version;
 
     -- final GlobalPosition value to return
     SELECT @position = (
