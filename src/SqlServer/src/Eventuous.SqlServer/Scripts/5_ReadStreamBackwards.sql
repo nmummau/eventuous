@@ -22,7 +22,15 @@ BEGIN
         ;THROW 50001, 'StreamNotFound', 1;
     END;
 
-    IF @current_version < @from_position + @count
+    -- nothing to read / invalid request
+    IF @count <= 0
+    BEGIN
+        RETURN;
+    END;
+
+    -- Validate the starting position for backwards read.
+    IF @from_position < 0                -- A negative starting position is invalid
+    OR @from_position > @current_version -- A starting position greater than the current version means we're trying to read from beyond the head of the stream
     BEGIN
         RETURN;
     END;
