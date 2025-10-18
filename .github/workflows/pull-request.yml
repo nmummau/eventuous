@@ -18,7 +18,7 @@ jobs:
 
   build-and-test:
     name: "Build and test"
-    runs-on: [ self-hosted, type-cx42, type-cpx41, image-x86-app-docker-ce, volume-cache-20GB ]
+    runs-on: [ self-hosted, type-cpx52, image-x86-app-docker-ce, volume-cache-20GB ]
     strategy:
       matrix:
         dotnet-version: [ '8.0', '9.0' ]
@@ -37,9 +37,11 @@ jobs:
             8.0
             9.0
       -
-        name: Prepare Testcontainers Cloud agent
-        if: env.TC_CLOUD_TOKEN != ''
-        uses: atomicjar/testcontainers-cloud-setup-action@main
+        name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_TOKEN }}
       -
         name: Run tests
         run: |

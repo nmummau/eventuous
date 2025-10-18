@@ -1,4 +1,4 @@
-// Copyright (C) Eventuous HQ OÜ.All rights reserved
+// Copyright (C) Eventuous HQ OÜ. All rights reserved
 // Licensed under the Apache License, Version 2.0.
 
 using System.Collections.Immutable;
@@ -6,6 +6,7 @@ using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using static Eventuous.Shared.Generators.Constants;
 
 namespace Eventuous.Shared.Generators;
 
@@ -15,8 +16,6 @@ namespace Eventuous.Shared.Generators;
 /// </summary>
 [Generator(LanguageNames.CSharp)]
 public sealed class TypeMappingsGenerator : IIncrementalGenerator {
-    const string AttributeFullName  = "Eventuous.EventTypeAttribute";
-
     public void Initialize(IncrementalGeneratorInitializationContext context) {
         var syntaxCandidates = context.SyntaxProvider
             .CreateSyntaxProvider(IsCandidate, Transform)
@@ -24,7 +23,7 @@ public sealed class TypeMappingsGenerator : IIncrementalGenerator {
             .Select(static (t, _) => t!)
             .Collect();
 
-        // Additionally discover [EventType] on symbols from referenced assemblies (metadata) via the Compilation model
+        // Additionally, discover [EventType] on symbols from referenced assemblies (metadata) via the Compilation model
         var symbolCandidates = context.CompilationProvider.Select(static (c, _) => DiscoverFromCompilation(c));
 
         var mergedCandidates = syntaxCandidates
@@ -65,14 +64,13 @@ public sealed class TypeMappingsGenerator : IIncrementalGenerator {
         var evtName = TryGetEventTypeName(attr) ?? string.Empty;
 
         // Use fully-qualified global:: name for the type
-        var typeName = symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-
-        if (!typeName.StartsWith("global::", StringComparison.Ordinal)) typeName = $"global::{typeName}";
+        var typeName = MakeGlobal(symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
 
         return new() { FullyQualifiedType = typeName, EventTypeName = evtName };
     }
 
     static AttributeData? GetEventTypeAttribute(ISymbol symbol) {
+        // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
         foreach (var a in symbol.GetAttributes()) {
             var attrClass = a.AttributeClass;
 
@@ -80,10 +78,7 @@ public sealed class TypeMappingsGenerator : IIncrementalGenerator {
 
             var name = attrClass.ToDisplayString();
 
-            if (name == AttributeFullName) return a;
-
-            // Also accept short name w/o namespace to be resilient
-            if (attrClass.Name is "EventTypeAttribute") return a;
+            if (name == EventTypeAttrFqcn || attrClass.Name is EventTypeAttribute) return a;
         }
 
         return null;
@@ -99,7 +94,7 @@ public sealed class TypeMappingsGenerator : IIncrementalGenerator {
 
         // Also check named argument "EventType"
         foreach (var kv in attr.NamedArguments) {
-            if (kv is { Key: "EventType", Value.Value: string s }) return s;
+            if (kv is { Key: EventTypeAttribute, Value.Value: string s }) return s;
         }
 
         return null;
@@ -107,22 +102,6 @@ public sealed class TypeMappingsGenerator : IIncrementalGenerator {
 
     static ImmutableArray<Mapping> DiscoverFromCompilation(Compilation compilation) {
         var builder = ImmutableArray.CreateBuilder<Mapping>();
-
-        void ProcessType(INamedTypeSymbol type) {
-            var attr = GetEventTypeAttribute(type);
-
-            if (attr is not null) {
-                var evtName  = TryGetEventTypeName(attr) ?? string.Empty;
-                var typeName = type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-
-                if (!typeName.StartsWith("global::", StringComparison.Ordinal)) typeName = $"global::{typeName}";
-                builder.Add(new() { FullyQualifiedType = typeName, EventTypeName = evtName });
-            }
-
-            foreach (var nt in type.GetTypeMembers()) {
-                ProcessType(nt);
-            }
-        }
 
         // Current assembly
         ProcessNamespace(compilation.Assembly.GlobalNamespace);
@@ -133,6 +112,20 @@ public sealed class TypeMappingsGenerator : IIncrementalGenerator {
         }
 
         return builder.ToImmutable();
+
+        void ProcessType(INamedTypeSymbol type) {
+            var attr = GetEventTypeAttribute(type);
+
+            if (attr is not null) {
+                var evtName  = TryGetEventTypeName(attr) ?? string.Empty;
+                var typeName = MakeGlobal(type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
+                builder.Add(new() { FullyQualifiedType = typeName, EventTypeName = evtName });
+            }
+
+            foreach (var nt in type.GetTypeMembers()) {
+                ProcessType(nt);
+            }
+        }
 
         void ProcessNamespace(INamespaceSymbol ns) {
             foreach (var member in ns.GetMembers()) {
@@ -210,4 +203,6 @@ public sealed class TypeMappingsGenerator : IIncrementalGenerator {
 
         return sb.ToString();
     }
+
+    static string MakeGlobal(string typeName) => !typeName.StartsWith("global::") ? $"global::{typeName}" : typeName;
 }

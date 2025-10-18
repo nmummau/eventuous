@@ -5,12 +5,15 @@ using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
+using static Eventuous.Shared.Generators.Constants;
 
-namespace Eventuous.Shared.Analyzers;
+// ReSharper disable CognitiveComplexity
+
+namespace Eventuous.Shared.Generators;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class EventUsageAnalyzer : DiagnosticAnalyzer {
-    public const string DiagnosticId = "EV001";
+    public const string DiagnosticId = "EVTC001";
 
     static readonly DiagnosticDescriptor MissingEventTypeAttribute = new(
         id: DiagnosticId,
@@ -97,20 +100,13 @@ public sealed class EventUsageAnalyzer : DiagnosticAnalyzer {
                         continue;
                     // If the argument is a lambda, analyze its body for created event instances
                     case IAnonymousFunctionOperation lambda:
-                        AnalyzeDelegateBodyForEventCreations(ctx, lambda.Body); break;
-                    case IConversionOperation { Operand: IAnonymousFunctionOperation lambdaConv }:
-                        AnalyzeDelegateBodyForEventCreations(ctx, lambdaConv.Body); break;
-                    // Method groups: try to resolve to the referenced method and analyze its body if available
-                    case IMethodReferenceOperation methodRef: {
-                        var decl = methodRef.Method;
-
-                        if (decl is { DeclaringSyntaxReferences.Length: > 0 }) {
-                            // We cannot easily get an IOperation for arbitrary method here; rely on separate object creation callback
-                            // so we do nothing here and rely on AnalyzeObjectCreation to catch creations within the method body
-                        }
+                        AnalyzeDelegateBodyForEventCreations(ctx, lambda.Body);
 
                         break;
-                    }
+                    case IConversionOperation { Operand: IAnonymousFunctionOperation lambdaConv }:
+                        AnalyzeDelegateBodyForEventCreations(ctx, lambdaConv.Body);
+
+                        break;
                 }
             }
         }
@@ -184,11 +180,6 @@ public sealed class EventUsageAnalyzer : DiagnosticAnalyzer {
             return type.TypeArguments[0] is { SpecialType: SpecialType.System_Object };
         }
 
-        // Also consider array of object (object[])
-        if (type is { IsGenericType: false } && type.AllInterfaces.Any(static i => i.Name == "IEnumerable" && i.ContainingNamespace.ToDisplayString() == "System.Collections")) {
-            // not precise; skip
-        }
-
         return false;
     }
 
@@ -197,7 +188,7 @@ public sealed class EventUsageAnalyzer : DiagnosticAnalyzer {
 
         // Walk base types to check if it derives from Eventuous.Aggregate<>
         for (var t = type; t != null; t = t.BaseType) {
-            if (t is { Name: "Aggregate", Arity: 1 } && t.ContainingNamespace.ToDisplayString() == "Eventuous") return true;
+            if (t is { Name: "Aggregate", Arity: 1 } && t.ContainingNamespace.ToDisplayString() == BaseNamespace) return true;
         }
 
         return false;
@@ -208,7 +199,7 @@ public sealed class EventUsageAnalyzer : DiagnosticAnalyzer {
 
         // Walk base types to check if it derives from Eventuous.State<>
         for (var t = type; t != null; t = t.BaseType) {
-            if (t is { Name: "State", Arity: 1 } && t.ContainingNamespace.ToDisplayString() == "Eventuous") return true;
+            if (t is { Name: "State", Arity: 1 } && t.ContainingNamespace.ToDisplayString() == BaseNamespace) return true;
         }
 
         return false;
@@ -224,7 +215,7 @@ public sealed class EventUsageAnalyzer : DiagnosticAnalyzer {
 
         var ns = containing.ContainingNamespace?.ToDisplayString();
 
-        if (ns != "Eventuous") return false;
+        if (ns != BaseNamespace) return false;
 
         // Simple name checks
         return containing.Name is "CommandHandlerBuilder" or "IDefineExecution" or "ICommandHandlerBuilder" or "IDefineStoreOrExecution";
@@ -232,18 +223,9 @@ public sealed class EventUsageAnalyzer : DiagnosticAnalyzer {
 
     static bool IsConcreteEvent(ITypeSymbol type) => type.TypeKind is TypeKind.Class or TypeKind.Struct;
 
-    static bool HasEventTypeAttribute(ITypeSymbol type) {
-        foreach (var a in type.GetAttributes()) {
-            var attrClass = a.AttributeClass;
-
-            if (attrClass == null) continue;
-
-            var name = attrClass.ToDisplayString();
-
-            if (name == "Eventuous.EventTypeAttribute") return true;
-            if (attrClass.Name is "EventTypeAttribute") return true;
-        }
-
-        return false;
-    }
+    static bool HasEventTypeAttribute(ITypeSymbol type)
+        => (from attrClass in type.GetAttributes().Select(a => a.AttributeClass).OfType<INamedTypeSymbol>()
+            let name = attrClass.ToDisplayString()
+            where name == EventTypeAttrFqcn || attrClass.Name is EventTypeAttribute
+            select attrClass).Any();
 }
