@@ -1,16 +1,24 @@
 CREATE OR ALTER PROCEDURE __schema__.read_stream_sub
-    @stream_id int,
+    @stream_id INT,
     @stream_name NVARCHAR(850),
     @from_position INT,
-    @count int
+    @count INT
     AS
 BEGIN
-    
-SELECT TOP (@count) 
-    MessageId, MessageType, StreamPosition, GlobalPosition,
-    JsonData, JsonMetadata, Created, @stream_name AS StreamName
-FROM __schema__.Messages
-WHERE StreamId = @stream_id AND Messages.StreamPosition >= @from_position
-ORDER BY Messages.GlobalPosition
-    
-END
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+
+    SELECT TOP (@count)
+        MessageId,
+        MessageType,
+        StreamPosition,
+        GlobalPosition,
+        JsonData,
+        JsonMetadata,
+        Created,
+        @stream_name StreamName
+    FROM __schema__.Messages
+    WHERE StreamId = @stream_id
+    AND StreamPosition >= @from_position
+    ORDER BY GlobalPosition;
+END;
