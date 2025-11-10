@@ -91,7 +91,13 @@ public class StreamSubscription : KurrentDBCatchUpSubscriptionBase<StreamSubscri
     protected override async ValueTask Subscribe(CancellationToken cancellationToken) {
         var (_, position) = await GetCheckpoint(cancellationToken).NoContext();
 
-        var fromStream = position == null ? FromStream.Start : FromStream.After(StreamPosition.FromInt64((long)position));
+        FromStream GetStreamPosition() {
+            if (position == null && Options.InitialPosition == CheckpointInitialPosition.End) return FromStream.End;
+            if (position == null) return FromStream.Start;
+            return FromStream.After(StreamPosition.FromInt64((long)position));
+        }
+
+        var fromStream = GetStreamPosition();
 
         Subscription = await Client.SubscribeToStreamAsync(
                 Options.StreamName,

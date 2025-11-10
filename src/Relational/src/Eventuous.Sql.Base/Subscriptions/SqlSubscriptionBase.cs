@@ -214,6 +214,15 @@ public abstract class SqlSubscriptionBase<TOptions, TConnection>(
         await BeforeSubscribe(cancellationToken).NoContext();
         var (_, position) = await GetCheckpoint(cancellationToken).NoContext();
 
+        if (position == null && Options.InitialPosition == CheckpointInitialPosition.End) {
+            var endOfStream = await GetSubscriptionEndOfStream(cancellationToken);
+            if (endOfStream == EndOfStream.Invalid) {
+                throw new InvalidOperationException($"Could not get the end of the stream for {SubscriptionId}");
+            }
+            await CheckpointStore.StoreCheckpoint(new Checkpoint(SubscriptionId, endOfStream.Position), true, cancellationToken);
+            position = endOfStream.Position;
+        }
+
         _runner = new TaskRunner(token => PollingQuery(position, token)).Start();
     }
 

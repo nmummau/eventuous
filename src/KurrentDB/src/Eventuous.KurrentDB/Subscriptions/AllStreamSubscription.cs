@@ -84,7 +84,13 @@ public class AllStreamSubscription : KurrentDBCatchUpSubscriptionBase<AllStreamS
 
         var (_, position) = await GetCheckpoint(cancellationToken).NoContext();
 
-        var fromAll = position == null ? FromAll.Start : FromAll.After(new(position.Value, position.Value));
+        FromAll GetPosition() {
+            if (position == null && Options.InitialPosition == CheckpointInitialPosition.End) return FromAll.End;
+            if (position == null) return FromAll.Start;
+            return FromAll.After(new(position.Value, position.Value));
+        }
+
+        var fromAll = GetPosition();
 
         Subscription = await Client.SubscribeToAllAsync(
                 fromAll,
