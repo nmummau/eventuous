@@ -30,7 +30,6 @@ public abstract class SubscribeToAllBase<TContainer, TSubscription, TSubscriptio
 
         await fixture.Handler.AssertCollection(TimeSpan.FromSeconds(2), [.. testEvents]).Validate(cancellationToken);
         await fixture.StopSubscription();
-    }
 
     protected async Task ShouldConsumeProducedEvents(CancellationToken cancellationToken) {
         const int count = 10;
