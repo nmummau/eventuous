@@ -17,7 +17,20 @@ public abstract record SubscriptionOptions {
 }
 
 public abstract record SubscriptionWithCheckpointOptions : SubscriptionOptions {
-    public int CheckpointCommitBatchSize { get; set; } = 100;
-    public int CheckpointCommitDelayMs   { get; set; } = 5000;
-    public CheckpointInitialPosition InitialPosition { get; set; } = CheckpointInitialPosition.Beginning;
+    /// <summary>
+    /// Checkpoint will be committed after processing this number of events. Default is 100.
+    /// The <seealso cref="CheckpointCommitDelayMs"/> option will be considered as well, so the commit will happen when either condition is met.
+    /// </summary>
+    public int             CheckpointCommitBatchSize { get; set; } = 100;
+
+    /// <summary>
+    /// Checkpoint will be committed after this delay. Default is 5 seconds.
+    /// The <seealso cref="CheckpointCommitBatchSize"/> option will be considered as well, so the commit will happen when either condition is met.
+    /// </summary>
+    public int             CheckpointCommitDelayMs   { get; set; } = 5000;
+
+    /// <summary>
+    /// Where to start reading events from if there's no checkpoint. Default is from the beginning.
+    /// </summary>
+    public InitialPosition StartFrom                 { get; set; } = InitialPosition.Earliest;
 }

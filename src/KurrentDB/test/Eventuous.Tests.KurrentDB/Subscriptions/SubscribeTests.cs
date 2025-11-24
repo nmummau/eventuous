@@ -9,7 +9,7 @@ namespace Eventuous.Tests.KurrentDB.Subscriptions;
 
     public class SubscribeToAllFromEnd()
     : SubscribeToAllBase<EventStoreDbContainer, AllStreamSubscription, AllStreamSubscriptionOptions, TestCheckpointStore>(
-        new CatchUpSubscriptionFixture<AllStreamSubscription, AllStreamSubscriptionOptions, TestEventHandler>(opt => opt.InitialPosition = CheckpointInitialPosition.End, new("$all"), false)
+        new CatchUpSubscriptionFixture<AllStreamSubscription, AllStreamSubscriptionOptions, TestEventHandler>(opt => opt.StartFrom = InitialPosition.Latest, new("$all"), false)
     ) {
     [Test]
     [Retry(3)]

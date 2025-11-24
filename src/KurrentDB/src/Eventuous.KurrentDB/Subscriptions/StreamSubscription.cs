@@ -91,12 +91,6 @@ public class StreamSubscription : KurrentDBCatchUpSubscriptionBase<StreamSubscri
     protected override async ValueTask Subscribe(CancellationToken cancellationToken) {
         var (_, position) = await GetCheckpoint(cancellationToken).NoContext();
 
-        FromStream GetStreamPosition() {
-            if (position == null && Options.InitialPosition == CheckpointInitialPosition.End) return FromStream.End;
-            if (position == null) return FromStream.Start;
-            return FromStream.After(StreamPosition.FromInt64((long)position));
-        }
-
         var fromStream = GetStreamPosition();
 
         Subscription = await Client.SubscribeToStreamAsync(
@@ -112,6 +106,12 @@ public class StreamSubscription : KurrentDBCatchUpSubscriptionBase<StreamSubscri
         Log.InfoLog?.Log("Subscribed to stream {Stream}", Options.StreamName);
 
         return;
+
+        FromStream GetStreamPosition() => position switch {
+            null when Options.StartFrom == InitialPosition.Latest => FromStream.End,
+            null                                                  => FromStream.Start,
+            _                                                     => FromStream.After(StreamPosition.FromInt64((long)position))
+        };
 
         async Task HandleEvent(ResolvedEvent re, CancellationToken ct) {
             // Despite ResolvedEvent.Event being not marked as nullable, it returns null for deleted events
