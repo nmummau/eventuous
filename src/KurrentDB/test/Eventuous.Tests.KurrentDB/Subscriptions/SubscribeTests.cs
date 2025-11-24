@@ -7,7 +7,18 @@ using Testcontainers.EventStoreDb;
 
 namespace Eventuous.Tests.KurrentDB.Subscriptions;
 
-public class SubscribeToAll()
+    public class SubscribeToAllFromEnd()
+    : SubscribeToAllBase<EventStoreDbContainer, AllStreamSubscription, AllStreamSubscriptionOptions, TestCheckpointStore>(
+        new CatchUpSubscriptionFixture<AllStreamSubscription, AllStreamSubscriptionOptions, TestEventHandler>(opt => opt.StartFrom = InitialPosition.Latest, new("$all"), false)
+    ) {
+    [Test]
+    [Retry(3)]
+    public async Task Esdb_ShouldStartConsumptionFromEnd(CancellationToken cancellationToken) {
+        await ShouldStartConsumptionFromEnd(cancellationToken);
+    }
+}
+
+    public class SubscribeToAll()
     : SubscribeToAllBase<EventStoreDbContainer, AllStreamSubscription, AllStreamSubscriptionOptions, TestCheckpointStore>(
         new CatchUpSubscriptionFixture<AllStreamSubscription, AllStreamSubscriptionOptions, TestEventHandler>(_ => { }, new("$all"), false)
     ) {

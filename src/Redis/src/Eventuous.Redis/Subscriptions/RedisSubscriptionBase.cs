@@ -57,7 +57,11 @@ public abstract class RedisSubscriptionBase<T>(
     TaskRunner? _runner;
 
     async Task PollingQuery(ulong? position, CancellationToken cancellationToken) {
-        var start = position.HasValue ? (long)position : 0;
+        var start = position.HasValue
+            ? (long)position
+            : Options.StartFrom == InitialPosition.Earliest
+                ? 0
+                : throw new NotSupportedException("Redis subscription does not support latest position");
 
         while (!cancellationToken.IsCancellationRequested) {
             try {

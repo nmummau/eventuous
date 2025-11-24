@@ -38,7 +38,8 @@ public abstract class EventSubscriptionWithCheckpoint<T>(
 
     EventPosition?           LastProcessed           { get; set; }
     CheckpointCommitHandler? CheckpointCommitHandler { get; set; }
-    ICheckpointStore         CheckpointStore         { get; } = Ensure.NotNull(checkpointStore);
+
+    protected ICheckpointStore CheckpointStore { get; } = Ensure.NotNull(checkpointStore);
 
     protected SubscriptionKind Kind { get; } = kind;
 

@@ -6,7 +6,7 @@
         <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="KurrentDB.Client" />
+        <PackageReference Include="KurrentDB.Client"/>
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="$(CoreRoot)\Eventuous.Producers\Eventuous.Producers.csproj"/>
@@ -25,5 +25,8 @@
         <Compile Include="$(CoreRoot)\Eventuous.Shared\Tools\Ensure.cs">
             <Link>Tools\Ensure.cs</Link>
         </Compile>
+    </ItemGroup>
+    <ItemGroup>
+        <None Remove="Eventuous.KurrentDB.csproj.DotSettings"/>
     </ItemGroup>
 </Project>

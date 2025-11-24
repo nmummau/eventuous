@@ -8,6 +8,17 @@ using Testcontainers.PostgreSql;
 namespace Eventuous.Tests.Postgres.Subscriptions;
 
 [NotInParallel]
+public class SubscribeToAllFromEnd()
+    : SubscribeToAllBase<PostgreSqlContainer, PostgresAllStreamSubscription, PostgresAllStreamSubscriptionOptions, PostgresCheckpointStore>(
+        new SubscriptionFixture<PostgresStore, PostgresAllStreamSubscription, PostgresAllStreamSubscriptionOptions, TestEventHandler>(opt => opt.StartFrom = Eventuous.Subscriptions.InitialPosition.Latest, false)
+    ) {
+    [Test]
+    public async Task Postgres_ShouldStartConsumptionFromEnd(CancellationToken cancellationToken) {
+        await ShouldStartConsumptionFromEnd(cancellationToken);
+    }
+}
+
+[NotInParallel]
 public class SubscribeToAll()
     : SubscribeToAllBase<PostgreSqlContainer, PostgresAllStreamSubscription, PostgresAllStreamSubscriptionOptions, PostgresCheckpointStore>(
         new SubscriptionFixture<PostgresStore, PostgresAllStreamSubscription, PostgresAllStreamSubscriptionOptions, TestEventHandler>(_ => { }, false)

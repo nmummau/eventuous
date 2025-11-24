@@ -15,6 +15,20 @@ public abstract class SubscribeToAllBase<TContainer, TSubscription, TSubscriptio
     where TSubscription : EventSubscription<TSubscriptionOptions>
     where TSubscriptionOptions : SubscriptionOptions
     where TCheckpointStore : class, ICheckpointStore {
+    protected async Task ShouldStartConsumptionFromEnd(CancellationToken cancellationToken) {
+        const int count = 10;
+
+        await GenerateAndHandleCommands(count);
+        await fixture.StartSubscription();
+        await fixture.Handler.AssertCollection(TimeSpan.FromSeconds(2), []).Validate(cancellationToken);
+
+        var commands   = await GenerateAndHandleCommands(count);
+        var testEvents = commands.Select(ToEvent).ToList();
+
+        await fixture.Handler.AssertCollection(TimeSpan.FromSeconds(2), [..testEvents]).Validate(cancellationToken);
+        await fixture.StopSubscription();
+    }
+
     protected async Task ShouldConsumeProducedEvents(CancellationToken cancellationToken) {
         const int count = 10;
 

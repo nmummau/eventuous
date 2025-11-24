@@ -51,7 +51,7 @@
     <PackageVersion Include="NEST" Version="7.17.5" />
     <PackageVersion Include="Polly" Version="8.5.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageVersion Include="StackExchange.Redis" Version="2.8.16" />
+    <PackageVersion Include="StackExchange.Redis" Version="2.10.1" />
     <PackageVersion Include="Azure.Messaging.ServiceBus" Version="7.20.1" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" />
     <PackageVersion Include="Microsoft.CodeAnalysis" Version="4.10.0" PrivateAssets="all" />
