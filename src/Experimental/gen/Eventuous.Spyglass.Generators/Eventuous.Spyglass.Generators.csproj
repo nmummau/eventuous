@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <TargetFrameworks>netstandard2.0</TargetFrameworks>
         <IsPackable>false</IsPackable>
@@ -6,11 +6,8 @@
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
     </PropertyGroup>
     <ItemGroup>
+        <PackageReference Include="IsExternalInit" PrivateAssets="all"/>
         <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" PrivateAssets="all"/>
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all"/>
-    </ItemGroup>
-    <ItemGroup>
-      <AdditionalFiles Remove="AnalyzerReleases.Shipped.md" />
-      <AdditionalFiles Remove="AnalyzerReleases.Unshipped.md" />
     </ItemGroup>
 </Project>
