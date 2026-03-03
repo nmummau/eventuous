@@ -10,6 +10,7 @@
     },
     {
       "label": "Concepts",
+      "collapsed": true,
       "items": [
         {
           "label": "Prologue",
@@ -33,6 +34,7 @@
     },
     {
       "label": "Building Apps",
+      "collapsed": true,
       "items": [
         {
           "label": "Application",
@@ -68,6 +70,7 @@
     },
     {
       "label": "Operations",
+      "collapsed": true,
       "items": [
         {
           "label": "Diagnostics",

@@ -27,6 +27,7 @@ export default defineConfig({
         { label: "What's New", slug: 'whats-new' },
         {
           label: 'Concepts',
+          collapsed: true,
           items: [
             { label: 'Prologue', autogenerate: { directory: 'prologue' } },
             { label: 'Domain', autogenerate: { directory: 'domain' } },
@@ -35,6 +36,7 @@ export default defineConfig({
         },
         {
           label: 'Building Apps',
+          collapsed: true,
           items: [
             { label: 'Application', autogenerate: { directory: 'application' } },
             { label: 'Subscriptions', autogenerate: { directory: 'subscriptions' } },
@@ -45,6 +47,7 @@ export default defineConfig({
         },
         {
           label: 'Operations',
+          collapsed: true,
           items: [
             { label: 'Diagnostics', autogenerate: { directory: 'diagnostics' } },
             { label: 'Infrastructure', autogenerate: { directory: 'infra' } },
