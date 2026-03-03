@@ -2,7 +2,7 @@
 title: "Implementation"
 description: "Implementing the Gateway"
 sidebar:
-  order: 1
+  order: 10
 ---
 
 Gateway is a ready-made Eventuous construct that needs other components to work properly (subscription and producer at least). Any of subscription and producer type provided by Eventuous, as well as custom ones, can be used in a gateway.
@@ -62,11 +62,11 @@ record GatewayMessage<TProduceOptions>(
 
 There's no other component to implement for getting a working gateway. You need to register a gateway using one subscription, one producer, and one transformation function or class.
 
-To register a gateway, use one of the `AddGateway` methods. For example, the sample application uses this gateway registration for publishing integration events to KurrentDB integration stream:
+To register a gateway, use one of the `AddGateway` methods. For example, the sample application uses this gateway registration for publishing integration events to EventStoreDB integration stream:
 
 ```csharp
 services
-    .AddGateway<AllStreamSubscription, AllStreamSubscriptionOptions, KurrentDBProducer>(
+    .AddGateway<AllStreamSubscription, AllStreamSubscriptionOptions, EventStoreProducer>(
         "IntegrationSubscription",
         PaymentsGateway.Transform
     );

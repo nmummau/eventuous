@@ -6,7 +6,7 @@ sidebar:
 ---
 
 You can find a bookings sample application here:
-- [.NET KurrentDB write => MongoDB read](https://github.com/Eventuous/eventuous/tree/dev/samples/kurrentdb)
+- [.NET EventStoreDB write => MongoDB read](https://github.com/Eventuous/eventuous/tree/dev/samples/esdb)
 - [.NET PostgreSQL write => MongoDB read](https://github.com/Eventuous/eventuous/tree/dev/samples/postgres)
 
 Samples are being updated with the latest features and improvements.

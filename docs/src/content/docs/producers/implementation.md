@@ -1,8 +1,8 @@
 ---
 title: "Implementation"
-description: "How producers are implemented"
 sidebar:
-  order: 1
+  order: 100
+description: "How producers are implemented"
 ---
 
 ## Abstraction
@@ -53,16 +53,16 @@ public record ProducedMessage {
 
 The `Message` property represents the actual message payload. Producers typically use an `IEventSerializer` instance to serialize the message payload. However, in certain situations, producers may need to comply with their supporting infrastructure and use a different method for serializing the message payload. In such cases, the `MessageType property can be included in the produced message body or header, allowing for proper deserialization by subscribers.
 
-As base producer is responsible for tracing, it creates the produce span and set some tags for it. Learn more on the [Diagnostics](../diagnostics/details.md) page. The base producer is unaware of the message type, and if the producer implementation wants to set the message type as a span tag, it should call the `SetActivityMessageType` method of the base class. All bundled producers do that except Elasticsearch producer.
+As base producer is responsible for tracing, it creates the produce span and set some tags for it. Learn more on the [Diagnostics](../diagnostics/traces.md) page. The base producer is unaware of the message type, and if the producer implementation wants to set the message type as a span tag, it should call the `SetActivityMessageType` method of the base class. All bundled producers do that except Elasticsearch producer.
 
 ## Registration
 
 Eventuous provides several extensions to the `IServiceCollection` interface to register producers. You can provide a pre-made producer instance, a function to resolve the producer from the `IServiceProvider`, or simply the producer type if its dependencies can be resolved automatically.
 
-For instance, if you have already registered the `KurrentDBClient` instance, you can register the `KurrentDBProducer` as follows:
+For instance, if you have already registered the `EventStoreClient` instance, you can register the `EventStoreProducer` as follows:
 
 ```csharp title="Program.cs"
-builder.Services.AddProducer<KurrentDBProducer>();
+builder.Services.AddProducer<EventStoreProducer>();
 ```
 
 If a producer requires some work to be done before it is ready, it should implement the `IHostedProducer` interface, allowing it to perform necessary startup tasks in its `StartAsync` method. When using any of the `AddProducer` extensions, if the producer implements `IHostedProducer`, it will be registered as such.
