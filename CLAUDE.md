@@ -97,7 +97,7 @@ samples/              Sample apps (esdb, postgres, kurrentdb, banking)
 
 ## Documentation Site
 
-The `docs/` directory is a Docusaurus v3 site (https://eventuous.dev). Requires Node >=18.19.0 and pnpm.
+The `docs/` directory is an Astro + Starlight site (https://eventuous.dev). Requires Node >=20.0.0 and pnpm.
 
 ```bash
 cd docs
@@ -106,19 +106,16 @@ cd docs
 pnpm install
 
 # Local dev server with hot reload
-pnpm start
+pnpm dev
 
-# Production build (output to docs/build/)
+# Production build (output to docs/dist/)
 pnpm build
 
 # Serve the production build locally
-pnpm serve
-
-# TypeScript validation
-pnpm typecheck
+pnpm preview
 ```
 
-Docs content lives in `docs/docs/` as `.md` and `.mdx` files organized by topic: `domain/`, `persistence/`, `application/`, `subscriptions/`, `read-models/`, `producers/`, `gateway/`, `diagnostics/`, and `infra/` (per-provider: esdb, postgres, mongodb, mssql, kafka, rabbitmq, pubsub, elastic). MDX files can embed React components. Mermaid diagrams are supported in markdown code blocks. Versioned docs are in `versioned_docs/` (current version: 0.15). The build enforces no broken links.
+Docs content lives in `docs/src/content/docs/` as `.md` and `.mdx` files organized by topic: `domain/`, `persistence/`, `application/`, `subscriptions/`, `read-models/`, `producers/`, `gateway/`, `diagnostics/`, and `infra/` (per-provider: esdb, postgres, mongodb, mssql, sqlite, kafka, rabbitmq, pubsub, elastic). MDX files can use Astro components. Mermaid diagrams are supported via `starlight-client-mermaid` plugin. Versioned docs (0.15) are managed by the `starlight-versions` plugin in `docs/src/content/docs/0.15/`. Sidebar is configured in `astro.config.mjs`. Frontmatter uses Starlight format (`sidebar.order` for ordering, not `sidebar_position`).
 
 ## Code Style
 
