@@ -18,10 +18,9 @@ export default defineConfig({
       ],
       customCss: ['./src/styles/custom.css'],
       plugins: [
-        // TODO: Re-enable starlight-versions after migrating 0.15 content (Task 5)
-        // starlightVersions({
-        //   versions: [{ slug: '0.15' }],
-        // }),
+        starlightVersions({
+          versions: [{ slug: '0.15' }],
+        }),
         starlightDocSearch({
           appId: 'YQSSKN21VQ',
           apiKey: '8985834538ee1103dfbee3358e1a4bfe',
