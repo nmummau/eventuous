@@ -1,0 +1,58 @@
+import { defineConfig } from 'astro/config';
+import starlight from '@astrojs/starlight';
+import starlightVersions from 'starlight-versions';
+import starlightDocSearch from '@astrojs/starlight-docsearch';
+import starlightMermaid from '@pasqal-io/starlight-client-mermaid';
+
+export default defineConfig({
+  site: 'https://eventuous.dev',
+  integrations: [
+    starlight({
+      title: 'Eventuous',
+      logo: {
+        src: './src/assets/logo.svg',
+      },
+      social: [
+        { icon: 'github', label: 'GitHub', href: 'https://github.com/eventuous/eventuous' },
+        { icon: 'discord', label: 'Discord', href: 'https://discord.gg/ZrqM6vnnmf' },
+      ],
+      customCss: ['./src/styles/custom.css'],
+      plugins: [
+        // TODO: Re-enable starlight-versions after migrating 0.15 content (Task 5)
+        // starlightVersions({
+        //   versions: [{ slug: '0.15' }],
+        // }),
+        starlightDocSearch({
+          appId: 'YQSSKN21VQ',
+          apiKey: '8985834538ee1103dfbee3358e1a4bfe',
+          indexName: 'eventuous',
+        }),
+        starlightMermaid(),
+      ],
+      sidebar: [
+        { label: 'Introduction', slug: 'intro' },
+        { label: "What's New", slug: 'whats-new' },
+        { label: 'Prologue', autogenerate: { directory: 'prologue' } },
+        { label: 'Domain', autogenerate: { directory: 'domain' } },
+        { label: 'Persistence', autogenerate: { directory: 'persistence' } },
+        { label: 'Application', autogenerate: { directory: 'application' } },
+        { label: 'Subscriptions', autogenerate: { directory: 'subscriptions' } },
+        { label: 'Read Models', autogenerate: { directory: 'read-models' } },
+        { label: 'Producers', autogenerate: { directory: 'producers' } },
+        { label: 'Gateway', autogenerate: { directory: 'gateway' } },
+        { label: 'Diagnostics', autogenerate: { directory: 'diagnostics' } },
+        { label: 'Infrastructure', autogenerate: { directory: 'infra' } },
+        { label: 'FAQ', autogenerate: { directory: 'faq' } },
+      ],
+      head: [
+        {
+          tag: 'link',
+          attrs: { rel: 'icon', href: '/favicon.ico', sizes: '32x32' },
+        },
+      ],
+      editLink: {
+        baseUrl: 'https://github.com/eventuous/eventuous/edit/dev/docs/',
+      },
+    }),
+  ],
+});
