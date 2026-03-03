@@ -2,7 +2,7 @@
 title: "Checkpoints"
 description: "What's a checkpoint and why you need to store it"
 ---
-import ThemedImage from '../../../../../components/ThemedImage.astro';
+import ThemedImage from '../../../components/ThemedImage.astro';
 
 When subscribing to an event store, it is important to consider which events you wish to receive. An effective event store should allow you to subscribe to individual event streams or to a global stream known as the "All stream", which contains all events in the store, organized in the order they were recorded. Many event-driven brokers that persist events as ordered logs also support subscriptions, which are often referred to as "consumers".
 
@@ -12,7 +12,7 @@ The subscription you choose will determine at what point in the stream you begin
 
 As the subscription receives and processes events, it progresses along the subscribed stream. Each event that is received and processed has a unique position within the stream, which serves as a checkpoint for the subscription. If the application hosting the subscription shuts down, it is necessary to resume processing events from the last recorded checkpoint, which is the position of the last processed event plus one. This ensures that each event is handled exactly once. As a result, the subscription must keep track of its checkpoint, either by storing it in a dedicated checkpoint store or by using the event store's built-in functionality.
 
-In some log-based brokers, the concept of a checkpoint is referred to as an "offset". Some event-driven brokers manage subscriptions on the server-side, eliminating the need for client-side checkpoint storage. For example, persistent subscriptions in EventStoreDB and subscriptions in Google PubSub do not require a client-side checkpoint store. Other subscriptions, such as those managed by RabbitMQ, do not have the concept of a checkpoint as RabbitMQ does not retain consumed messages, whether they have been acknowledged or not.
+In some log-based brokers, the concept of a checkpoint is referred to as an "offset". Some event-driven brokers manage subscriptions on the server-side, eliminating the need for client-side checkpoint storage. For example, persistent subscriptions in KurrentDB and subscriptions in Google PubSub do not require a client-side checkpoint store. Other subscriptions, such as those managed by RabbitMQ, do not have the concept of a checkpoint as RabbitMQ does not retain consumed messages, whether they have been acknowledged or not.
 
 ## Checkpoint store
 
@@ -89,10 +89,14 @@ The Postgres checkpoint store will create and use the `checkpoint` table, and th
 
 ```sql
 create table if not exists __schema__.checkpoints (
-    id varchar primary key, 
-    position bigint null 
+    id varchar primary key,
+    position bigint null
 );
 ```
+
+#### SQLite
+
+The SQLite checkpoint store uses a `{schema}_checkpoints` table (default: `eventuous_checkpoints`), with the subscription id as the row key. The table is created automatically when `initializeDatabase: true` is set.
 
 #### Other stores
 

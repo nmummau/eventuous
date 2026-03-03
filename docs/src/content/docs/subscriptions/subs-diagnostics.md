@@ -86,7 +86,7 @@ As all Eventuous producers and event store(s) are instrumented, they propagate t
 
 Here's an example of the trace context propagated to the subscription visualized by Zipkin:
 
-![Subscription trace](images/sub-trace.png)
+![Subscription trace](./images/sub-trace.png)
 
 As you can see, event handlers for the `BookingProjection` subscription are projections, and trigger updates in MongoDB, which are also traced because the sample application is instrumented by MongoDB tracing library.
 
