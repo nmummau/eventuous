@@ -23,7 +23,7 @@ export default defineConfig({
         starlightMermaid(),
       ],
       sidebar: [
-        { label: 'Introduction', link: '/' },
+        { label: 'Introduction', slug: 'intro' },
         { label: "What's New", slug: 'whats-new' },
         {
           label: 'Concepts',
