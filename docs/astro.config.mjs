@@ -18,7 +18,7 @@ export default defineConfig({
       customCss: ['./src/styles/custom.css'],
       plugins: [
         starlightVersions({
-          current: { label: 'v0.15 (Stable)' },
+          current: { label: 'v0.15' },
           versions: [{ slug: 'next', label: 'Preview' }],
         }),
         starlightMermaid(),
