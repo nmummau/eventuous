@@ -10,7 +10,7 @@ export default defineConfig({
     starlight({
       title: 'Eventuous',
       logo: {
-        src: './src/assets/logo.svg',
+        src: './src/assets/logo.png',
       },
       social: [
         { icon: 'github', label: 'GitHub', href: 'https://github.com/eventuous/eventuous' },
