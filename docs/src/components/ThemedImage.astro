@@ -19,8 +19,13 @@ const { alt, lightSrc, darkSrc } = Astro.props;
     height: auto;
     margin: 1rem 0;
   }
-  :global([data-theme='dark']) .light-only,
-  :global(:not([data-theme='dark'])) .dark-only {
+  .dark-only {
     display: none;
+  }
+  :global([data-theme='dark']) .light-only {
+    display: none;
+  }
+  :global([data-theme='dark']) .dark-only {
+    display: initial;
   }
 </style>
