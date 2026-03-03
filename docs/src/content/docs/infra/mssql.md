@@ -82,7 +82,7 @@ Both subscription types use continuous polling to check for new events.
 
 ### Registering subscriptions
 
-Registering a global log subscription is similar to [EventStoreDB](../esdb/index.md#all-stream-subscription). The only difference is the subscription and the options types:
+Registering a global log subscription is similar to [EventStoreDB](../esdb#all-stream-subscription). The only difference is the subscription and the options types:
 
 ```csharp title="Program.cs"
 builder.Services.AddSubscription<SqlServerAllStreamSubscription, SqlServerAllStreamSubscriptionOptions>(

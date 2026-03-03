@@ -19,7 +19,7 @@ In some log-based brokers, the concept of a checkpoint is referred to as an "off
 Eventuous offers an abstraction layer that enables subscriptions to store checkpoints securely and reliably. You can choose to store the checkpoint in a file or database and determine the frequency at which you wish to store the checkpoint, whether after processing each event or periodically. Although periodic checkpoint storage reduces the stress on the infrastructure supporting the checkpoint store, it requires the subscription to be idempotent. This can be challenging, especially in integration scenarios where it is often difficult or impossible to determine if an event has been published to the broker or not. However, this approach may work for read model projections.
 
 :::caution[Keep the checkpoint safe]
-It is important to keep the checkpoint safe, as its loss will result in the subscription receiving all events. This may be intentional when creating a new [read model](../../read-models), but it can also have unintended consequences in other scenarios.
+It is important to keep the checkpoint safe, as its loss will result in the subscription receiving all events. This may be intentional when creating a new [read model](../../read-models/rm-concept), but it can also have unintended consequences in other scenarios.
 :::
 
 On top of the abstraction Eventuous provides a few implementations of the checkpoint store, which you can use out of the box. You can also implement your own checkpoint store if you need to store the checkpoint in a custom location.

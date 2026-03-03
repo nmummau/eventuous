@@ -5,7 +5,7 @@ description: "Monitoring subscriptions"
 
 Out of the box, Eventuous provides metrics and traces for monitoring your subscriptions.
 
-Also, study the [Diagnostics](../../diagnostics) section for more information.
+Also, study the [Diagnostics](../../../diagnostics) section for more information.
 
 ## Mind the gap
 

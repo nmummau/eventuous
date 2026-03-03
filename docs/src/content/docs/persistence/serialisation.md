@@ -3,7 +3,7 @@ title: "Serialization"
 description: "How events are serialized and deserialized"
 ---
 
-As described on the [Domain events](../domain/domain-events.md) page, events must be (de)serializable. Eventuous doesn't care about the serialization format, but requires you to provide a serializer instance, which implements the `IEventSerializer` interface.
+As described on the [Domain events](../../domain/domain-events) page, events must be (de)serializable. Eventuous doesn't care about the serialization format, but requires you to provide a serializer instance, which implements the `IEventSerializer` interface.
 
 The serializer interface is simple:
 
@@ -95,7 +95,7 @@ Then, you won't need to call the `TypeMap` registration in the application code 
 
 ### Default serializer
 
-Eventuous provides a default serializer implementation, which uses `System.Text.Json`. You just need to register it in the `Startup` to make it available for the infrastructure components, like [aggregate store](aggregate-store) and [subscriptions](../subscriptions).
+Eventuous provides a default serializer implementation, which uses `System.Text.Json`. You just need to register it in the `Startup` to make it available for the infrastructure components, like [aggregate store](../aggregate-store) and [subscriptions](../../subscriptions/subs-concept).
 
 Normally, you don't need to register or provide the serializer instance to any of the Eventuous classes that perform serialization and deserialization work. It's because they will use the default serializer instance instead.
 

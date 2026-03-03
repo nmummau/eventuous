@@ -33,4 +33,4 @@ Producers operations create a span with the name `produce`. The span is tagged w
 
 ## Subscription tracing
 
-Subscription tracing is described in the [subscriptions diagnostics](../subscriptions/subs-diagnostics/index.md#subscription-tracing) page.
+Subscription tracing is described in the [subscriptions diagnostics](../../subscriptions/subs-diagnostics#subscription-tracing) page.

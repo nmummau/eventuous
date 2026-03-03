@@ -5,13 +5,13 @@ sidebar:
   order: 2
 ---
 
-MongoDB is a popular document database, and Eventuous natively supports projecting events to it. In combination with Mongo [checkpoint store](../../subscriptions/checkpoint) you can comfortably use MongoDB as a queryable store for your read models.
+MongoDB is a popular document database, and Eventuous natively supports projecting events to it. In combination with Mongo [checkpoint store](../../../subscriptions/checkpoint) you can comfortably use MongoDB as a queryable store for your read models.
 
 The base class for a MongoDB projection is `MongoProjection<T>` where `T` is a record derived from the `ProjectedDocument` abstract record.
 
 ## Projected document
 
-The `ProjectedDocument` record has two properties: `Id`, which is used as the document id, and `Position`. The `Position` property is set by the Mongo projection implicitly when an event is projected to a document. The value set for this property is the projection position in the subscribed stream. You can use this information for addressing the [consistency concern](../../read-models/rm-concept.md#dealing-with-stale-data).
+The `ProjectedDocument` record has two properties: `Id`, which is used as the document id, and `Position`. The `Position` property is set by the Mongo projection implicitly when an event is projected to a document. The value set for this property is the projection position in the subscribed stream. You can use this information for addressing the [consistency concern](../../../read-models/rm-concept#dealing-with-stale-data).
 
 Here is an example of a document model from the sample application:
 
@@ -245,4 +245,4 @@ public class MyBookingsProjection : MongoProjection<MyBookings> {
 
 MongoDB projection is an event handler, so it can be added to a subscription using the `AddEventHandler` extension of the subscription builder.
 
-You can find examples of adding handlers to subscriptions in the [subscription documentation](../../subscriptions/sub-base/#registration).
+You can find examples of adding handlers to subscriptions in the [subscription documentation](../../../subscriptions/sub-base#registration).

@@ -39,8 +39,8 @@ Although Domain-Driven Design (DDD) is very useful and provides patterns that ar
 
 ### First-class observability
 
-Eventuous implements all elements of observability like [logging](../diagnostics/logs.md), [metrics](../diagnostics/metrics.md), and [distributed tracing](../diagnostics/traces.md).
+Eventuous implements all elements of observability like [logging](../../diagnostics/logs), [metrics](../../diagnostics/metrics), and [distributed tracing](../../diagnostics/traces).
 
-It is important to understand that observability is not only about logging and metrics. It's about understanding the system's behaviour and performance. Eventuous provides a way to trace messages across the system, which is crucial for understanding the system's behaviour. Following the current observability trends, Eventuous [integrates](../diagnostics/opentelemetry.md) natively with OpenTelemetry, so applications can be configured to export traces and metrics to any APM provider that support OTLP.
+It is important to understand that observability is not only about logging and metrics. It's about understanding the system's behaviour and performance. Eventuous provides a way to trace messages across the system, which is crucial for understanding the system's behaviour. Following the current observability trends, Eventuous [integrates](../../diagnostics/opentelemetry) natively with OpenTelemetry, so applications can be configured to export traces and metrics to any APM provider that support OTLP.
 
 Particularly, each event-sourced system essentially is a distributed system, and it's important to understand how messages flow through the system. Eventuous provides a way to trace messages across the system, which is crucial for understanding the system's behaviour.

@@ -37,7 +37,7 @@ Further, you need to tell Eventuous to use the `EsdbEventStore` for its aggregat
 services.AddEventStore<EsdbEventStore>();
 ```
 
-When that's done, Eventuous would persist aggregates using EventStoreDB when you use the [command service](../../application/app-service.mdx).
+When that's done, Eventuous would persist aggregates using EventStoreDB when you use the [command service](../../application/app-service).
 
 ## Subscriptions
 
@@ -125,7 +125,7 @@ builder => builder
 
 ### Single stream subscription
 
-Although subscribing to `$all` using [`AllStreamSubscription`](#all-stream-subscription) is the most efficient way to create, for example, [read models](../../read-models) using all events in the event store, it is also possible to subscribe to a single stream.
+Although subscribing to `$all` using [`AllStreamSubscription`](#all-stream-subscription) is the most efficient way to create, for example, [read models](../../read-models/rm-concept) using all events in the event store, it is also possible to subscribe to a single stream.
 
 For example, you can subscribe to the `$ce-Booking` stream to project all events for all the aggregates of type `Booking`, and create some representation of the state of the aggregate in a queryable store.
 

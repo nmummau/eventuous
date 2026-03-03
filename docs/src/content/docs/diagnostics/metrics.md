@@ -92,5 +92,5 @@ eventuous_persistence_errors_count_total{otel_scope_name="eventuous.persistence"
 
 ## Subscription metrics
 
-Subscription metrics are described in the [subscriptions diagnostics](../subscriptions/subs-diagnostics/index.md#subscription-metrics) page.
+Subscription metrics are described in the [subscriptions diagnostics](../../subscriptions/subs-diagnostics#subscription-metrics) page.
 

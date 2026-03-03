@@ -11,7 +11,7 @@ The base class for a MongoDB projection is `MongoProjection<T>` where `T` is a r
 
 ## Projected document
 
-The `ProjectedDocument` record has two properties: `Id`, which is used as the document id, and `Position`. The `Position` property is set by the Mongo projection implicitly when an event is projected to a document. The value set for this property is the projection position in the subscribed stream. You can use this information for addressing the [consistency concern](../../read-models/rm-concept.md#dealing-with-stale-data).
+The `ProjectedDocument` record has two properties: `Id`, which is used as the document id, and `Position`. The `Position` property is set by the Mongo projection implicitly when an event is projected to a document. The value set for this property is the projection position in the subscribed stream. You can use this information for addressing the [consistency concern](../../read-models/rm-concept#dealing-with-stale-data).
 
 Here is an example of a document model from the sample application:
 

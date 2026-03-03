@@ -10,7 +10,7 @@ sidebar:
 The functional command service is an alternative way to handle commands. There, you don't use aggregates for the domain model. Instead, you define a set of stateless functions that receive the restored state instance and the collection of previously stored events, and produces new events. The service performs the following operations when handling one command:
 1. Extract the stream name from the command, if necessary.
 2. Instantiate all the necessary value objects. This could effectively reject the command if value objects cannot be constructed. The command service could also load some other streams, or any other information, which is needed to execute the command but won't change state.
-3. If the command expects to operate on an existing stream, the stream events get loaded from the [Event Store](../persistence/event-store).
+3. If the command expects to operate on an existing stream, the stream events get loaded from the [Event Store](../../persistence/event-store).
 4. Restore state from the loaded events.
 5. Execute an operation on the loaded (or new) state and events, using values from the command, and the constructed value objects.
 6. The function either performs the operation and produces new events, or rejects the operation. It can also do nothing.
@@ -38,7 +38,7 @@ sequenceDiagram
 ```
 
 :::caution[Handling failures]
-The last point above translates to: the command service **does not throw exceptions**. It [returns](./app-service.md#result) an instance of `ErrorResult` instead. It is your responsibility to handle the error.
+The last point above translates to: the command service **does not throw exceptions**. It [returns](../app-service#result) an instance of `ErrorResult` instead. It is your responsibility to handle the error.
 :::
 
 ## Implementation
@@ -95,7 +95,7 @@ public class BookingFuncService : FunctionalCommandService<BookingState> {
 }
 ```
 
-The service uses the same `BookingState` record as described on the [State](../domain/state) page.
+The service uses the same `BookingState` record as described on the [State](../../domain/state) page.
 
 ### Usage
 
@@ -125,7 +125,7 @@ public class CommandApi : ControllerBase {
 Mapping commands to HTTP endpoints won't work with functional services. These features are coming in upcoming releases.
 :::
 
-You can also use the `CommandHttpApiBaseFunc` base class as described on the [command API](./command-api.md) page.
+You can also use the `CommandHttpApiBaseFunc` base class as described on the [command API](../command-api) page.
 
 ### Registration
 

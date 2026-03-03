@@ -10,7 +10,7 @@ sidebar:
 The command service itself performs the following operations when handling one command:
 1. Extract the aggregate id from the command, if necessary.
 2. Instantiate all the necessary value objects. This could effectively reject the command if value objects cannot be constructed. The command service could also load some other aggregates, or any other information, which is needed to execute the command but won't change state.
-3. If the command expects to operate on an existing aggregate instance, this instance gets loaded from the [Aggregate Store](../persistence/aggregate-store).
+3. If the command expects to operate on an existing aggregate instance, this instance gets loaded from the [Aggregate Store](../../persistence/aggregate-store).
 4. Execute an operation on the loaded (or new) aggregate, using values from the command, and the constructed value objects.
 5. The aggregate either performs the operation and changes its state by producing new events, or rejects the operation.
 6. If the operation was successful, the service persists new events to the store. Otherwise, it returns a failure to the edge.
@@ -99,7 +99,7 @@ public class BookingsCommandService
 ```
 
 :::caution[Stream name]
-Check the [stream name](../persistence/aggregate-stream#stream-name) documentation if you need to use custom stream names.
+Check the [stream name](../../persistence/aggregate-stream#stream-name) documentation if you need to use custom stream names.
 :::
 
 ### Result
@@ -112,7 +112,7 @@ If the operation was not successful, the command service will return an instance
 
 ### Bootstrap
 
-If you registered the `KurrentDBEventStore` and the `AggregateStore` in your `Startup` as described on the [Aggregate store](../persistence/aggregate-store) page, you can also register the command service:
+If you registered the `KurrentDBEventStore` and the `AggregateStore` in your `Startup` as described on the [Aggregate store](../../persistence/aggregate-store) page, you can also register the command service:
 
 ```csharp title="Program.cs"
 builder.Services.AddCommandService<BookingCommandService, BookingState>();
@@ -122,10 +122,10 @@ The `AddCommandService` extension will register the `BookingService`, and also a
 
 When you also use `AddControllers`, you get the command service injected to your controllers.
 
-You can simplify your application and avoid creating HTTP endpoints explicitly (as controllers or minimal API endpoints) if you use the [command API feature](command-api.md).
+You can simplify your application and avoid creating HTTP endpoints explicitly (as controllers or minimal API endpoints) if you use the [command API feature](../command-api).
 
 ## Application HTTP API
 
 The most common use case is to connect the command service to an HTTP API.
 
-Read the [Command API](./command-api) feature documentation for more details.
+Read the [Command API](../command-api) feature documentation for more details.

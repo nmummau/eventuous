@@ -35,7 +35,7 @@ Eventuous 0.15 adds support for .NET 8 and removes support for .NET 7. Currently
 * Non-generic `ICommandService` interface is removed.
 * `IStateCommandService<TState>` is replaced by `ICommandService<TState>`. Both aggregate-based and functional command services implement that interface.
 * Command services no longer use `IAggregateStore`, so it doesn't need to be registered in the DI container. Replace `AddAggregateStore` by `AddEventStore`.
-* Non-generic `Result`, `OkResult` and `ErrorResult` types are removed. Only generic `Result<TState>` is supported. Read more [here](./application/app-service.mdx#result).
+* Non-generic `Result`, `OkResult` and `ErrorResult` types are removed. Only generic `Result<TState>` is supported. Read more [here](../application/app-service#result).
 * Service registration extension replaced by `AddCommandService<TService, TState>`:
     * `AddCommandService<TService, TAggregate>`
     * `AddCommandService<TService, TAggtegate, TId>`
@@ -59,7 +59,7 @@ Eventuous 0.15 adds support for .NET 8 and removes support for .NET 7. Currently
 * The same applies to command mappings with external-internal command conversion. Aggregate constraint is replaced by state type constraint, and a custom result type is no longer supported in favour of `Result<TState>`.
 
 :::note
-Current APIs for working with HTTP is [documented here](./application/command-api.md).
+Current APIs for working with HTTP is [documented here](../application/command-api).
 :::
 
 ### Subscriptions

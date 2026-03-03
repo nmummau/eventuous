@@ -127,7 +127,7 @@ There, you notice that the domain command uses value objects, and the contract o
 
 ### Using controller base
 
-When you implement your API using the `CommandHttpApiBase` or `CommandHttpApiBaseFunc` [base classes](./command-api.md#controller-base), you can provide the command mapper as a dependency. The mapper needs to be instantiated before the application starts, and injected to the controller.
+When you implement your API using the `CommandHttpApiBase` or `CommandHttpApiBaseFunc` [base classes](../command-api#controller-base), you can provide the command mapper as a dependency. The mapper needs to be instantiated before the application starts, and injected to the controller.
 
 Here is how the mapping is defined:
 
@@ -167,7 +167,7 @@ public class BookingApi : CommandHttpApiBase<Booking> {
 
 ### Using generated endpoints
 
-When you use the [generated endpoints](./command-api.md#generated-command-api), you can use the `Map` method to map the contract to the domain command. You can also use data from the `HttpContext` to add additional information to the command, like the user identity. There's no need to add ignored properties to the contract in this case.
+When you use the [generated endpoints](../command-api#generated-command-api), you can use the `Map` method to map the contract to the domain command. You can also use data from the `HttpContext` to add additional information to the command, like the user identity. There's no need to add ignored properties to the contract in this case.
 
 Consider the contract record being decorated by the `HttpCommand` attribute:
 
@@ -212,5 +212,5 @@ app
 ```
 
 :::caution
-Generated endpoints currently don't support [functional command services](./func-service). This functionality will be added in a future version.
+Generated endpoints currently don't support [functional command services](../func-service). This functionality will be added in a future version.
 :::

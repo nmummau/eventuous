@@ -6,7 +6,7 @@ sidebar:
 ---
 
 :::info
-From version **0.14.0** using aggregates is **optional**. You can define your domain logic using [functional services](../application/func-service.mdx) instead.
+From version **0.14.0** using aggregates is **optional**. You can define your domain logic using [functional services](../../application/func-service) instead.
 :::
 
 :::info
@@ -70,7 +70,7 @@ The `Aggregate` abstract class is quite technical and provides very little out o
 The aggregate state in Eventuous is _immutable_. When applying an event to it, we get a new state.
 
 :::tip[Event-sourced state]
-The `State` abstraction is described on the [State](state) page.
+The `State` abstraction is described on the [State](../state) page.
 :::
 
 Here are the `Aggregate` class members:
@@ -152,7 +152,7 @@ public record BookingId(string Value) : Id(Value);
 
 The abstract record overrides its `ToString` to return the string value as-is. It also has an implicit conversion operator, which allows you to use a string value without explicitly instantiating the identity record. However, we still recommend instantiating the identity explicitly to benefit from type safety.
 
-The aggregate identity type is only used by the [command service](../application/app-service.mdx) and for calculating the [stream name](../persistence/aggregate-stream.md) for loading and saving events. When the command service loads an aggregate with identity, it sets the state identity to a value derived from the stream name. For example, when loading events from a stream `Order-123` for an aggregate type declared as `Order : Aggregate<OrderState<OrderId>>`, the `OrderId` value will be set to `123`. 
+The aggregate identity type is only used by the [command service](../../application/app-service) and for calculating the [stream name](../../persistence/aggregate-stream) for loading and saving events. When the command service loads an aggregate with identity, it sets the state identity to a value derived from the stream name. For example, when loading events from a stream `Order-123` for an aggregate type declared as `Order : Aggregate<OrderState<OrderId>>`, the `OrderId` value will be set to `123`. 
 
 ## Aggregate factory
 

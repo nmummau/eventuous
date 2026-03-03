@@ -11,7 +11,7 @@ In order to isolate the core library from a particular way of storing events, Ev
 
 The `IEventStore` interface implements both `IEventReader` and `IEventWriter` interfaces. Each of those interfaces is focused on one specific task - reading events from streams, and appending events to streams. This separation is necessary for scenarios when you only need, for example, to read events from a specific store, but not to append them. In such case, you'd want to use the `IEventReader` interface only.
 
-Eventuous has several implementations of event store abstraction, you can find them in the [infrastructure](../infra) section. The default implementation is `EsdbEventStore`, which uses [EventStoreDB](https://eventstore.com) as the event store. It's a great product, and we're happy to provide first-class support for it. It's also a great product for learning about Event Sourcing and CQRS.
+Eventuous has several implementations of event store abstraction, you can find them in the [infrastructure](../../infra/esdb) section. The default implementation is `EsdbEventStore`, which uses [EventStoreDB](https://eventstore.com) as the event store. It's a great product, and we're happy to provide first-class support for it. It's also a great product for learning about Event Sourcing and CQRS.
 
 In addition, Eventuous has an in-memory event store, which is mostly used for testing purposes. It's not recommended to use it in production, as it doesn't provide any persistence guarantees.
 
@@ -45,10 +45,10 @@ Here are the operations supported by event stores:
 ### Available adapters
 
 Eventuous has several implementations of the event store: 
- * [EventStoreDB](../infra/esdb/index.md)
- * [PostgreSQL](../infra/postgres/index.md)
- * [Microsoft SQL Server](../infra/mssql/index.md)
- * [Elasticsearch](../infra/elastic/index.md)
+ * [EventStoreDB](../../infra/esdb)
+ * [PostgreSQL](../../infra/postgres)
+ * [Microsoft SQL Server](../../infra/mssql)
+ * [Elasticsearch](../../infra/elastic)
 
 If you use one of the implementations provided, you won't need to know about the event store abstraction. It is required though if you want to implement it for your preferred database. 
 
@@ -61,7 +61,7 @@ Remember to check [Event Store Cloud](https://www.eventstore.com/event-store-clo
 
 As Eventuous 0.15 stopped using the `IAggregateStore` abstraction, and all related APIs are marked obsolete.
 
-Aggregate persistence is now supported by a few functions extending the `IEventReader` and `IEventWriter` interfaces, described on the [Aggregate store](./aggregate-store.mdx) page.
+Aggregate persistence is now supported by a few functions extending the `IEventReader` and `IEventWriter` interfaces, described on the [Aggregate store](../aggregate-store) page.
 
 ## State persistence
 
@@ -175,7 +175,7 @@ As the result, the load operation would be as fast as it would be with the hot s
 There is a drawback to this approach. As events disappear from the hot store, you won't be able to replay them when you create new subscriptions that need to process all the historical events. However, you need to carefully examine if this is a problem in your application.
 :::
 
-In many cases, replaying the full history is the opposite of what you want. If you add a new subscription to host a new [read model](../read-models), that new read model might only need to process the latest events, and processing the full history would just trigger useless database operations.
+In many cases, replaying the full history is the opposite of what you want. If you add a new subscription to host a new [read model](../../read-models/rm-concept), that new read model might only need to process the latest events, and processing the full history would just trigger useless database operations.
 
 For example, if you add an _Upcoming check-ins_ read model, it would need to process events from reservations during the booking period that hasn't completed yet. It's not often that you have reservations that are made five years back, in many cases it's just impossible as hotels set their prices only a year or so upfront. Therefore, projecting the full history of reservations would trigger adding and removing thousands of records to the database, which is not what you want. In fact, if you have only reservation events for the past year, and the rest in the archive, you will have the new read model rebuilt much faster, and the fact that all the historical events are archived won't be noticeable.
 

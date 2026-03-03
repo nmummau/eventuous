@@ -65,7 +65,7 @@ builder.Services.Configure<PostgresStoreOptions>(
 );
 ```
 
-When that's done, Eventuous would persist aggregates in Postgres when you use the [command service](../../application/app-service).
+When that's done, Eventuous would persist aggregates in Postgres when you use the [command service](../../../application/app-service).
 
 At this moment, the Postgres event store implementation doesn't support stream truncation.
 
@@ -77,7 +77,7 @@ Both subscription types use continuous polling to check for new events. We don't
 
 ### Registering subscriptions
 
-Registering a global log subscription is similar to [KurrentDB](../esdb/index.md#all-stream-subscription). The only difference is the subscription and the options types:
+Registering a global log subscription is similar to [KurrentDB](../esdb#all-stream-subscription). The only difference is the subscription and the options types:
 
 ```csharp title="Program.cs"
 builder.Services.AddSubscription<PostgresAllStreamSubscription, PostgresAllStreamSubscriptionOptions>(
@@ -101,7 +101,7 @@ builder.Services.AddSubscription<PostgresStreamSubscription, PostgresStreamSubsc
 
 ### Checkpoint store
 
-Catch-up subscriptions need a [checkpoint](../../subscriptions/checkpoint). You can register the checkpoint store using `AddCheckpointStore<T>`, and it will be used for all subscriptions in the application.
+Catch-up subscriptions need a [checkpoint](../../../subscriptions/checkpoint). You can register the checkpoint store using `AddCheckpointStore<T>`, and it will be used for all subscriptions in the application.
 
 Remember to store the checkpoint in the same database as the read model. For example, if you use Postgres as an event store, and project events to read models in MongoDB, you need to use the `MongoCheckpointStore`. Eventuous also has a checkpoint store implementation for Postgres (`PostgresCheckpointStore`), which you can use if you project events to Postgres.
 

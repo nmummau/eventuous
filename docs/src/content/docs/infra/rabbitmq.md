@@ -9,7 +9,7 @@ sidebar:
 
 RabbitMQ is a popular message broker, and it can serve as a great integration infrastructure for communicating 
 between services. Eventuous supports using RabbitMQ messaging with [producers](../../producers) for producing messages 
-and [subscriptions](../../subscriptions) for consuming messages.
+and [subscriptions](../../subscriptions/subs-concept) for consuming messages.
 
 Eventuous producer for RabbitMQ publishes messages to _exchanges_.
 An exchange can be considered similar to topics in other message brokers like Kafka or Google Pub/Sub, but, unlike topics, those messages are not persistent.
@@ -58,7 +58,7 @@ The producer publishes messages to a RabbitMQ exchange where the exchange name i
 
 When you tell the producer to publish a message to an exchange, it will check if the exchange exists. If the exchange doesn't exist, the producer will create one using the exchange options described above. This check only happens once per service lifetime, so it doesn't affect performance.
 
-As the RabbitMQ producer implements the same `IProducer` interface as any other Eventuous producer, it has the same API as described on the [Producers](../../producers/implementation.md) page.
+As the RabbitMQ producer implements the same `IProducer` interface as any other Eventuous producer, it has the same API as described on the [Producers](../../producers/implementation) page.
 
 It's possible to tune the producer's behaviour when producing messages by supplying an optional produce option. For RabbitMQ, those options are represented by the `RabbitMqProduceOptions` record with the following properties:
 
@@ -74,7 +74,7 @@ When the produced message has metadata, all metadata values will be converted to
 
 ## Subscriptions
 
-Eventuous supports consuming messages from RabbitMQ using [subscriptions](../../subscriptions).
+Eventuous supports consuming messages from RabbitMQ using [subscriptions](../../subscriptions/subs-concept).
 
 ### Configuration
 
@@ -152,7 +152,7 @@ It's important to understand how Eventuous messaging for RabbitMQ is different c
 
 The most noticeable difference is that both MassTransit and NServiceBus use _message-type-based routing_. It means that by default, they create exchanges for each message type produced by the application. Another default is that the .NET class name is used to compute the exchange name. As a result, any refactoring of the message schema code, like renaming classes, changing namespaces, etc., causes disruption for downstream consumers. As fully qualified class names are also used for deserialization, changes in message class names as well as their namespaces causes issue for downstream consumers and requires coordinated deployments.
 
-Eventuous uses a different approach where the service normally produces messages to its own single exchange which is named after the service. Each subscription gets its own queue and creates a binding to a particular exchange. So, each consumer will get messages with different types, from a particular service. Message type is supplied as a default RabbitMQ `Type` message property. It uses Eventuous [type map](../../persistence/serialisation.md#type-map) for mapping CLR types to strings, so refactoring namespaces and class name will not affect message routing. In addition, messages are delivered in relative order from one service to another. Certainly, it might affect the system performance as if the subscription queue gets congested, it will keep growing. That can be mitigated by using message priority, which is supported by RabbitMQ.
+Eventuous uses a different approach where the service normally produces messages to its own single exchange which is named after the service. Each subscription gets its own queue and creates a binding to a particular exchange. So, each consumer will get messages with different types, from a particular service. Message type is supplied as a default RabbitMQ `Type` message property. It uses Eventuous [type map](../../persistence/serialisation#type-map) for mapping CLR types to strings, so refactoring namespaces and class name will not affect message routing. In addition, messages are delivered in relative order from one service to another. Certainly, it might affect the system performance as if the subscription queue gets congested, it will keep growing. That can be mitigated by using message priority, which is supported by RabbitMQ.
 
 [1]: https://www.rabbitmq.com/docs/confirms#channel-qos-prefetch
 [2]: https://www.rabbitmq.com/docs/ttl#per-message-ttl-in-publishers

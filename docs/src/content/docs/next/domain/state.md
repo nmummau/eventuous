@@ -7,7 +7,7 @@ sidebar:
 
 ## Event-sourced state
 
-Eventuous has an abstraction for event-sourced state. The state can be used both as an aggregate state, or independently when using functions to handle commands and produce new events using the [functional service](../application/func-service.md). Moving along, we consider event-based state transitions as part of the state handling. Therefore, the state object needs to expose an API to receive events and produce a new instance of itself (remember that the state is immutable).
+Eventuous has an abstraction for event-sourced state. The state can be used both as an aggregate state, or independently when using functions to handle commands and produce new events using the [functional service](../../application/func-service). Moving along, we consider event-based state transitions as part of the state handling. Therefore, the state object needs to expose an API to receive events and produce a new instance of itself (remember that the state is immutable).
 
 To support state immutability, `State` is an abstract _record_, not class. Therefore, it supports immutability out of the box and supports `with` syntax to make state transitions easier.
 
@@ -44,7 +44,7 @@ Eventuous performs additional checks if event types, which are handled by the `W
 
 You can also use explicit event handlers, where you define one function per event, and register them in the constructor. In that case, there's no need to override the `When` function.
 
-The syntax is similar to registered command handlers for the [command service](../application):
+The syntax is similar to registered command handlers for the [command service](../../application):
 
 ```csharp title="BookingState.cs"
 public record BookingState : State<BookingState> {
@@ -113,4 +113,4 @@ public record BookingState<BookingId> {
 }
 ```
 
-The `BookingState` type will have a property named `Id` of type `BookingId`. You don't need to set it manually as it will be provided when the state object is recreated from events by the [command service](../application/app-service.md).
+The `BookingState` type will have a property named `Id` of type `BookingId`. You don't need to set it manually as it will be provided when the state object is recreated from events by the [command service](../../application/app-service).

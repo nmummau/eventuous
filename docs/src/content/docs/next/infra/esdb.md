@@ -37,11 +37,11 @@ Further, you need to tell Eventuous to use the `KurrentDBEventStore` for its agg
 services.AddEventStore<KurrentDBEventStore>();
 ```
 
-When that's done, Eventuous would persist aggregates using KurrentDB when you use the [command service](../../application/app-service).
+When that's done, Eventuous would persist aggregates using KurrentDB when you use the [command service](../../../application/app-service).
 
 ## Subscriptions
 
-KurrentDB supports multiple [subscription](../../subscriptions/subs-concept) types, and all of them are supported by Eventuous. The main choice you'd need to make is to use [catch-up][4] or [persistent subscription][5].
+KurrentDB supports multiple [subscription](../../../subscriptions/subs-concept) types, and all of them are supported by Eventuous. The main choice you'd need to make is to use [catch-up][4] or [persistent subscription][5].
 
 ### All stream subscription
 
@@ -78,7 +78,7 @@ Subscription options for `AllStreamSubscription` are defined in `AllStreamSubscr
 
 #### Checkpoint store
 
-`AllStreamSubscription` is a catch-up subscription that is fully managed on the client side (your application), so you need to manage the [checkpoint](../../subscriptions/checkpoint). You can register the checkpoint store using `AddCheckpointStore<T>`, but in that case it will be used for all subscriptions in the application. It might be that your app has multiple subscriptions, and you want to use different checkpoint stores for each of them. In that case, you can register the checkpoint store for each subscription using `UseCheckpointStore<T>` extension of the subscription builder
+`AllStreamSubscription` is a catch-up subscription that is fully managed on the client side (your application), so you need to manage the [checkpoint](../../../subscriptions/checkpoint). You can register the checkpoint store using `AddCheckpointStore<T>`, but in that case it will be used for all subscriptions in the application. It might be that your app has multiple subscriptions, and you want to use different checkpoint stores for each of them. In that case, you can register the checkpoint store for each subscription using `UseCheckpointStore<T>` extension of the subscription builder
 
 ```csharp
 builder.Services.AddSubscription<AllStreamSubscription, AllStreamSubscriptionOptions>(
@@ -125,7 +125,7 @@ builder => builder
 
 ### Single stream subscription
 
-Although subscribing to `$all` using [`AllStreamSubscription`](#all-stream-subscription) is the most efficient way to create, for example, [read models](../../read-models) using all events in the event store, it is also possible to subscribe to a single stream.
+Although subscribing to `$all` using [`AllStreamSubscription`](#all-stream-subscription) is the most efficient way to create, for example, [read models](../../read-models/rm-concept) using all events in the event store, it is also possible to subscribe to a single stream.
 
 For example, you can subscribe to the `$ce-Booking` stream to project all events for all the aggregates of type `Booking`, and create some representation of the state of the aggregate in a queryable store.
 
@@ -171,7 +171,7 @@ When subscribing to a stream that contains link events (for example, `$ce-` cate
 
 #### Checkpoint store
 
-`StreamSubscription` is a catch-up subscription that is fully managed on the client side (your application), so you need to manage the [checkpoint](../../subscriptions/checkpoint). The checkpoint store configuration for stream subscriptions is identical to the one for the [`AllStreamSubscription`](#checkpoint-store).
+`StreamSubscription` is a catch-up subscription that is fully managed on the client side (your application), so you need to manage the [checkpoint](../../../subscriptions/checkpoint). The checkpoint store configuration for stream subscriptions is identical to the one for the [`AllStreamSubscription`](#checkpoint-store).
 
 #### Concurrent event handlers
 
@@ -223,7 +223,7 @@ There's no need to use a checkpoint store as persistent subscription checkpoint 
 
 ## Producer
 
-In a prototype or small-scale production application, you can use KurrentDB as a message broker. In that case, you can use the `KurrentDBProducer` to publish events to the database. Unlike the aggregate store, [producers](../../producers) allow publishing events that aren't necessarily domain events.
+In a prototype or small-scale production application, you can use KurrentDB as a message broker. In that case, you can use the `KurrentDBProducer` to publish events to the database. Unlike the aggregate store, [producers](../../../producers) allow publishing events that aren't necessarily domain events.
 
 You can then register the `KurrentDBProducer` in the DI container. As the producer needs the `KurrentDBClient` or `KurrentDBClientSettings` as a dependency, you need to register those as well.
 

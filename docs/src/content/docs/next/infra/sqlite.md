@@ -62,7 +62,7 @@ builder.Services.AddEventuousSqlite(
 builder.Services.AddEventStore<SqliteStore>();
 ```
 
-When that's done, Eventuous will persist aggregates in SQLite when you use the [command service](../../application/app-service).
+When that's done, Eventuous will persist aggregates in SQLite when you use the [command service](../../../application/app-service).
 
 ## Subscriptions
 
@@ -96,7 +96,7 @@ builder.Services.AddSubscription<SqliteStreamSubscription, SqliteStreamSubscript
 
 ### Checkpoint store
 
-Catch-up subscriptions need a [checkpoint](../../subscriptions/checkpoint). You can register the SQLite checkpoint store, and it will be used for all subscriptions in the application:
+Catch-up subscriptions need a [checkpoint](../../../subscriptions/checkpoint). You can register the SQLite checkpoint store, and it will be used for all subscriptions in the application:
 
 ```csharp title="Program.cs"
 builder.Services.AddSqliteCheckpointStore();

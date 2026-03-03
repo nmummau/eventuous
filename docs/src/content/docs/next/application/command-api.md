@@ -28,7 +28,7 @@ public class CommandApi : ControllerBase {
 }
 ```
 
-The issue here is there's no way to know if the command was successful or not. As the command service won't throw an exception if the command fails, we can't return an error via the HTTP response, unless we parse the [result](app-service.md#result) and return a meaningful HTTP response.
+The issue here is there's no way to know if the command was successful or not. As the command service won't throw an exception if the command fails, we can't return an error via the HTTP response, unless we parse the [result](../app-service#result) and return a meaningful HTTP response.
 
 Eventuous allows you to simplify the command handling in the API controller by providing a `CommandHttpApiBase<TAggregate>` abstract class, which implements the `ControllerBase` and contains the `Handle` method. The class takes `ICommandService<TAggregate>` as a dependency. The `Handle` method will call the command service, and also convert the handling result to `ActionResult<Result>`. Here are the rules for exception handling:
 
@@ -56,7 +56,7 @@ public class CommandApi : CommandHttpApiBase<Booking> {
 
 We recommend using the `CommandHttpApiBase` class when you want to handle commands using the HTTP API.
 
-When using [functional services](./func-service.md) you can use the `CommandHttpApiBaseFunc` base class, which works exactly the same way:
+When using [functional services](../func-service) you can use the `CommandHttpApiBaseFunc` base class, which works exactly the same way:
 
 ```csharp
 [Route("/booking")]

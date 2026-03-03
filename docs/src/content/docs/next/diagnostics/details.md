@@ -114,7 +114,7 @@ eventuous_persistence_errors_count_total{otel_scope_name="eventuous.persistence"
 
 ### Subscription metrics
 
-Subscription metrics are described in the [subscriptions diagnostics](../subscriptions/subs-diagnostics/index.md#subscription-metrics) page.
+Subscription metrics are described in the [subscriptions diagnostics](../../subscriptions/subs-diagnostics#subscription-metrics) page.
 
 ## Tracing
 
@@ -147,7 +147,7 @@ Producers operations create a span with the name `produce`. The span is tagged w
 
 ### Subscription tracing
 
-Subscription tracing is described in the [subscriptions diagnostics](../subscriptions/subs-diagnostics/index.md#subscription-tracing) page.
+Subscription tracing is described in the [subscriptions diagnostics](../../subscriptions/subs-diagnostics#subscription-tracing) page.
 
 ## OpenTelemetry integration
 

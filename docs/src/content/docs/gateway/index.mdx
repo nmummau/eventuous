@@ -5,7 +5,7 @@ sidebar:
   order: 80
 ---
 
-An event gateway is an engine to bridge Event Sourcing with Event-Driven Architecture (EDA). When you store events to an [event store](../persistence/event-store.mdx), you can use an event gateway to receive stored events, transform them, and distribute downstream using different transport.
+An event gateway is an engine to bridge Event Sourcing with Event-Driven Architecture (EDA). When you store events to an [event store](../persistence/event-store), you can use an event gateway to receive stored events, transform them, and distribute downstream using different transport.
 
 Scenarios where an event gateway is useful:
 * Publish transformed domain events as integration events using a broker
@@ -16,6 +16,6 @@ Scenarios where an event gateway is useful:
 ## How a gateway works
 
 A gateway needs three components that form a gateway event pipeline:
-* [Subscription](../subscriptions) to the source event store
+* [Subscription](../subscriptions/subs-concept) to the source event store
 * [Transformation](implementation/#transformation) function that can also be used as a filter
 * [Producer](../producers) to a broker, another event store, or a database
