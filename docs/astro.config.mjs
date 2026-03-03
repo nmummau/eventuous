@@ -1,7 +1,6 @@
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import starlightVersions from 'starlight-versions';
-import starlightDocSearch from '@astrojs/starlight-docsearch';
 import starlightMermaid from '@pasqal-io/starlight-client-mermaid';
 
 export default defineConfig({
@@ -18,11 +17,6 @@ export default defineConfig({
       ],
       customCss: ['./src/styles/custom.css'],
       plugins: [
-        starlightDocSearch({
-          appId: 'YQSSKN21VQ',
-          apiKey: '8985834538ee1103dfbee3358e1a4bfe',
-          indexName: 'eventuous',
-        }),
         starlightVersions({
           versions: [{ slug: '0.15' }],
         }),
