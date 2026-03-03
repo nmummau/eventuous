@@ -33,7 +33,7 @@ public interface IEventHandler {
 
 The `HandleEvent` function will be called by the subscription service for each event it receives. The event is already deserialized. The function also gets the event position in the stream. It might be used in projections to set some property of the read model. Using this property in queries will tell you if the projection is up-to-date.
 
-:::caution Event handler failures
+:::caution[Event handler failures]
 If an event handler throws, the whole subscription will fail. Such a failure will cause the subscription drop, and the subscription will resubscribe. If the error is caused by a poison event, which can never be handled, it will keep failing in a loop. You can configure the subscription to ignore failures and continue by setting `ThrowIfError` property of `SubscriptionOptions` to `false`.
 :::
 

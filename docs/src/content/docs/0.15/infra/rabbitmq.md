@@ -109,13 +109,13 @@ RabbitMQ subscriptions can be configured using the following options:
 | `ConcurrencyLimit` | The number of parallel consumers, default is one                                                   |
 | `PrefetchCount`    | The number of [in-flight messages][1] per consumer, default is concurrency limit multiplied by two |
 
-:::note Exchange configuration
+:::note[Exchange configuration]
 Please remember that both the producer and the subscription can create the exchange, depending on which initiates first.
 In case the exchange options set by the producer and the subscription are different, the exchange will not undergo any updates.
 It is important to note that exchange options are only taken into account at the time of exchange creation.
 :::
 
-:::note Queue and binding configuration
+:::note[Queue and binding configuration]
 Both the queue and the binding are only applied when those elements are created.
 Any changes to the queue and bindings that happen afterward won't trigger updating queues and bindings.
 You can still update those using RabbitMQ management API.

@@ -36,7 +36,7 @@ sequenceDiagram
     API Endpoint-->>-Client: Return result
 ```
 
-:::caution Handling failures
+:::caution[Handling failures]
 The last point above translates to: the command service **does not throw exceptions**. It [returns](#result) an instance of `ErrorResult` instead. It is your responsibility to handle the error.
 :::
 
@@ -98,7 +98,7 @@ public class BookingsCommandService
 }
 ```
 
-:::caution Stream name
+:::caution[Stream name]
 Check the [stream name](../persistence/aggregate-stream#stream-name) documentation if you need to use custom stream names.
 :::
 

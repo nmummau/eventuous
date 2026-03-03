@@ -39,7 +39,7 @@ In Eventuous, subscriptions are specific to event store implementation. In addit
 
 One of the common mistakes people make when building an event-sourced application is using an event store which is not capable of handling realtime subscriptions. It forces developers to engage some sort of message bus to deliver new events to subscribers. There are [quite a few issues](../../prologue/the-right-way) with that approach, but the most obvious one is a two-phase commit.
 
-:::tip Bad bus
+:::tip[Bad bus]
 Read more about the **[Bad Bus →](../../prologue/the-right-way/#event-bus)**
 :::
 

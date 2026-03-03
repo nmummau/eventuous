@@ -37,7 +37,7 @@ sequenceDiagram
     API Endpoint-->>-Client: Return result
 ```
 
-:::caution Handling failures
+:::caution[Handling failures]
 The last point above translates to: the command service **does not throw exceptions**. It [returns](./app-service.md#result) an instance of `ErrorResult` instead. It is your responsibility to handle the error.
 :::
 

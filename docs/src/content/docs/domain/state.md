@@ -38,7 +38,7 @@ Although it is possible to use pattern matching, we recommend using explicit han
 
 ### Using explicit handlers
 
-:::tip Use explicit handlers
+:::tip[Use explicit handlers]
 Eventuous performs additional checks if event types, which are handled by the `When` function, are registered in the type map. If you use pattern matching, the check is impossible to perform, and the application can crash if the event is not registered in the type map.
 :::
 

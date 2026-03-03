@@ -165,7 +165,7 @@ Subscription options for `StreamSubscription` are defined in `StreamSubscription
 At the bare minimum, you must define the stream name in the subscription options.
 :::
 
-:::caution Link events
+:::caution[Link events]
 When subscribing to a stream that contains link events (for example, `$ce-` category stream), you should set the `ResolveLinkTos` option to `true` to resolve the link to the original event that is linked to the link event.
 :::
 
@@ -183,7 +183,7 @@ Read more about concurrent event processing on the [all stream subscription](#co
 
 ### Persistent subscriptions
 
-:::caution Ordered events
+:::caution[Ordered events]
 KurrentDB persistent subscriptions do not guarantee ordered event processing. Therefore, we only recommend using them for integration purposes (reactions).
 :::
 

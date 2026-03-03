@@ -13,7 +13,7 @@ When using subscriptions for read model projections, you enter to the world of [
 
 The easiest way to detect such situations is to observe the gap between the last event in the stream, which the subscription listens to, and the event, which is currently being processed. We call it the **subscription gap**.
 
-:::caution Alerting for the gap
+:::caution[Alerting for the gap]
 If the gap increases continuously, your subscription is not catching up with all the events it receives. You need to set up a proper metric for the gap, and trigger an alert if the gap exceeds the value you can tolerate.
 :::
 

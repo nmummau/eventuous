@@ -3,7 +3,7 @@ title: "Aggregate store"
 description: "How aggregates are stored in an event store"
 ---
 
-:::info Deprecation notice
+:::note[Deprecation notice]
 Since version **0.15**, Eventuous doesn't use _Aggregate store_ internally. All persistence operations in command services are using [Event store](./event-store.mdx). The following elements are marked obsolete:
 
 - `IAggregateStore` interface
@@ -134,6 +134,6 @@ Task<TAggregate> IEventWriter.LoadAggregate<TAggregate, TState, TId>(
 
 ## Multi-tier store
 
-:::info Deprecation notice
+:::note[Deprecation notice]
 Since version **0.15**, aggregate store with archive is superseded by [tiered event store](./event-store.mdx#event-store-with-archive).
 :::

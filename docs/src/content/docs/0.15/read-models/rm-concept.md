@@ -28,7 +28,7 @@ The concept can be traced back in time to a separation between operational and r
 
 Greg argues that it's not a requirement to separate two databases, but it's a good idea to at least understand that the need for transactional updates requires a different approach compared with reporting needs. Say, you use something like EntityFramework to persist your domain entities state. Although it works quite well, it's not a good idea to use it for reporting purposes. You'd be limited to reach the data using EntityFramework's DbContext, when in reality you'd want to make more direct queries, joining different tables, etc.
 
-:::info What's up with CARS?
+:::note[What's up with CARS?]
 Where "did you mean CARS?" comes from? When CQRS wasn't as popular term, Google search assumed you made a mistake and proposed to search for "cars" instead.
 :::
 

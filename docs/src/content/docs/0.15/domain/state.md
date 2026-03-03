@@ -15,7 +15,7 @@ A record, which inherits from `State` needs to implement a single function calle
 
 ### Using pattern matching
 
-:::tip Use explicit handlers
+:::tip[Use explicit handlers]
 Eventuous performs additional checks if event types, which are handled by the `When` function, are registered in the type map. If you use pattern matching, the check is impossible to perform, and the application can crash if the event is not registered in the type map. Therefore, we advise to use explicit handlers as described [below](#using-explicit-handlers).
 :::
 

@@ -19,7 +19,7 @@ If you are familiar with the concept, [scroll down](#implementation).
 
 When handling a command, you need to ensure it only changes the state of a single aggregate. An aggregate boundary is a transaction boundary, so the state transition for the aggregate needs to happen entirely or not at all.
 
-:::tip No entities
+:::tip[No entities]
 **TD;LR** Eventuous doesn't have entities other than the Aggregate Root. If you are okay with that, [scroll down](#implementation).
 :::
 
@@ -65,7 +65,7 @@ The `Aggregate` abstract class is quite technical and provides very little out o
 
 The aggregate state in Eventuous is _immutable_. When applying an event to it, we get a new state.
 
-:::tip Event-sourced state
+:::tip[Event-sourced state]
 The `State` abstraction is described on the [State](state) page.
 :::
 
