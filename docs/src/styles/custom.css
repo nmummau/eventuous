@@ -1,1 +1,5 @@
 /* Eventuous custom styles — start with minimal overrides */
+
+starlight-version-select select {
+  width: 10em;
+}
