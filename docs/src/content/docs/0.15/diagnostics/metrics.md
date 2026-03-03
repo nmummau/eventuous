@@ -23,7 +23,7 @@ Command handling duration is collected as a histogram with the name `eventuous_s
 
 Here's an example of command service metrics exported in Prometheus format:
 
-```prometheus
+```txt
 # TYPE eventuous_service_duration_milliseconds histogram
 # UNIT eventuous_service_duration_milliseconds milliseconds
 # HELP eventuous_service_duration_milliseconds Command execution duration, milliseconds
@@ -62,7 +62,7 @@ Persistence operation duration is collected as a histogram with the name `eventu
 
 Here's an example of persistence metrics exported in Prometheus format:
 
-```prometheus
+```txt
 # TYPE eventuous_persistence_duration_milliseconds histogram
 # UNIT eventuous_persistence_duration_milliseconds milliseconds
 # HELP eventuous_persistence_duration_milliseconds Event store operation duration, milliseconds

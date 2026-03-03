@@ -39,7 +39,7 @@ Keep in mind that due to the limitation of EventStoreDB, the gap event count is 
 
 Here is an example of the subscription gap metric exported to Prometheus:
 
-```prometheus
+```txt
 # HELP eventuous_subscription_gap_count_events Gap between the last processed event and the stream tail
 # TYPE eventuous_subscription_gap_count_events gauge
 eventuous_subscription_gap_count_events{subscription_id="BookingsProjections"} 1098 1649081749067
@@ -52,7 +52,7 @@ All the subscription metrics are tagged by the subscription id (`subscription_id
 
 Here is an example of the subscription duration metrics exported as a Prometheus [metric](https://prometheus.io/docs/practices/naming/) for the subscription with id `BookingsProjections`:
 
-```prometheus
+```txt
 # HELP eventuous_subscription_duration_ms Processing duration, milliseconds
 # TYPE eventuous_subscription_duration_ms histogram
 eventuous_subscription_duration_ms_bucket{message_type="V1.RoomBooked",partition="0",subscription_id="BookingsProjections",le="0"} 0 1649081749067
