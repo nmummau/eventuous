@@ -185,6 +185,7 @@ The default collection name is derived from the document type with automatic suf
 
 ## Bug fixes
 
+- **Checkpoint subscription resubscribe state reset** (#509): fixed resubscription after handler failure skipping the failed event. When `ThrowOnError` is enabled and a handler throws, the subscription now resets its in-memory checkpoint state (`LastProcessed`, `Sequence`, and `CheckpointCommitHandler`) before resubscribing. Previously, `GetCheckpoint()` would return the stale `LastProcessed` value (which may have advanced past the failed event), causing the resubscribed run to skip it. The checkpoint commit handler is also disposed and recreated to avoid sequence gaps.
 - **RabbitMQ queue binding** (#498): fixed `QueueBind` using `SubscriptionId` instead of the resolved queue name when `QueueOptions.Queue` was overridden. Also fixed `Gateway.GetOriginalStream()` returning null due to incorrect type casting.
 - **Aggregate version calculation** (#475): fixed version tracking for deleted streams by storing `OriginalVersion` as a field instead of computing it.
 - **PostgreSQL read_stream_backwards** (#464): fixed guard clause that incorrectly mixed page size with position validation, causing valid backwards reads to return empty results.
