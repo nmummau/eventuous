@@ -7,8 +7,8 @@ sidebar:
 
 ## Introduction
 
-RabbitMQ is a popular message broker, and it can serve as a great integration infrastructure for communicating 
-between services. Eventuous supports using RabbitMQ messaging with [producers](../../producers) for producing messages 
+RabbitMQ is a popular message broker, and it can serve as a great integration infrastructure for communicating
+between services. Eventuous supports using RabbitMQ messaging with [producers](../../producers) for producing messages
 and [subscriptions](../../subscriptions/subs-concept) for consuming messages.
 
 Eventuous producer for RabbitMQ publishes messages to _exchanges_.
@@ -33,7 +33,7 @@ builder.Services.AddSingleton(
     new ConnectionFactory {
         Uri = new Uri(rabbitMqConnectionString)
     }
-); 
+);
 ```
 
 When that's done, you can register the producer by using `AddProducer` extension provided by Eventuous:
@@ -78,7 +78,7 @@ Eventuous supports consuming messages from RabbitMQ using [subscriptions](../../
 
 ### Configuration
 
-As any other subscription, it can be added to the Di container using `AddSubscription` extension:
+As any other subscription, it can be added to the DI container using `AddSubscription` extension:
 
 ```csharp
 builder.Services.AddSubscription<RabbitMqSubscription, RabbitMqSubscriptionOptions>(
@@ -93,7 +93,7 @@ The `Exchange` configuration property is mandatory as the subscription needs to 
 
 For consuming messages, the subscription needs a queue bound to the specified exchange. By default, the subscription id is used as the queue name. You can override the queue name by specifying an alternative value using `QueueOptions.Queue` property of the subscription options.
 
-Besides the queue name, it's possible to configure the subscription with RabbitQ-specific parameters. Those include queue options, exchange options, and binding options. Eventuous provides default values for all those, so usually you would not need to change those. One option that likely should be overridden is the concurrency limit value, which is set to `1` by default. As RabbitMQ doesn't guarantee message ordering anyway, you can speed up message processing by increasing the concurrency limit, so the subscription can consume messages in parallel. Eventuous will also adjust the prefetch count to accommodate for increased number of consumers, if necessary.
+Besides the queue name, it's possible to configure the subscription with RabbitMQ-specific parameters. Those include queue options, exchange options, and binding options. Eventuous provides default values for all those, so usually you would not need to change those. One option that likely should be overridden is the concurrency limit value, which is set to `1` by default. As RabbitMQ doesn't guarantee message ordering anyway, you can speed up message processing by increasing the concurrency limit, so the subscription can consume messages in parallel. Eventuous will also adjust the prefetch count to accommodate for increased number of consumers, if necessary.
 
 As mentioned previously, RabbitMQ messages are published to an exchange and consumed from a queue bound to that exchange. When the subscription starts, it makes sure that both the exchange and the queue exist, and the queue is bound to the exchange. If you start producing messages to an exchange created by the producer before starting the subscription at least once, and there's no queue and binding created upfront, those messages will be dropped. As long as the exchange has a binding to a subscription queue, the messages will be kept in the queue until consumed. Therefore, we recommend starting the subscription before producing messages.
 
@@ -125,7 +125,7 @@ For configuring the subscription queue, the following options are available in `
 
 | Name         | Description                                                                       |
 |--------------|-----------------------------------------------------------------------------------|
-| `Queue`      | Overriders the default queue name, which is set to subscription id by default     |
+| `Queue`      | Overrides the default queue name, which is set to subscription id by default      |
 | `AutoDelete` | Default is `false`, so the queue will survive restarts                            |
 | `Exclusive`  | Default is `false`, change it if you want to only have a single consumer instance |
 | `Durable`    | Default is `true`, so the queue will be persisted on disk                         |

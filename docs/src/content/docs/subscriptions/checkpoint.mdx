@@ -12,7 +12,7 @@ The subscription you choose will determine at what point in the stream you begin
 
 As the subscription receives and processes events, it progresses along the subscribed stream. Each event that is received and processed has a unique position within the stream, which serves as a checkpoint for the subscription. If the application hosting the subscription shuts down, it is necessary to resume processing events from the last recorded checkpoint, which is the position of the last processed event plus one. This ensures that each event is handled exactly once. As a result, the subscription must keep track of its checkpoint, either by storing it in a dedicated checkpoint store or by using the event store's built-in functionality.
 
-In some log-based brokers, the concept of a checkpoint is referred to as an "offset". Some event-driven brokers manage subscriptions on the server-side, eliminating the need for client-side checkpoint storage. For example, persistent subscriptions in EventStoreDB and subscriptions in Google PubSub do not require a client-side checkpoint store. Other subscriptions, such as those managed by RabbitMQ, do not have the concept of a checkpoint as RabbitMQ does not retain consumed messages, whether they have been acknowledged or not.
+In some log-based brokers, the concept of a checkpoint is referred to as an "offset". Some event-driven brokers manage subscriptions on the server-side, eliminating the need for client-side checkpoint storage. For example, persistent subscriptions in KurrentDB and subscriptions in Google PubSub do not require a client-side checkpoint store. Other subscriptions, such as those managed by RabbitMQ, do not have the concept of a checkpoint as RabbitMQ does not retain consumed messages, whether they have been acknowledged or not.
 
 ## Checkpoint store
 
@@ -89,10 +89,14 @@ The Postgres checkpoint store will create and use the `checkpoint` table, and th
 
 ```sql
 create table if not exists __schema__.checkpoints (
-    id varchar primary key, 
-    position bigint null 
+    id varchar primary key,
+    position bigint null
 );
 ```
+
+#### SQLite
+
+The SQLite checkpoint store uses a `{schema}_checkpoints` table (default: `eventuous_checkpoints`), with the subscription id as the row key. The table is created automatically when `initializeDatabase: true` is set.
 
 #### Other stores
 
@@ -101,6 +105,28 @@ In addition to that, Eventuous has two implementations in the core subscriptions
 - `NoOpCheckpointStore`: does nothing, used in Eventuous tests
 
 The measured store is used by default if Eventuous diagnostics aren't disabled, and you use the `AddCheckpointStore` container registration extension.
+
+## Initial position
+
+When a subscription starts for the first time and no checkpoint exists, it needs to decide where to begin reading events. By default, subscriptions start from the **earliest** position (the beginning of the stream). You can change this behaviour using the `StartFrom` option on any subscription that uses checkpoints:
+
+```csharp
+builder.Services.AddSubscription<MySubscription, MySubscriptionOptions>(
+    "MySubscription",
+    b => b
+        .Configure(cfg => cfg.StartFrom = InitialPosition.Latest)
+        .AddEventHandler<MyHandler>()
+);
+```
+
+| Value | Description |
+|---|---|
+| `InitialPosition.Earliest` | Start from the beginning of the stream (default). Processes all historical events. |
+| `InitialPosition.Latest` | Start from the current end of the stream. Only processes events produced after the subscription starts. |
+
+:::note
+The `StartFrom` option only applies when there is no existing checkpoint. Once a checkpoint is stored, the subscription always resumes from the last committed checkpoint position, regardless of the `StartFrom` setting.
+:::
 
 ## Checkpoint commit handler
 

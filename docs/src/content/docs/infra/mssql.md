@@ -29,7 +29,7 @@ For subscriptions, Eventuous adds a table called `Checkpoints` that stores the l
 ## Event persistence
 
 Before using SQL Server as an event store, you need to register the SQL Server-based event store implementation.
-For that to work, you'd also need to register an SQL Sever connection detail used to create connections to the database.
+For that to work, you'd also need to register an SQL Server connection detail used to create connections to the database.
 Eventuous provides a few overloads for `AddEventuousSqlServer` registration extension to do that.
 
 One way to register the connection details is to provide a connection string and, optionally, the schema name:
@@ -82,14 +82,14 @@ Both subscription types use continuous polling to check for new events.
 
 ### Registering subscriptions
 
-Registering a global log subscription is similar to [EventStoreDB](../esdb#all-stream-subscription). The only difference is the subscription and the options types:
+Registering a global log subscription is similar to [KurrentDB](../esdb#all-stream-subscription). The only difference is the subscription and the options types:
 
 ```csharp title="Program.cs"
 builder.Services.AddSubscription<SqlServerAllStreamSubscription, SqlServerAllStreamSubscriptionOptions>(
     "BookingsProjections",
     b => b
         .AddEventHandler<BookingStateProjection>()
-        .AddEventHandler<MyBookingsProjection>();
+        .AddEventHandler<MyBookingsProjection>()
 );
 ```
 
@@ -100,7 +100,7 @@ builder.Services.AddSubscription<SqlServerStreamSubscription, SqlServerStreamSub
     "StreamSubscription",
     b => b
         .Configure(x => x.StreamName = "my-stream")
-        .AddEventHandler<StreamSubscriptionHander>()
+        .AddEventHandler<StreamSubscriptionHandler>()
 );
 ```
 
@@ -170,8 +170,8 @@ You can project the `BookingImported` event to this table using a simple project
 public class ImportingBookingsProjector : SqlServerProjector {
     public ImportingBookingsProjector(SqlServerConnectionOptions options) : base(options) {
         var insert = $"""
-                      INSERT INTO {schemaInfo.Schema}.Bookings 
-                      (BookingId, CheckinDate, Price) 
+                      INSERT INTO {options.Schema}.Bookings
+                      (BookingId, CheckinDate, Price)
                       VALUES (@BookingId, @CheckinDate, @Price)
                       """;
 
@@ -198,7 +198,7 @@ builder.Services.AddSubscription<SqlServerAllStreamSubscription, SqlServerAllStr
     "ImportedBookingsProjections",
     b => b
         .UseCheckpointStore<SqlServerCheckpointStore>()
-        .AddEventHandler<ImportingBookingsProjector>();
+        .AddEventHandler<ImportingBookingsProjector>()
 );
 ```
 
@@ -208,4 +208,3 @@ At this moment, there is no way to use different checkpoint store options for ea
 :::
 
 Note that the `insert` operation in the projection is not idempotent, so if the event is processed twice because there was a failure, the projector will throw an exception. It would not be an issue when the subscription uses the default setting that tells it not to stop when the handler fails. If you want to ensure that failures force the subscription to throw, you can change the subscription option `ThrowOnError` to `true`, and make the operation idempotent by using "insert or update".
-Microsoft SQL Server is a popular choice for storing queryable application data. Many organizations that use .NET as their preferred stack also use SQL Server.

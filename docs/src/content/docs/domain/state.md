@@ -15,10 +15,6 @@ A record, which inherits from `State` needs to implement a single function calle
 
 ### Using pattern matching
 
-:::tip[Use explicit handlers]
-Eventuous performs additional checks if event types, which are handled by the `When` function, are registered in the type map. If you use pattern matching, the check is impossible to perform, and the application can crash if the event is not registered in the type map. Therefore, we advise to use explicit handlers as described [below](#using-explicit-handlers).
-:::
-
 Using pattern matching, you can define how events mutate the state with functions that return the new `State` instance.
 
 For example:
@@ -42,9 +38,13 @@ Although it is possible to use pattern matching, we recommend using explicit han
 
 ### Using explicit handlers
 
+:::tip[Use explicit handlers]
+Eventuous performs additional checks if event types, which are handled by the `When` function, are registered in the type map. If you use pattern matching, the check is impossible to perform, and the application can crash if the event is not registered in the type map.
+:::
+
 You can also use explicit event handlers, where you define one function per event, and register them in the constructor. In that case, there's no need to override the `When` function.
 
-The syntax is simple, allowing you to add separate functions for applying each event type to the state:
+The syntax is similar to registered command handlers for the [command service](../../application):
 
 ```csharp title="BookingState.cs"
 public record BookingState : State<BookingState> {
@@ -66,23 +66,26 @@ public record BookingState : State<BookingState> {
         On<BookingPaymentRegistered>(
             (state, paid) => state with {
                 AmountPaid = state.AmountPaid + new Money(paid.AmountPaid),
-                _payments = state._payments.Add(
+                _registeredPayments = state._registeredPayments.Add(
                     new Payment(paid.PaymentId, new Money(paid.AmountPaid))
                 )
             }
         );
     }
 
-    ImmutableArray<Payment> _payments = ImmutableArray<Payment>.Empty;
+    ImmutableArray<Payment> _registeredPayments = ImmutableArray<Payment>.Empty;
 
     public Money Price      { get; private init; }
     public Money AmountPaid { get; private init; }
 
-    public bool IsFullyPaid() => AmountPaid.Amount >= Price.Amount;
+    public bool IsFullyPaid()
+        => AmountPaid.Amount >= Price.Amount;
 
-    public bool IsOverpaid() => AmountPaid.Amount > Price.Amount;
+    public bool IsOverpaid()
+        => AmountPaid.Amount > Price.Amount;
 
-    public bool HasPayment(string paymentId) => _payments.Any(p => p.PaymentId == paymentId);
+    public bool HasPayment(string paymentId)
+        => _registeredPayments.Any(p => p.PaymentId == paymentId);
 
     record Payment(string PaymentId, Money Amount);
 }
@@ -110,4 +113,4 @@ public record BookingState<BookingId> {
 }
 ```
 
-The `BookingState` type will have a property named `Id` of type `BookingId`. You don't need to set it manually as it will be provided when the state object is recreated from events by the command service.
+The `BookingState` type will have a property named `Id` of type `BookingId`. You don't need to set it manually as it will be provided when the state object is recreated from events by the [command service](../../application/app-service).
