@@ -19,6 +19,7 @@ public class ResubscribeOnHandlerFailureTests {
         // Arrange
         var loggerFactory   = LoggingExtensions.GetLoggerFactory();
         var droppedTcs      = new TaskCompletionSource<(string Id, DropReason Reason, Exception? Ex)>();
+        var checkpointTcs   = new TaskCompletionSource<Checkpoint>();
         var subscribedCount = 0;
 
         var options = new TestSubscriptionOptions {
@@ -30,6 +31,9 @@ public class ResubscribeOnHandlerFailureTests {
         var pipe    = new ConsumePipe().AddDefaultConsumer(handler);
 
         var checkpointStore = new NoOpCheckpointStore();
+
+        // Track checkpoint commits — the flush happens asynchronously during dispose
+        checkpointStore.CheckpointStored += (_, cp) => checkpointTcs.TrySetResult(cp);
 
         var subscription = new TestPollingSubscription(
             options,
@@ -57,8 +61,6 @@ public class ResubscribeOnHandlerFailureTests {
             subscription.IsDropped.ShouldBeTrue("Subscription should be marked as dropped after handler failure");
         }
         else {
-            // This is the bug: the subscription silently stopped without calling Dropped
-            // Check if the subscription is still "running" but not processing events
             var handledCount = handler.HandledCount;
 
             Assert.Fail(
@@ -71,16 +73,23 @@ public class ResubscribeOnHandlerFailureTests {
         // Cleanup
         await subscription.Unsubscribe(_ => { }, ct);
 
-        // Verify checkpoint: only event #1 (position 0) was successfully acked before the failure on event #2
-        var checkpoint = await checkpointStore.GetLastCheckpoint("test-handler-failure", ct);
+        // Wait for the checkpoint to be committed — the flush may still be in flight
+        // from the Resubscribe path disposing the handler asynchronously
+        var checkpointCommitted = await Task.WhenAny(checkpointTcs.Task, Task.Delay(TimeSpan.FromSeconds(5), ct));
+        checkpointCommitted.ShouldBe(checkpointTcs.Task, "Checkpoint should have been committed during handler disposal");
+
+        // Verify: only event #1 (position 0) was successfully acked before the failure on event #2
+        var checkpoint = await checkpointTcs.Task;
         checkpoint.Position.ShouldBe((ulong)0, "Checkpoint should be at position 0 (only the first event was acked before failure)");
     }
 
     [Test]
     public async Task Should_skip_failed_event_and_advance_checkpoint_when_throw_on_error_disabled(CancellationToken ct) {
         // Arrange — ThrowOnError = false means Nack calls Ack (skip), so all events are processed
-        var loggerFactory = LoggingExtensions.GetLoggerFactory();
-        var completedTcs  = new TaskCompletionSource();
+        var loggerFactory    = LoggingExtensions.GetLoggerFactory();
+        var completedTcs     = new TaskCompletionSource();
+        ulong? lastCommitted = null;
+        var    commitTcs     = new TaskCompletionSource<ulong>();
 
         var options = new TestSubscriptionOptions {
             SubscriptionId          = "test-handler-skip",
@@ -93,6 +102,15 @@ public class ResubscribeOnHandlerFailureTests {
         var pipe    = new ConsumePipe().AddDefaultConsumer(handler);
 
         var checkpointStore = new NoOpCheckpointStore();
+
+        // Track the highest committed position
+        checkpointStore.CheckpointStored += (_, cp) => {
+            if (cp.Position is { } pos) {
+                lastCommitted = pos;
+
+                if (pos >= 4) commitTcs.TrySetResult(pos);
+            }
+        };
 
         var subscription = new TestPollingSubscription(
             options,
@@ -117,9 +135,12 @@ public class ResubscribeOnHandlerFailureTests {
         // Cleanup — Finalize flushes pending checkpoint commits
         await subscription.Unsubscribe(_ => { }, ct);
 
+        // Wait for checkpoint to reach the last event position
+        var commitCompleted = await Task.WhenAny(commitTcs.Task, Task.Delay(TimeSpan.FromSeconds(5), ct));
+        commitCompleted.ShouldBe(commitTcs.Task, $"Checkpoint should reach position 4, last committed: {lastCommitted}");
+
         // Verify: checkpoint should have advanced past all events including the failed one (which was skipped)
-        var checkpoint = await checkpointStore.GetLastCheckpoint("test-handler-skip", ct);
-        checkpoint.Position.ShouldBe((ulong)4, "Checkpoint should be at position 4 (all events processed, failed one skipped)");
+        lastCommitted.ShouldBe((ulong)4, "Checkpoint should be at position 4 (all events processed, failed one skipped)");
     }
 
     /// <summary>
