@@ -54,7 +54,7 @@ public ValueTask<EventHandlingStatus> HandleEvent(IMessageConsumeContext ctx) {
 }
 ```
 
-However, it's easier and more explicit to use pre-optimised base handlers. For read model projections you can use [Projections] handlers, described separately. For integration purposes you might want to use the [Gateway](../../../gateway). For more generic needs, Eventuous offers the `EventHandler` base class. It allows specifying typed handlers for each of the event types that the handler processes:
+However, it's easier and more explicit to use pre-optimised base handlers. For read model projections you can use [Projections] handlers, described separately. For integration purposes you might want to use the [Gateway](../../gateway). For more generic needs, Eventuous offers the `EventHandler` base class. It allows specifying typed handlers for each of the event types that the handler processes:
 
 ```csharp
 public class MyHandler : EventHandler {
@@ -80,7 +80,7 @@ The subscription will acknowledge the event only if all of its handlers _don't f
 
 ## Registration
 
-As mentioned before, you'd normally register subscriptions using the DI extensions provided by Eventuous. This example uses the [KurrentDB](../../../infra/esdb) subscription.
+As mentioned before, you'd normally register subscriptions using the DI extensions provided by Eventuous. This example uses the [KurrentDB](../../infra/esdb) subscription.
 
 ```csharp title="Program.cs"
 builder.Services.AddSubscription<StreamSubscription, StreamSubscriptionOptions>(

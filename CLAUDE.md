@@ -115,7 +115,9 @@ pnpm build
 pnpm preview
 ```
 
-Docs content lives in `docs/src/content/docs/` as `.md` and `.mdx` files organized by topic: `domain/`, `persistence/`, `application/`, `subscriptions/`, `read-models/`, `producers/`, `gateway/`, `diagnostics/`, and `infra/` (per-provider: esdb, postgres, mongodb, mssql, sqlite, kafka, rabbitmq, pubsub, elastic). MDX files can use Astro components. Mermaid diagrams are supported via `starlight-client-mermaid` plugin. Versioned docs (0.15) are managed by the `starlight-versions` plugin in `docs/src/content/docs/0.15/`. Sidebar is configured in `astro.config.mjs`. Frontmatter uses Starlight format (`sidebar.order` for ordering, not `sidebar_position`).
+Docs content lives in `docs/src/content/docs/` as `.md` and `.mdx` files organized by topic: `domain/`, `persistence/`, `application/`, `subscriptions/`, `read-models/`, `producers/`, `gateway/`, `diagnostics/`, and `infra/` (per-provider: esdb, postgres, mongodb, mssql, sqlite, kafka, rabbitmq, pubsub, azure-service-bus, elastic). MDX files can use Astro components. Mermaid diagrams are supported via `starlight-client-mermaid` plugin. Sidebar is auto-generated from directories in `astro.config.mjs`. Frontmatter uses Starlight format (`sidebar.order` for ordering, not `sidebar_position`).
+
+For detailed docs versioning and authoring rules, see `docs/DOCS_VERSIONING.md`.
 
 ## Code Style
 

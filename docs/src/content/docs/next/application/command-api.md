@@ -2,7 +2,7 @@
 title: "Command API"
 description: "Auto-generated HTTP API for command handling"
 sidebar:
-  order: 3
+  order: 30
 ---
 
 ## Controller base

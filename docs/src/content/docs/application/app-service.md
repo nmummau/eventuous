@@ -1,21 +1,16 @@
 ---
-title: "Service with aggregate"
+title: "Command service"
 description: "Command service and unit of work for aggregates"
 sidebar:
-  order: 1
+  order: 10
 ---
 
 ## Concept
 
-:::note
-This page describes command services that work with [aggregates](../../domain/aggregate). If you are not using aggregates, check the [Functional services](../func-service) page.
-:::
-
-
 The command service itself performs the following operations when handling one command:
 1. Extract the aggregate id from the command, if necessary.
 2. Instantiate all the necessary value objects. This could effectively reject the command if value objects cannot be constructed. The command service could also load some other aggregates, or any other information, which is needed to execute the command but won't change state.
-3. If the command expects to operate on an existing aggregate instance, this instance gets loaded from the [event store](../../persistence/event-store).
+3. If the command expects to operate on an existing aggregate instance, this instance gets loaded from the [Aggregate Store](../../persistence/aggregate-store).
 4. Execute an operation on the loaded (or new) aggregate, using values from the command, and the constructed value objects.
 5. The aggregate either performs the operation and changes its state by producing new events, or rejects the operation.
 6. If the operation was successful, the service persists new events to the store. Otherwise, it returns a failure to the edge.
@@ -42,18 +37,12 @@ sequenceDiagram
 ```
 
 :::caution[Handling failures]
-The last point above translates to: the command service **does not throw exceptions**. It [returns](#result) an instance of `Result<TState>.Error` instead. It is your responsibility to handle the error.
+The last point above translates to: the command service **does not throw exceptions**. It [returns](#result) an instance of `ErrorResult` instead. It is your responsibility to handle the error.
 :::
 
 ## Implementation
 
 Eventuous provides a base class for you to build command services. It is a generic abstract class, which is typed to the aggregate type. You should create your own implementation of a command service for each aggregate type. As command execution is transactional, it can only operate on a single aggregate instance, and, logically, only one aggregate type.
-
-:::note
-Add `Eventuous.Application` NuGet package to your project.
-:::
-
-The base class for aggregate-based command services is `CommandService<TAggregate, TState, TId>`.
 
 ### Handling commands
 
@@ -71,7 +60,7 @@ Here is an example of a command service form our test project:
 public class BookingsCommandService 
     : CommandService<Booking, BookingState, BookingId> {
     public BookingsCommandService(
-        IEventStore store, 
+        IAggregateStore store, 
         Services.IsRoomAvailable isRoomAvailable
     ) : base(store) {
         On<BookRoom>()
@@ -115,39 +104,15 @@ Check the [stream name](../../persistence/aggregate-stream#stream-name) document
 
 ### Result
 
-The command service will return an instance of `Result<TState>`. It can be inspected using the following members:
+The command service will return an instance of `Result<TState>`.
 
-| Signature                                                                  | Description                                                                                                                                                                         |
-|----------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `bool TryGet(out Result<TState>.Ok ok)`                                    | Returns `true` if the result is successful and also returns `Result<TState>.Ok` as the `out` variable.                                                                              |
-| `bool TryGetError(out Result<TState>.Error error)`                         | Returns `true` if there was an error. The `error` then gets assigned to an instance of `Error` that contains more details about what went wrong.                                    |
-| `bool Success`                                                             | Returns `true` if the result is successful.                                                                                                                                         |
-| `Exception? Exception { get; }`                                            | Returns an exception instance if there was an error, or `null` if there was no exception.                                                                                           |
-| `void ThrowIfError()`                                                      | Throws the recorded exception if there was an error, does nothing otherwise.                                                                                                        |
-| `T Match<T>(Func<Ok, T> matchOk, Func<Error, T> matchError)`               | Can be used for pattern matching success and error if the output has the same type. Eventuous uses this function for producing `IResult` and `ActionResult` in HTTP API extensions. |
-| `void Match<T>(Action<Ok> matchOk, Action<Error> matchError)`              | Allows to execute code branches based on the result success.                                                                                                                        |
-| `Task MatchAsync<T>(Func<Ok, Task> matchOk, Func<Error, Task> matchError)` | Allows to execute async code branches based on the result success.                                                                                                                  |
+It could be an `OkResult<TState>`, which contains the new aggregate state and the list of new events. You use the data in the result to pass it over to the caller, if needed.
 
-When using `TryGet`, you get the `Ok` instance back, which contains the following properties:
+If the operation was not successful, the command service will return an instance of `ErrorResult` that contains the error message and the exception details.
 
-| Property               | Description                                                                                              |
-|------------------------|----------------------------------------------------------------------------------------------------------|
-| `TState State`         | New state instance                                                                                       |
-| `Change[] Changes`     | List of new events. `Change` struct contains both the event payload and its type.                        |
-| `ulong StreamPosition` | Position of the last event in the stream that can be used for tracking, for example, read model updates. |
+### Bootstrap
 
-The `Match` function also provides `Ok` for the `matchOk` function to use.
-
-When using `TryGetError`, you get the `Error` instance back, which contains the following properties:
-
-| Property               | Description                                                         |
-|------------------------|---------------------------------------------------------------------|
-| `string ErrorMessage`  | The error message, which can be custom or taken from the exception. |
-| `Exception? Exception` | Exception details if available.                                     |
-
-## Bootstrap
-
-If you registered an implementation of  `IEventStore` in the DI container, you can also register the command service:
+If you registered the `KurrentDBEventStore` and the `AggregateStore` in your `Startup` as described on the [Aggregate store](../../persistence/aggregate-store) page, you can also register the command service:
 
 ```csharp title="Program.cs"
 builder.Services.AddCommandService<BookingCommandService, BookingState>();
@@ -161,6 +126,6 @@ You can simplify your application and avoid creating HTTP endpoints explicitly (
 
 ## Application HTTP API
 
-The most common use case is to connect the command service to an HTTP API using controllers or minimal API mappings.
+The most common use case is to connect the command service to an HTTP API.
 
 Read the [Command API](../command-api) feature documentation for more details.

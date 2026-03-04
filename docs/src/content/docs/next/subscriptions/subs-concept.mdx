@@ -4,7 +4,9 @@ description: "The concept of real-time subscriptions"
 sidebar:
   order: 1
 ---
-import ThemedImage from '../../../../components/ThemedImage.astro';
+import ThemedImage from '@components/ThemedImage.astro';
+import subscriptions from './images/subscriptions.png';
+import subscriptionsDark from './images/subscriptions-dark.png';
 
 Real-time subscriptions are essential when building a successful event-sourced system. They support the following sequence of operations:
 
@@ -31,16 +33,16 @@ By combining those two projections in _one subscription_, they could be both beh
 
 Subscriptions need to maintain their own [checkpoints](../checkpoint), so when the service that host a subscription restarts, it will start receiving events from the last known position in the stream.
 
-Most often, you'd want to subscribe to the _global event stream_, so you can build read models, which compose information from different aggregates. Eventuous offers the [All stream subscription](../../../infra/esdb#all-stream-subscription) for this use case. In some cases you'd need to subscribe to a regular stream using the [stream subscription](../../../infra/esdb#single-stream-subscription).
+Most often, you'd want to subscribe to the _global event stream_, so you can build read models, which compose information from different aggregates. Eventuous offers the [All stream subscription](../../infra/esdb#all-stream-subscription) for this use case. In some cases you'd need to subscribe to a regular stream using the [stream subscription](../../infra/esdb#single-stream-subscription).
 
 In Eventuous, subscriptions are specific to event store implementation. In addition, Eventuous has subscriptions to message brokers like Google PubSub and RabbitMQ for integration purposes.
 
 ## The wrong way
 
-One of the common mistakes people make when building an event-sourced application is using an event store which is not capable of handling realtime subscriptions. It forces developers to engage some sort of message bus to deliver new events to subscribers. There are [quite a few issues](../../../prologue/the-right-way) with that approach, but the most obvious one is a two-phase commit.
+One of the common mistakes people make when building an event-sourced application is using an event store which is not capable of handling realtime subscriptions. It forces developers to engage some sort of message bus to deliver new events to subscribers. There are [quite a few issues](../../prologue/the-right-way) with that approach, but the most obvious one is a two-phase commit.
 
 :::tip[Bad bus]
-Read more about the **[Bad Bus →](../../../prologue/the-right-way#event-bus)**
+Read more about the **[Bad Bus →](../../prologue/the-right-way#event-bus)**
 :::
 
 When using two distinct pieces of infrastructure in one transaction, you risk one of those operations to fail. Let's use the following example code, which is very common:
@@ -62,15 +64,15 @@ It is not hard to avoid the two-phase commits and ensure to publish domain event
 
 <ThemedImage
     alt="Consistent event flow"
-    lightSrc="./images/subscriptions.png"
-    darkSrc="./images/subscriptions-dark.png"
+    lightSrc={subscriptions}
+    darkSrc={subscriptionsDark}
 />
 
 Why is this flow "consistent"? It's because the command handling process always finishes with an append operation towards event store (unless the command fails). There's no explicit `Publish` or `Produce` call that happens after the event is persisted. A proper event store should have a capability for to subscribe for getting all the new events when they appear in the store. As the `Append` operation of the event store is transactional, such a subscription will get the event only once, if it is capable to acknowledge the event correctly back to the subscription.
 
-Subscriptions have many purposes. Most often, you would use a subscription to project domain events to your query models ([read models](../../read-models/rm-concept)). You can also use subscriptions to transform and publish integration events (see [Gateway](../../../gateway)).
+Subscriptions have many purposes. Most often, you would use a subscription to project domain events to your query models ([read models](../../read-models/rm-concept)). You can also use subscriptions to transform and publish integration events (see [Gateway](../../gateway)).
 
-Subscriptions can also be used for integration purposes in combination with [Producers](../../../producers).
+Subscriptions can also be used for integration purposes in combination with [Producers](../../producers).
 
 ## Implementation
 

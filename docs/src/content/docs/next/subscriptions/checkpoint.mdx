@@ -2,7 +2,9 @@
 title: "Checkpoints"
 description: "What's a checkpoint and why you need to store it"
 ---
-import ThemedImage from '../../../../components/ThemedImage.astro';
+import ThemedImage from '@components/ThemedImage.astro';
+import commitHandler from './images/commit-handler.png';
+import commitHandlerDark from './images/commit-handler-dark.png';
 
 When subscribing to an event store, it is important to consider which events you wish to receive. An effective event store should allow you to subscribe to individual event streams or to a global stream known as the "All stream", which contains all events in the store, organized in the order they were recorded. Many event-driven brokers that persist events as ordered logs also support subscriptions, which are often referred to as "consumers".
 
@@ -106,6 +108,28 @@ In addition to that, Eventuous has two implementations in the core subscriptions
 
 The measured store is used by default if Eventuous diagnostics aren't disabled, and you use the `AddCheckpointStore` container registration extension.
 
+## Initial position
+
+When a subscription starts for the first time and no checkpoint exists, it needs to decide where to begin reading events. By default, subscriptions start from the **earliest** position (the beginning of the stream). You can change this behaviour using the `StartFrom` option on any subscription that uses checkpoints:
+
+```csharp
+builder.Services.AddSubscription<MySubscription, MySubscriptionOptions>(
+    "MySubscription",
+    b => b
+        .Configure(cfg => cfg.StartFrom = InitialPosition.Latest)
+        .AddEventHandler<MyHandler>()
+);
+```
+
+| Value | Description |
+|---|---|
+| `InitialPosition.Earliest` | Start from the beginning of the stream (default). Processes all historical events. |
+| `InitialPosition.Latest` | Start from the current end of the stream. Only processes events produced after the subscription starts. |
+
+:::note
+The `StartFrom` option only applies when there is no existing checkpoint. Once a checkpoint is stored, the subscription always resumes from the last committed checkpoint position, regardless of the `StartFrom` setting.
+:::
+
 ## Checkpoint commit handler
 
 In addition to checkpoint store, Eventuous has a more advanced way to work with checkpoints. It doesn't load or store checkpoints by itself, for that purpose it uses the provided checkpoint store. However, the commit handler is able to receive a stream of unordered checkpoints, reorder them, detect possible gaps, and only store the checkpoint that is the latest before the gap.
@@ -118,8 +142,8 @@ When events get partitioned by the filter, several consumer instances process ev
 
 <ThemedImage
     alt="Gap in the commit handler queue"
-    lightSrc="./images/commit-handler.png"
-    darkSrc="./images/commit-handler-dark.png"
+    lightSrc={commitHandler}
+    darkSrc={commitHandlerDark}
 />
 
 :::note

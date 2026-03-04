@@ -4,7 +4,9 @@ description: >
     Event Sourcing done right, as it meant to be. Don't get caught up in the misconception that Event Sourcing is the same thing
     as Event-Driven Architecture.
 ---
-import ThemedImage from '../../../../components/ThemedImage.astro';
+import ThemedImage from '@components/ThemedImage.astro';
+import theRightWay from './images/the-right-way.png';
+import theRightWayDark from './images/the-right-way-dark.png';
 
 If you've ever searched for a diagram that explains Event Sourcing, you may have found many images, but most of them are confusing or simply incorrect. Despite claims that Event Sourcing is difficult, many people who have this opinion have never actually tried it or made mistakes during implementation.
 
@@ -26,8 +28,8 @@ Please refer to the diagram below for a complete understanding of the process.
 
 <ThemedImage
     alt="Eventuous way"
-    lightSrc="./images/the-right-way.png"
-    darkSrc="./images/the-right-way-dark.png"
+    lightSrc={theRightWay}
+    darkSrc={theRightWayDark}
 />
 
 ## What's wrong with those other diagrams?

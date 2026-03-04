@@ -2,7 +2,7 @@
 title: "Command service"
 description: "Command service and unit of work for aggregates"
 sidebar:
-  order: 1
+  order: 10
 ---
 
 ## Concept

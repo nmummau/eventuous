@@ -1,16 +1,19 @@
 ---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
 interface Props {
   alt: string;
-  lightSrc: string;
-  darkSrc: string;
+  lightSrc: ImageMetadata;
+  darkSrc: ImageMetadata;
 }
 
 const { alt, lightSrc, darkSrc } = Astro.props;
 ---
 
 <picture class="themed-image">
-  <img class="light-only" src={lightSrc} alt={alt} />
-  <img class="dark-only" src={darkSrc} alt={alt} />
+  <Image class="light-only" src={lightSrc} alt={alt} />
+  <Image class="dark-only" src={darkSrc} alt={alt} />
 </picture>
 
 <style>
