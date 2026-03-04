@@ -21,7 +21,7 @@ export default defineConfig({
           current: { label: 'v0.16 (Stable)' },
           versions: [
             { slug: '0.15', label: 'v0.15' },
-            { slug: 'next', label: 'Preview' },
+            { slug: 'next', label: 'Preview', redirect: 'root' },
           ],
         }),
         starlightMermaid(),
