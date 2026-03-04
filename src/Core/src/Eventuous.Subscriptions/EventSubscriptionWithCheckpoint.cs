@@ -127,6 +127,22 @@ public abstract class EventSubscriptionWithCheckpoint<T>(
         return checkpoint;
     }
 
+    [RequiresUnreferencedCode(AttrConstants.DynamicSerializationMessage)]
+    [RequiresDynamicCode(AttrConstants.DynamicSerializationMessage)]
+    protected override async Task Resubscribe(TimeSpan delay, CancellationToken cancellationToken) {
+        // Reset checkpoint state so the new run reads from the committed checkpoint,
+        // not from LastProcessed (which may be ahead of the failed event).
+        LastProcessed = null;
+        Sequence = 0;
+
+        if (CheckpointCommitHandler != null) {
+            await CheckpointCommitHandler.DisposeAsync();
+            CheckpointCommitHandler = null;
+        }
+
+        await base.Resubscribe(delay, cancellationToken);
+    }
+
     protected override async ValueTask Finalize(CancellationToken cancellationToken) {
         if (CheckpointCommitHandler == null) return;
 

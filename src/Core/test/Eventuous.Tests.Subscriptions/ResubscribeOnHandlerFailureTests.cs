@@ -70,6 +70,56 @@ public class ResubscribeOnHandlerFailureTests {
 
         // Cleanup
         await subscription.Unsubscribe(_ => { }, ct);
+
+        // Verify checkpoint: only event #1 (position 0) was successfully acked before the failure on event #2
+        var checkpoint = await checkpointStore.GetLastCheckpoint("test-handler-failure", ct);
+        checkpoint.Position.ShouldBe((ulong)0, "Checkpoint should be at position 0 (only the first event was acked before failure)");
+    }
+
+    [Test]
+    public async Task Should_skip_failed_event_and_advance_checkpoint_when_throw_on_error_disabled(CancellationToken ct) {
+        // Arrange — ThrowOnError = false means Nack calls Ack (skip), so all events are processed
+        var loggerFactory = LoggingExtensions.GetLoggerFactory();
+        var completedTcs  = new TaskCompletionSource();
+
+        var options = new TestSubscriptionOptions {
+            SubscriptionId          = "test-handler-skip",
+            ThrowOnError            = false,
+            CheckpointCommitBatchSize = 1,
+            CheckpointCommitDelayMs   = 100
+        };
+
+        var handler = new FailingHandler(failOnEvent: 2);
+        var pipe    = new ConsumePipe().AddDefaultConsumer(handler);
+
+        var checkpointStore = new NoOpCheckpointStore();
+
+        var subscription = new TestPollingSubscription(
+            options,
+            checkpointStore,
+            pipe,
+            loggerFactory,
+            eventCount: 5,
+            onCompleted: () => completedTcs.TrySetResult()
+        );
+
+        // Act
+        await subscription.Subscribe(
+            _ => { },
+            (_, _, _) => { },
+            ct
+        );
+
+        // Wait for all events to be processed
+        var completed = await Task.WhenAny(completedTcs.Task, Task.Delay(TimeSpan.FromSeconds(10), ct));
+        completed.ShouldBe(completedTcs.Task, "All events should be processed when ThrowOnError is false");
+
+        // Cleanup — Finalize flushes pending checkpoint commits
+        await subscription.Unsubscribe(_ => { }, ct);
+
+        // Verify: checkpoint should have advanced past all events including the failed one (which was skipped)
+        var checkpoint = await checkpointStore.GetLastCheckpoint("test-handler-skip", ct);
+        checkpoint.Position.ShouldBe((ulong)4, "Checkpoint should be at position 4 (all events processed, failed one skipped)");
     }
 
     /// <summary>
@@ -99,7 +149,8 @@ public class ResubscribeOnHandlerFailureTests {
             ICheckpointStore        checkpointStore,
             ConsumePipe             pipe,
             ILoggerFactory?         loggerFactory,
-            int                     eventCount
+            int                     eventCount,
+            Action?                 onCompleted = null
         )
         : EventSubscriptionWithCheckpoint<TestSubscriptionOptions>(
             options,
@@ -128,8 +179,10 @@ public class ResubscribeOnHandlerFailureTests {
         }
 
         async Task PollEvents(CancellationToken cancellationToken) {
-            // Simulate producing events through the pipeline
-            for (var i = 0; i < eventCount && !cancellationToken.IsCancellationRequested; i++) {
+            var checkpoint = await GetCheckpoint(cancellationToken);
+            var start = (int)(checkpoint.Position ?? 0);
+
+            for (var i = start; i < eventCount && !cancellationToken.IsCancellationRequested; i++) {
                 var context = new MessageConsumeContext(
                     Guid.NewGuid().ToString(),
                     "TestEvent",
@@ -150,6 +203,8 @@ public class ResubscribeOnHandlerFailureTests {
 
                 await Task.Delay(50, cancellationToken);
             }
+
+            onCompleted?.Invoke();
         }
     }
 }
