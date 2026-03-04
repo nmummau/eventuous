@@ -5,6 +5,8 @@ sidebar:
   order: 1
 ---
 import ThemedImage from '../../../../components/ThemedImage.astro';
+import subscriptions from './images/subscriptions.png';
+import subscriptionsDark from './images/subscriptions-dark.png';
 
 Real-time subscriptions are essential when building a successful event-sourced system. They support the following sequence of operations:
 
@@ -62,8 +64,8 @@ It is not hard to avoid the two-phase commits and ensure to publish domain event
 
 <ThemedImage
     alt="Consistent event flow"
-    lightSrc="./images/subscriptions.png"
-    darkSrc="./images/subscriptions-dark.png"
+    lightSrc={subscriptions}
+    darkSrc={subscriptionsDark}
 />
 
 Why is this flow "consistent"? It's because the command handling process always finishes with an append operation towards event store (unless the command fails). There's no explicit `Publish` or `Produce` call that happens after the event is persisted. A proper event store should have a capability for to subscribe for getting all the new events when they appear in the store. As the `Append` operation of the event store is transactional, such a subscription will get the event only once, if it is capable to acknowledge the event correctly back to the subscription.

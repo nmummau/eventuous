@@ -3,6 +3,12 @@ title: "Consume pipe"
 description: "Subscription consume pipes and filters"
 ---
 import ThemedImage from '../../../../components/ThemedImage.astro';
+import defaultPipe from './images/default-pipe.png';
+import defaultPipeDark from './images/default-pipe-dark.png';
+import concurrentFilter from './images/concurrent-filter.png';
+import concurrentFilterDark from './images/concurrent-filter-dark.png';
+import partitioningFilter from './images/partitioning-filter.png';
+import partitioningFilterDark from './images/partitioning-filter-dark.png';
 
 ## Pipes and filters
 
@@ -12,8 +18,8 @@ Eventuous consume pipe can be customised by adding filters to it, but normally y
 
 <ThemedImage
     alt="Default consume pipeline"
-    lightSrc="./images/default-pipe.png"
-    darkSrc="./images/default-pipe-dark.png"
+    lightSrc={defaultPipe}
+    darkSrc={defaultPipeDark}
 />
 
 Some subscriptions conditionally or unconditionally add filters to the pipe, when they detect the default pipe. For example, KurrentDB catch-up subscription might add the concurrent filter and partitioning filter, and RabbitMQ subscription uses the concurrent filter.
@@ -66,8 +72,8 @@ Because of such a split, the result returned to the subscription doesn't contain
 
 <ThemedImage
     alt="Pipe with concurrent filter"
-    lightSrc="./images/concurrent-filter.png"
-    darkSrc="./images/concurrent-filter-dark.png"
+    lightSrc={concurrentFilter}
+    darkSrc={concurrentFilterDark}
 />
 
 The concurrent filter is useful in combination with partitioning filter, but it can also be used for other purposes, like batched event processing.
@@ -84,8 +90,8 @@ Sometimes the subscription workload gets too high for it to cope with the number
 
 <ThemedImage
     alt="Pipe with concurrent and partitioning filters"
-    lightSrc="./images/partitioning-filter.png"
-    darkSrc="./images/partitioning-filter-dark.png"
+    lightSrc={partitioningFilter}
+    darkSrc={partitioningFilterDark}
 />
 
 You can use two options for configuring the filter:

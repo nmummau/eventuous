@@ -6,6 +6,10 @@ sidebar:
 ---
 
 import ThemedImage from '../../../../components/ThemedImage.astro';
+import replication from './images/replication.png';
+import replicationDark from './images/replication-dark.png';
+import reading from './images/reading.png';
+import readingDark from './images/reading-dark.png';
 
 In order to isolate the core library from a particular way of storing events, Eventuous uses the `IEventStore` abstraction.
 
@@ -108,8 +112,8 @@ When the connector is running, it will replicate all events from one store to th
 
 <ThemedImage
     alt="Replication process"
-    lightSrc="./images/replication.png"
-    darkSrc="./images/replication-dark.png"
+    lightSrc={replication}
+    darkSrc={replicationDark}
 />
 
 You'd need to have the connector [up and running](https://connect.eventuous.dev/docs/deployment/) before you can use Elasticsearch as the cold store in Eventuous-based application.
@@ -154,8 +158,8 @@ The process of reading events from the tiered store looks like this:
 
 <ThemedImage
     alt="Reading from two stores"
-    lightSrc="./images/reading.png"
-    darkSrc="./images/reading-dark.png"
+    lightSrc={reading}
+    darkSrc={readingDark}
 />
 
 Here's the reading process described step-by-step:

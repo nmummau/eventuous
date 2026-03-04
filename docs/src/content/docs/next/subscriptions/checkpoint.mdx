@@ -3,6 +3,8 @@ title: "Checkpoints"
 description: "What's a checkpoint and why you need to store it"
 ---
 import ThemedImage from '../../../../components/ThemedImage.astro';
+import commitHandler from './images/commit-handler.png';
+import commitHandlerDark from './images/commit-handler-dark.png';
 
 When subscribing to an event store, it is important to consider which events you wish to receive. An effective event store should allow you to subscribe to individual event streams or to a global stream known as the "All stream", which contains all events in the store, organized in the order they were recorded. Many event-driven brokers that persist events as ordered logs also support subscriptions, which are often referred to as "consumers".
 
@@ -140,8 +142,8 @@ When events get partitioned by the filter, several consumer instances process ev
 
 <ThemedImage
     alt="Gap in the commit handler queue"
-    lightSrc="./images/commit-handler.png"
-    darkSrc="./images/commit-handler-dark.png"
+    lightSrc={commitHandler}
+    darkSrc={commitHandlerDark}
 />
 
 :::note

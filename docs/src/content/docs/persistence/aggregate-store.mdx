@@ -3,6 +3,10 @@ title: "Aggregate store"
 description: "How aggregates are stored in an event store"
 ---
 import ThemedImage from '../../../components/ThemedImage.astro';
+import replication from './images/replication.png';
+import replicationDark from './images/replication-dark.png';
+import reading from './images/reading.png';
+import readingDark from './images/reading-dark.png';
 
 :::info
 Eventuous does not have a concept of Repository. Find out why [on this page](../../persistence).
@@ -59,8 +63,8 @@ The connector is running continuously, and it copies all the events from the hot
 
 <ThemedImage
     alt="Replication process"
-    lightSrc="./images/replication.png"
-    darkSrc="./images/replication-dark.png"
+    lightSrc={replication}
+    darkSrc={replicationDark}
 />
 
 As the connector replicates all the events, there's no need to perform an explicit archive action when storing the events normally using the regular event store.
@@ -102,8 +106,8 @@ From there, the process of loading an aggregate is seamless from the outside, bu
 
 <ThemedImage
     alt="Reading from two stores"
-    lightSrc="./images/reading.png"
-    darkSrc="./images/reading-dark.png"
+    lightSrc={reading}
+    darkSrc={readingDark}
 />
 
 Here's the reading process described step-by-step:
