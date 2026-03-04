@@ -58,7 +58,7 @@ public abstract class EventSubscriptionWithCheckpoint<T>(
     protected async ValueTask HandleInternal(IMessageConsumeContext context) {
         try {
             Logger.Current = Log;
-            var ctx = new AsyncConsumeContext(context, Ack, Nack);
+            var ctx = new AsyncConsumeContext(context, Ack, NackOnAsyncWorker);
             await Handler(ctx).NoContext();
         } catch (OperationCanceledException e) when (context.CancellationToken.IsCancellationRequested) {
             context.LogContext.MessageHandlingFailed(Options.SubscriptionId, context, e);
@@ -67,6 +67,24 @@ public abstract class EventSubscriptionWithCheckpoint<T>(
             context.LogContext.MessageHandlingFailed(Options.SubscriptionId, context, e);
 
             if (Options.ThrowOnError) throw;
+        }
+    }
+
+    /// <summary>
+    /// Wraps the Nack callback for the async worker path. When ThrowOnError is true,
+    /// Nack throws to signal a fatal error. On the async worker thread (AsyncHandlingFilter),
+    /// that throw would silently kill the channel worker without triggering Dropped/Resubscribe.
+    /// This wrapper catches the throw and calls Dropped instead.
+    /// </summary>
+    [RequiresUnreferencedCode(AttrConstants.DynamicSerializationMessage)]
+    [RequiresDynamicCode(AttrConstants.DynamicSerializationMessage)]
+    ValueTask NackOnAsyncWorker(IMessageConsumeContext context, Exception exception) {
+        try {
+            return Nack(context, exception);
+        } catch (Exception) {
+            Dropped(DropReason.SubscriptionError, exception);
+
+            return default;
         }
     }
 
@@ -109,10 +127,26 @@ public abstract class EventSubscriptionWithCheckpoint<T>(
         return checkpoint;
     }
 
-    protected override async ValueTask Finalize(CancellationToken cancellationToken) {
-        if (CheckpointCommitHandler == null) return;
+    [RequiresUnreferencedCode(AttrConstants.DynamicSerializationMessage)]
+    [RequiresDynamicCode(AttrConstants.DynamicSerializationMessage)]
+    protected override async Task Resubscribe(TimeSpan delay, CancellationToken cancellationToken) {
+        // Reset checkpoint state so the new run reads from the committed checkpoint,
+        // not from LastProcessed (which may be ahead of the failed event).
+        LastProcessed = null;
+        Sequence = 0;
 
-        await CheckpointCommitHandler.DisposeAsync();
+        await DisposeCommitHandler();
+
+        await base.Resubscribe(delay, cancellationToken);
+    }
+
+    protected override async ValueTask Finalize(CancellationToken cancellationToken) => await DisposeCommitHandler();
+
+    async ValueTask DisposeCommitHandler() {
+        // Swap to null first so the concurrent path (Resubscribe vs Finalize) sees null.
+        var handler = CheckpointCommitHandler;
         CheckpointCommitHandler = null;
+
+        if (handler != null) await handler.DisposeAsync();
     }
 }

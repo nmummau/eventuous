@@ -11,7 +11,6 @@ using Eventuous.Tests.Persistence.Base.Fixtures;
 using Eventuous.Tests.Subscriptions.Base;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Eventuous.Tests.Sqlite.Subscriptions;
@@ -28,22 +27,21 @@ public partial class SubscriptionFixture<TSubscription, TSubscriptionOptions, TE
     where TEventHandler : class, IEventHandler {
     string _dbPath = null!;
 
-    protected internal readonly string SchemaName = GetSchemaName();
+    readonly string _schemaName = GetSchemaName();
 
-    public string             ConnectionString { get; private set; } = null!;
-    public IEventStore        EventStore       { get; private set; } = null!;
-    public TypeMapper         TypeMapper       { get; }              = new();
-    public string             SubscriptionId   { get; }              = $"test-{Guid.NewGuid():N}";
-
-    internal TEventHandler    Handler         { get; private set; } = null!;
-    internal ICheckpointStore CheckpointStore { get; private set; } = null!;
-    internal ILoggerFactory   LoggerFactory   { get; set; }         = null!;
-    ILogger                   Log             { get; set; }         = null!;
-    IMessageSubscription      Subscription    { get; set; }         = null!;
-    ServiceProvider           Provider        { get; set; }         = null!;
+    string                    ConnectionString { get; set; }         = null!;
+    TypeMapper                TypeMapper       { get; }              = new();
+    public   IEventStore      EventStore       { get; private set; } = null!;
+    public   string           SubscriptionId   { get; }              = $"test-{Guid.NewGuid():N}";
+    internal TEventHandler    Handler          { get; private set; } = null!;
+    internal ICheckpointStore CheckpointStore  { get; private set; } = null!;
+    ILoggerFactory            LoggerFactory    { get; set; }         = null!;
+    ILogger                   Log              { get; set; }         = null!;
+    IMessageSubscription      Subscription     { get; set; }         = null!;
+    ServiceProvider           Provider         { get; set; }         = null!;
 
     public async Task InitializeAsync() {
-        _dbPath = Path.Combine(Path.GetTempPath(), $"eventuous_test_{Guid.NewGuid():N}.db");
+        _dbPath          = Path.Combine(Path.GetTempPath(), $"eventuous_test_{Guid.NewGuid():N}.db");
         ConnectionString = $"Data Source={_dbPath}";
 
         TypeMapper.RegisterKnownEventTypes(typeof(BookingEvents.BookingImported).Assembly);
@@ -54,7 +52,7 @@ public partial class SubscriptionFixture<TSubscription, TSubscriptionOptions, TE
         services.AddSingleton(TypeMapper);
         services.AddLogging(b => b.ForTests(logLevel).SetMinimumLevel(logLevel));
 
-        services.AddEventuousSqlite(ConnectionString, SchemaName, true);
+        services.AddEventuousSqlite(ConnectionString, _schemaName, true);
         services.AddEventStore<SqliteStore>();
         services.AddSqliteCheckpointStore();
         services.AddSingleton(new TestEventHandlerOptions());
@@ -63,11 +61,13 @@ public partial class SubscriptionFixture<TSubscription, TSubscriptionOptions, TE
             SubscriptionId,
             b => {
                 b.AddEventHandler<TEventHandler>();
+
                 b.Configure(opt => {
-                    opt.Schema           = SchemaName;
-                    opt.ConnectionString = ConnectionString;
-                    configureOptions(opt);
-                });
+                        opt.Schema           = _schemaName;
+                        opt.ConnectionString = ConnectionString;
+                        configureOptions(opt);
+                    }
+                );
             }
         );
 
@@ -104,7 +104,7 @@ public partial class SubscriptionFixture<TSubscription, TSubscriptionOptions, TE
     public async Task<ulong> GetLastPosition() {
         await using var connection = await ConnectionFactory.GetConnection(ConnectionString, default);
         await using var cmd        = connection.CreateCommand();
-        cmd.CommandText = $"SELECT MAX(global_position) FROM {SchemaName}_messages";
+        cmd.CommandText = $"SELECT MAX(global_position) FROM {_schemaName}_messages";
         var result = await cmd.ExecuteScalarAsync();
 
         return (ulong)(result is DBNull or null ? 0 : (long)result);
@@ -115,7 +115,9 @@ public partial class SubscriptionFixture<TSubscription, TSubscriptionOptions, TE
 
         _disposed = true;
 
-        try { await StopSubscription(); } catch { /* best effort */ }
+        try { await StopSubscription(); } catch {
+            /* best effort */
+        }
 
         var inits = Provider.GetServices<IHostedService>();
 
@@ -134,7 +136,11 @@ public partial class SubscriptionFixture<TSubscription, TSubscriptionOptions, TE
     }
 
     static void TryDeleteFile(string path) {
-        try { if (File.Exists(path)) File.Delete(path); } catch { /* best effort */ }
+        try {
+            if (File.Exists(path)) File.Delete(path);
+        } catch {
+            /* best effort */
+        }
     }
 
     static string GetSchemaName() => NormaliseRegex().Replace(new Faker().Internet.UserName(), "").ToLower();
@@ -144,5 +150,3 @@ public partial class SubscriptionFixture<TSubscription, TSubscriptionOptions, TE
 
     bool _disposed;
 }
-
-public record SchemaInfo(string Schema);
