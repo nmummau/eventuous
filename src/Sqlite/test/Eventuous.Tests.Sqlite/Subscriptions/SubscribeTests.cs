@@ -1,6 +1,5 @@
 using Eventuous.Sqlite.Subscriptions;
 using Eventuous.Sut.App;
-using Eventuous.Sut.Domain;
 using Eventuous.Tests.Persistence.Base.Fixtures;
 using Eventuous.Tests.Subscriptions.Base;
 using static Eventuous.Sut.App.Commands;

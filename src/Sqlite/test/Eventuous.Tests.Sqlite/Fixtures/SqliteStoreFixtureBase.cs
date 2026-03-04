@@ -5,7 +5,6 @@ using Eventuous.TestHelpers.TUnit.Logging;
 using Eventuous.Tests.Persistence.Base.Fixtures;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace Eventuous.Tests.Sqlite.Fixtures;
 
@@ -16,7 +15,7 @@ public abstract partial class SqliteStoreFixtureBase(LogLevel logLevel = LogLeve
     public string ConnectionString { get; private set; } = null!;
 
     public virtual async Task InitializeAsync() {
-        _dbPath = Path.Combine(Path.GetTempPath(), $"eventuous_test_{Guid.NewGuid():N}.db");
+        _dbPath          = Path.Combine(Path.GetTempPath(), $"eventuous_test_{Guid.NewGuid():N}.db");
         ConnectionString = $"Data Source={_dbPath}";
 
         var services = new ServiceCollection();
@@ -65,7 +64,11 @@ public abstract partial class SqliteStoreFixtureBase(LogLevel logLevel = LogLeve
     }
 
     static void TryDeleteFile(string path) {
-        try { if (File.Exists(path)) File.Delete(path); } catch { /* best effort */ }
+        try {
+            if (File.Exists(path)) File.Delete(path);
+        } catch {
+            /* best effort */
+        }
     }
 
     protected abstract void SetupServices(IServiceCollection services);

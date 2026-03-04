@@ -58,7 +58,7 @@ public abstract class EventSubscriptionWithCheckpoint<T>(
     protected async ValueTask HandleInternal(IMessageConsumeContext context) {
         try {
             Logger.Current = Log;
-            var ctx = new AsyncConsumeContext(context, Ack, Nack);
+            var ctx = new AsyncConsumeContext(context, Ack, NackOnAsyncWorker);
             await Handler(ctx).NoContext();
         } catch (OperationCanceledException e) when (context.CancellationToken.IsCancellationRequested) {
             context.LogContext.MessageHandlingFailed(Options.SubscriptionId, context, e);
@@ -67,6 +67,24 @@ public abstract class EventSubscriptionWithCheckpoint<T>(
             context.LogContext.MessageHandlingFailed(Options.SubscriptionId, context, e);
 
             if (Options.ThrowOnError) throw;
+        }
+    }
+
+    /// <summary>
+    /// Wraps the Nack callback for the async worker path. When ThrowOnError is true,
+    /// Nack throws to signal a fatal error. On the async worker thread (AsyncHandlingFilter),
+    /// that throw would silently kill the channel worker without triggering Dropped/Resubscribe.
+    /// This wrapper catches the throw and calls Dropped instead.
+    /// </summary>
+    [RequiresUnreferencedCode(AttrConstants.DynamicSerializationMessage)]
+    [RequiresDynamicCode(AttrConstants.DynamicSerializationMessage)]
+    ValueTask NackOnAsyncWorker(IMessageConsumeContext context, Exception exception) {
+        try {
+            return Nack(context, exception);
+        } catch (Exception) {
+            Dropped(DropReason.SubscriptionError, exception);
+
+            return default;
         }
     }
 
