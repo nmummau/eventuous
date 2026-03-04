@@ -135,18 +135,18 @@ public abstract class EventSubscriptionWithCheckpoint<T>(
         LastProcessed = null;
         Sequence = 0;
 
-        if (CheckpointCommitHandler != null) {
-            await CheckpointCommitHandler.DisposeAsync();
-            CheckpointCommitHandler = null;
-        }
+        await DisposeCommitHandler();
 
         await base.Resubscribe(delay, cancellationToken);
     }
 
-    protected override async ValueTask Finalize(CancellationToken cancellationToken) {
-        if (CheckpointCommitHandler == null) return;
+    protected override async ValueTask Finalize(CancellationToken cancellationToken) => await DisposeCommitHandler();
 
-        await CheckpointCommitHandler.DisposeAsync();
+    async ValueTask DisposeCommitHandler() {
+        // Swap to null first so the concurrent path (Resubscribe vs Finalize) sees null.
+        var handler = CheckpointCommitHandler;
         CheckpointCommitHandler = null;
+
+        if (handler != null) await handler.DisposeAsync();
     }
 }
