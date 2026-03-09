@@ -38,11 +38,11 @@ class GatewayHandler<TProduceOptions>(
             var contextMeta = GatewayMetaHelper.GetContextMeta(context);
 
             var requests = shovelMessages
-                .GroupBy(x => x.TargetStream)
+                .GroupBy(x => (x.TargetStream, x.ProduceOptions))
                 .Select(g => new ProduceRequest<TProduceOptions>(
-                    g.Key,
+                    g.Key.TargetStream,
                     g.Select(x => new ProducedMessage(x.Message, x.GetMeta(context), contextMeta) { OnAck = onAck, OnNack = onFail }),
-                    g.First().ProduceOptions
+                    g.Key.ProduceOptions
                 ))
                 .ToArray();
 
