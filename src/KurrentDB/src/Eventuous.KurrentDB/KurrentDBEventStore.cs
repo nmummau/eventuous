@@ -158,6 +158,75 @@ public partial class KurrentDBEventStore : IEventStore {
     /// <inheritdoc/>
     [RequiresDynamicCode(AttrConstants.DynamicSerializationMessage)]
     [RequiresUnreferencedCode(AttrConstants.DynamicSerializationMessage)]
+    public Task<AppendEventsResult[]> AppendEvents(
+            IReadOnlyCollection<NewStreamAppend> appends,
+            CancellationToken                    cancellationToken = default
+        ) {
+        if (appends.Count == 0) return Task.FromResult(Array.Empty<AppendEventsResult>());
+
+        return TryExecute(
+            async () => {
+                var requests = appends.Select(a => new AppendStreamRequest(
+                    a.StreamName,
+                    ToStreamState(a.ExpectedVersion),
+                    a.Events.Select(ToEventData)
+                ));
+
+                var result = await _client.MultiStreamAppendAsync(
+                    ToAsyncEnumerable(requests),
+                    cancellationToken
+                ).AsTask().NoContext();
+
+                var responseMap = new Dictionary<string, long>();
+
+                foreach (var resp in result.Responses ?? []) {
+                    responseMap[resp.Stream] = resp.StreamRevision;
+                }
+
+                return appends.Select(a => {
+                    if (a.Events.Count == 0) return AppendEventsResult.NoOp;
+
+                    var streamName = a.StreamName.ToString();
+
+                    return responseMap.TryGetValue(streamName, out var revision)
+                        ? new AppendEventsResult((ulong)result.Position, revision)
+                        : AppendEventsResult.NoOp;
+                }).ToArray();
+            },
+            string.Join(", ", appends.Select(a => a.StreamName.ToString())),
+            true,
+            () => new("Unable to append events to multiple streams"),
+            (s, ex) => {
+                Log.UnableToAppendEvents(s, ex);
+
+                return new AppendToStreamException(s, ex);
+            }
+        );
+
+        [RequiresDynamicCode("Calls Eventuous.IEventSerializer.SerializeEvent(Object)")]
+        [RequiresUnreferencedCode("Calls Eventuous.IEventSerializer.SerializeEvent(Object)")]
+        EventData ToEventData(NewStreamEvent streamEvent) {
+            var (eventType, contentType, payload) = _serializer.SerializeEvent(streamEvent.Payload!);
+
+            return new(
+                Uuid.FromGuid(streamEvent.Id),
+                eventType,
+                payload,
+                _metaSerializer.Serialize(streamEvent.Metadata),
+                contentType
+            );
+        }
+
+        static async IAsyncEnumerable<AppendStreamRequest> ToAsyncEnumerable(IEnumerable<AppendStreamRequest> source) {
+            foreach (var item in source) {
+                yield return item;
+            }
+        }
+    }
+
+    /// <inheritdoc/>
+    [RequiresDynamicCode(AttrConstants.DynamicSerializationMessage)]
+    [RequiresUnreferencedCode(AttrConstants.DynamicSerializationMessage)]
     public async Task<StreamEvent[]> ReadEvents(StreamName stream, StreamReadPosition start, int count, bool failIfNotFound, CancellationToken cancellationToken = default) {
         var read = _client.ReadStreamAsync(Direction.Forwards, stream, start.AsStreamPosition(), count, cancellationToken: cancellationToken);
 
