@@ -48,6 +48,8 @@ public class TracedEventWriter(IEventWriter writer) : BaseTracer, IEventWriter {
             IReadOnlyCollection<NewStreamAppend> appends,
             CancellationToken                    cancellationToken
         ) {
+        if (appends.Count == 0) return [];
+
         var streamNames = new StreamName(string.Join(", ", appends.Select(a => a.StreamName.ToString())));
         using var activity = StartActivity(streamNames, Operations.AppendEvents);
 
