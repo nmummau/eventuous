@@ -120,12 +120,6 @@ public class SqliteStore : SqlEventStoreBase<SqliteConnection, SqliteTransaction
             var i       = 0;
 
             foreach (var append in appends) {
-                if (append.Events.Count == 0) {
-                    results[i++] = AppendEventsResult.NoOp;
-
-                    continue;
-                }
-
                 var persistedEvents = append.Events.Where(x => x.Payload != null).Select(Convert).ToArray();
 
                 results[i++] = persistedEvents.Length == 0

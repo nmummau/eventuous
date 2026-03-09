@@ -182,13 +182,11 @@ public partial class KurrentDBEventStore : IEventStore {
                 }
 
                 return appends.Select(a => {
-                            if (a.Events.Count == 0) return AppendEventsResult.NoOp;
-
                             var streamName = a.StreamName.ToString();
 
                             return responseMap.TryGetValue(streamName, out var revision)
                                 ? new AppendEventsResult((ulong)result.Position, revision)
-                                : AppendEventsResult.NoOp;
+                                : throw new InvalidOperationException($"No response received for stream {streamName}");
                         }
                     )
                     .ToArray();

@@ -206,12 +206,6 @@ public abstract class SqlEventStoreBase<TConnection, TTransaction>(IEventSeriali
             var i       = 0;
 
             foreach (var append in appends) {
-                if (append.Events.Count == 0) {
-                    results[i++] = AppendEventsResult.NoOp;
-
-                    continue;
-                }
-
                 var persistedEvents = append.Events.Where(x => x.Payload != null).Select(Convert).ToArray();
 
                 await using var cmd = GetAppendCommand(connection, (TTransaction)transaction, append.StreamName, append.ExpectedVersion, persistedEvents);

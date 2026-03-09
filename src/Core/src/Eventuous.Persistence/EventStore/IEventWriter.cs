@@ -37,9 +37,10 @@ public interface IEventWriter {
         var i       = 0;
 
         foreach (var append in appends) {
-            results[i++] = append.Events.Count == 0
-                ? AppendEventsResult.NoOp
-                : await AppendEvents(append.StreamName, append.ExpectedVersion, append.Events, cancellationToken);
+            Ensure.NotNull(append.Events);
+            if (append.Events.Count == 0) throw new InvalidOperationException($"Append to stream {append.StreamName} has no events");
+
+            results[i++] = await AppendEvents(append.StreamName, append.ExpectedVersion, append.Events, cancellationToken).NoContext();
         }
 
         return results;

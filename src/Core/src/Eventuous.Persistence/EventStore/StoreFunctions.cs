@@ -62,11 +62,15 @@ public static class StoreFunctions {
             ) {
             if (streams.Count == 0) return [];
 
-            var appends = streams.Select(s => new NewStreamAppend(
-                        s.StreamName,
-                        s.ExpectedVersion,
-                        s.Changes.Select(evt => ToStreamEvent(evt, amendEvent)).ToArray()
-                    )
+            var appends = streams.Select(s => {
+                        Ensure.NotNull(s.Changes);
+
+                        return new NewStreamAppend(
+                            s.StreamName,
+                            s.ExpectedVersion,
+                            s.Changes.Select(evt => ToStreamEvent(evt, amendEvent)).ToArray()
+                        );
+                    }
                 )
                 .ToArray();
 

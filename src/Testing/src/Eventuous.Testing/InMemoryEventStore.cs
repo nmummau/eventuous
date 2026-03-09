@@ -33,12 +33,6 @@ public class InMemoryEventStore : IEventStore {
         var i       = 0;
 
         foreach (var append in appends) {
-            if (append.Events.Count == 0) {
-                results[i++] = AppendEventsResult.NoOp;
-
-                continue;
-            }
-
             var existing = _storage.GetOrAdd(append.StreamName, s => new(s));
             existing.AppendEvents(append.ExpectedVersion, append.Events);
             _global.AddRange(append.Events.Select((x, j) => new StreamEvent(x.Id, x.Payload, x.Metadata, "application/json", _global.Count + j)));

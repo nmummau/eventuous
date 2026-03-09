@@ -42,11 +42,15 @@ static class WriterExtensions {
             ) {
             if (appends.Count == 0) return [];
 
-            var streamAppends = appends.Select(a => new NewStreamAppend(
-                        a.StreamName,
-                        a.ExpectedVersion,
-                        a.Events.Select(evt => ToStreamEvent(evt, amendEvent)).ToArray()
-                    )
+            var streamAppends = appends.Select(a => {
+                        Ensure.NotNull(a.Events);
+
+                        return new NewStreamAppend(
+                            a.StreamName,
+                            a.ExpectedVersion,
+                            a.Events.Select(evt => ToStreamEvent(evt, amendEvent)).ToArray()
+                        );
+                    }
                 )
                 .ToArray();
 
