@@ -4,52 +4,92 @@
 namespace Eventuous;
 
 public static class StoreFunctions {
-    /// <summary>
-    /// Stores a collection of events to the event store
-    /// </summary>
     /// <param name="eventWriter">Event writer or event store</param>
-    /// <param name="streamName">Name of the stream where events will be appended to</param>
-    /// <param name="expectedStreamVersion">Expected version of the stream in the event store</param>
-    /// <param name="changes">Collection of events to store</param>
-    /// <param name="amendEvent">Optional: function to add extra information to an event before it gets stored</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Append events result</returns>
-    /// <exception cref="Exception">Any exception that occurred in the event store</exception>
-    /// <exception cref="OptimisticConcurrencyException">Gets thrown if the expected stream version mismatches with the given original stream version</exception>
-    [RequiresDynamicCode(AttrConstants.DynamicSerializationMessage)]
-    [RequiresUnreferencedCode(AttrConstants.DynamicSerializationMessage)]
-    public static async Task<AppendEventsResult> Store(
-            this IEventWriter           eventWriter,
-            StreamName                  streamName,
-            ExpectedStreamVersion       expectedStreamVersion,
-            IReadOnlyCollection<object> changes,
-            AmendEvent?                 amendEvent        = null,
-            CancellationToken           cancellationToken = default
-        ) {
-        Ensure.NotNull(changes);
+    extension(IEventWriter eventWriter) {
+        /// <summary>
+        /// Stores a collection of events in the event store
+        /// </summary>
+        /// <param name="streamName">Name of the stream where events will be appended to</param>
+        /// <param name="expectedStreamVersion">Expected version of the stream in the event store</param>
+        /// <param name="changes">Collection of events to store</param>
+        /// <param name="amendEvent">Optional: function to add extra information to an event before it gets stored</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>Append events result</returns>
+        /// <exception cref="Exception">Any exception that occurred in the event store</exception>
+        /// <exception cref="OptimisticConcurrencyException">Gets thrown if the expected stream version mismatches with the given original stream version</exception>
+        [RequiresDynamicCode(AttrConstants.DynamicSerializationMessage)]
+        [RequiresUnreferencedCode(AttrConstants.DynamicSerializationMessage)]
+        public async Task<AppendEventsResult> Store(
+                StreamName                  streamName,
+                ExpectedStreamVersion       expectedStreamVersion,
+                IReadOnlyCollection<object> changes,
+                AmendEvent?                 amendEvent        = null,
+                CancellationToken           cancellationToken = default
+            ) {
+            Ensure.NotNull(changes);
 
-        if (changes.Count == 0) return AppendEventsResult.NoOp;
+            if (changes.Count == 0) return AppendEventsResult.NoOp;
 
-        try {
-            var result = await eventWriter.AppendEvents(
-                    streamName,
-                    expectedStreamVersion,
-                    changes.Select(ToStreamEvent).ToArray(),
-                    cancellationToken
-                )
-                .NoContext();
+            try {
+                var result = await eventWriter.AppendEvents(
+                        streamName,
+                        expectedStreamVersion,
+                        changes.Select(ToStreamEvent).ToArray(),
+                        cancellationToken
+                    )
+                    .NoContext();
 
-            return result;
-        } catch (Exception e) {
-            throw e.InnerException?.Message.Contains("WrongExpectedVersion") == true
-                ? new OptimisticConcurrencyException(streamName, e)
-                : e;
+                return result;
+            } catch (Exception e) {
+                throw e.InnerException?.Message.Contains("WrongExpectedVersion") == true
+                    ? new OptimisticConcurrencyException(streamName, e)
+                    : e;
+            }
+
+            NewStreamEvent ToStreamEvent(object evt) {
+                var streamEvent = new NewStreamEvent(Guid.NewGuid(), evt, new());
+
+                return amendEvent?.Invoke(streamEvent) ?? streamEvent;
+            }
         }
 
-        NewStreamEvent ToStreamEvent(object evt) {
-            var streamEvent = new NewStreamEvent(Guid.NewGuid(), evt, new());
+        [RequiresDynamicCode(AttrConstants.DynamicSerializationMessage)]
+        [RequiresUnreferencedCode(AttrConstants.DynamicSerializationMessage)]
+        public async Task<AppendEventsResult[]> Store(
+                IReadOnlyCollection<(StreamName StreamName, ExpectedStreamVersion ExpectedVersion, IReadOnlyCollection<object> Changes)> streams,
+                AmendEvent?                                                                                                              amendEvent        = null,
+                CancellationToken                                                                                                        cancellationToken = default
+            ) {
+            if (streams.Count == 0) return [];
 
-            return amendEvent?.Invoke(streamEvent) ?? streamEvent;
+            var appends = streams.Select(s => {
+                        Ensure.NotNull(s.Changes);
+
+                        return new NewStreamAppend(
+                            s.StreamName,
+                            s.ExpectedVersion,
+                            s.Changes.Select(evt => ToStreamEvent(evt, amendEvent)).ToArray()
+                        );
+                    }
+                )
+                .ToArray();
+
+            try {
+                return await eventWriter.AppendEvents(appends, cancellationToken).NoContext();
+            } catch (Exception e) {
+                throw e.InnerException?.Message.Contains("WrongExpectedVersion") == true
+                    ? new OptimisticConcurrencyException(
+                        new StreamName(string.Join(", ", streams.Select(s => s.StreamName.ToString()))),
+                        e
+                    )
+                    : e;
+            }
+
+            static NewStreamEvent ToStreamEvent(object evt, AmendEvent? amendEvent) {
+                var streamEvent = new NewStreamEvent(Guid.NewGuid(), evt, new());
+
+                return amendEvent?.Invoke(streamEvent) ?? streamEvent;
+            }
         }
     }
 

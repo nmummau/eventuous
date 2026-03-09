@@ -143,6 +143,7 @@ public abstract class SqlEventStoreBase<TConnection, TTransaction>(IEventSeriali
             FailedToDeserialize failed       => throw new SerializationException($"Can't deserialize {evt.MessageType}: {failed.Error}"),
             _                                => throw new("Unknown deserialization result")
         };
+
         StreamEvent AsStreamEvent(object payload) => new(evt.MessageId, payload, meta ?? new Metadata(), ContentType, evt.StreamPosition);
     }
 
@@ -177,6 +178,53 @@ public abstract class SqlEventStoreBase<TConnection, TTransaction>(IEventSeriali
             PersistenceEventSource.Log.UnableToAppendEvents(stream, e);
 
             throw IsConflict(e) ? new AppendToStreamException(stream, e) : e;
+        }
+
+        [RequiresUnreferencedCode("Calls Eventuous.IEventSerializer.SerializeEvent(Object)")]
+        [RequiresDynamicCode("Calls Eventuous.IEventSerializer.SerializeEvent(Object)")]
+        NewPersistedEvent Convert(NewStreamEvent evt) {
+            var data = Serializer.SerializeEvent(evt.Payload!);
+            var meta = MetaSerializer.Serialize(evt.Metadata);
+
+            return new(evt.Id, data.EventType, AsString(data.Payload), AsString(meta));
+        }
+
+        string AsString(ReadOnlySpan<byte> bytes) => Encoding.UTF8.GetString(bytes);
+    }
+
+    /// <inheritdoc />
+    [RequiresDynamicCode(Constants.DynamicSerializationMessage)]
+    [RequiresUnreferencedCode(Constants.DynamicSerializationMessage)]
+    public virtual async Task<AppendEventsResult[]> AppendEvents(IReadOnlyCollection<NewStreamAppend> appends, CancellationToken cancellationToken) {
+        if (appends.Count == 0) return [];
+
+        await using var connection  = await OpenConnection(cancellationToken).NoContext();
+        await using var transaction = await connection.BeginTransactionAsync(cancellationToken).NoContext();
+
+        try {
+            var results = new AppendEventsResult[appends.Count];
+            var i       = 0;
+
+            foreach (var append in appends) {
+                var persistedEvents = append.Events.Where(x => x.Payload != null).Select(Convert).ToArray();
+
+                await using var cmd = GetAppendCommand(connection, (TTransaction)transaction, append.StreamName, append.ExpectedVersion, persistedEvents);
+
+                await using var reader = await cmd.ExecuteReaderAsync(cancellationToken).NoContext();
+                await reader.ReadAsync(cancellationToken).NoContext();
+                results[i++] = new((ulong)reader.GetInt64(1), reader.GetInt32(0));
+            }
+
+            await transaction.CommitAsync(cancellationToken).NoContext();
+
+            return results;
+        } catch (Exception e) {
+            await transaction.RollbackAsync(cancellationToken).NoContext();
+
+            var streamNames = string.Join(", ", appends.Select(a => a.StreamName.ToString()));
+            PersistenceEventSource.Log.UnableToAppendEvents(streamNames, e);
+
+            throw IsConflict(e) ? new AppendToStreamException(streamNames, e) : e;
         }
 
         [RequiresUnreferencedCode("Calls Eventuous.IEventSerializer.SerializeEvent(Object)")]

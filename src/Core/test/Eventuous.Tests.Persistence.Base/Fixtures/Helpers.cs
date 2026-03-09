@@ -31,5 +31,8 @@ public static class Helpers {
 
         public Task<AppendEventsResult> StoreChanges(StreamName stream, object evt, ExpectedStreamVersion version)
             => fixture.EventStore.Store(stream, version, [evt]);
+
+        public Task<AppendEventsResult[]> AppendEventsToMultipleStreams(IReadOnlyCollection<NewStreamAppend> appends)
+            => fixture.EventStore.AppendEvents(appends, default);
     }
 }

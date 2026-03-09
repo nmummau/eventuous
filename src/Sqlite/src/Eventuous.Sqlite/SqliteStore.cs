@@ -90,82 +90,10 @@ public class SqliteStore : SqlEventStoreBase<SqliteConnection, SqliteTransaction
         await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellationToken).NoContext();
 
         try {
-            // Ensure stream exists (idempotent insert)
-            await using (var insertStreamCmd = connection.GetTextCommand(
-                $"INSERT OR IGNORE INTO {Schema.StreamsTable} (stream_name, version) VALUES (@name, -1)", transaction
-            )) {
-                insertStreamCmd.Parameters.AddWithValue("@name", stream.ToString());
-                await insertStreamCmd.ExecuteNonQueryAsync(cancellationToken).NoContext();
-            }
-
-            // Get current stream state
-            int streamId;
-            int currentVersion;
-
-            await using (var selectCmd = connection.GetTextCommand(
-                $"SELECT stream_id, version FROM {Schema.StreamsTable} WHERE stream_name = @name", transaction
-            )) {
-                selectCmd.Parameters.AddWithValue("@name", stream.ToString());
-                await using var reader = await selectCmd.ExecuteReaderAsync(cancellationToken).NoContext();
-                await reader.ReadAsync(cancellationToken).NoContext();
-                streamId       = reader.GetInt32(0);
-                currentVersion = reader.GetInt32(1);
-            }
-
-            // Validate expected version
-            if (expectedVersion != ExpectedStreamVersion.Any && currentVersion != expectedVersion.Value) {
-                throw new AppendToStreamException(
-                    stream,
-                    new InvalidOperationException(
-                        $"WrongExpectedVersion {expectedVersion.Value}, current version {currentVersion}"
-                    )
-                );
-            }
-
-            // Insert events
-            var  now                 = DateTime.UtcNow.ToString("o");
-            long lastGlobalPosition = 0;
-
-            for (var i = 0; i < persistedEvents.Length; i++) {
-                var evt            = persistedEvents[i];
-                var streamPosition = currentVersion + i + 1;
-
-                await using var insertCmd = connection.GetTextCommand(
-                    $"""
-                     INSERT INTO {Schema.MessagesTable}
-                         (message_id, message_type, stream_id, stream_position, json_data, json_metadata, created)
-                     VALUES (@message_id, @message_type, @stream_id, @stream_position, @json_data, @json_metadata, @created)
-                     RETURNING global_position
-                     """,
-                    transaction
-                );
-
-                insertCmd.Parameters.AddWithValue("@message_id", evt.MessageId.ToString());
-                insertCmd.Parameters.AddWithValue("@message_type", evt.MessageType);
-                insertCmd.Parameters.AddWithValue("@stream_id", streamId);
-                insertCmd.Parameters.AddWithValue("@stream_position", streamPosition);
-                insertCmd.Parameters.AddWithValue("@json_data", evt.JsonData);
-                insertCmd.Parameters.AddWithValue("@json_metadata", (object?)evt.JsonMetadata ?? DBNull.Value);
-                insertCmd.Parameters.AddWithValue("@created", now);
-
-                var result = await insertCmd.ExecuteScalarAsync(cancellationToken).NoContext();
-                lastGlobalPosition = System.Convert.ToInt64(result);
-            }
-
-            // Update stream version
-            var newVersion = currentVersion + persistedEvents.Length;
-
-            await using (var updateCmd = connection.GetTextCommand(
-                $"UPDATE {Schema.StreamsTable} SET version = @version WHERE stream_id = @id", transaction
-            )) {
-                updateCmd.Parameters.AddWithValue("@version", newVersion);
-                updateCmd.Parameters.AddWithValue("@id", streamId);
-                await updateCmd.ExecuteNonQueryAsync(cancellationToken).NoContext();
-            }
-
+            var result = await AppendToStream(connection, transaction, stream, expectedVersion, persistedEvents, cancellationToken);
             await transaction.CommitAsync(cancellationToken).NoContext();
 
-            return new AppendEventsResult((ulong)lastGlobalPosition, newVersion);
+            return result;
         } catch (AppendToStreamException) {
             await transaction.RollbackAsync(cancellationToken).NoContext();
 
@@ -176,18 +104,142 @@ public class SqliteStore : SqlEventStoreBase<SqliteConnection, SqliteTransaction
 
             throw IsConflict(e) ? new AppendToStreamException(stream, e) : e;
         }
+    }
 
-        [RequiresUnreferencedCode("Calls Eventuous.IEventSerializer.SerializeEvent(Object)")]
-        [RequiresDynamicCode("Calls Eventuous.IEventSerializer.SerializeEvent(Object)")]
-        NewPersistedEvent Convert(NewStreamEvent evt) {
-            var data = Serializer.SerializeEvent(evt.Payload!);
-            var meta = MetaSerializer.Serialize(evt.Metadata);
+    /// <inheritdoc />
+    [RequiresDynamicCode("Only works with AOT when using DefaultStaticEventSerializer")]
+    [RequiresUnreferencedCode("Only works with AOT when using DefaultStaticEventSerializer")]
+    public override async Task<AppendEventsResult[]> AppendEvents(IReadOnlyCollection<NewStreamAppend> appends, CancellationToken cancellationToken) {
+        if (appends.Count == 0) return [];
 
-            return new(evt.Id, data.EventType, AsString(data.Payload), AsString(meta));
+        await using var connection  = await OpenConnection(cancellationToken).NoContext();
+        await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellationToken).NoContext();
+
+        try {
+            var results = new AppendEventsResult[appends.Count];
+            var i       = 0;
+
+            foreach (var append in appends) {
+                var persistedEvents = append.Events.Where(x => x.Payload != null).Select(Convert).ToArray();
+
+                results[i++] = persistedEvents.Length == 0
+                    ? AppendEventsResult.NoOp
+                    : await AppendToStream(connection, transaction, append.StreamName, append.ExpectedVersion, persistedEvents, cancellationToken);
+            }
+
+            await transaction.CommitAsync(cancellationToken).NoContext();
+
+            return results;
+        } catch (AppendToStreamException) {
+            await transaction.RollbackAsync(cancellationToken).NoContext();
+
+            throw;
+        } catch (Exception e) {
+            await transaction.RollbackAsync(cancellationToken).NoContext();
+            var streamNames = string.Join(", ", appends.Select(a => a.StreamName.ToString()));
+            PersistenceEventSource.Log.UnableToAppendEvents(streamNames, e);
+
+            throw IsConflict(e) ? new AppendToStreamException(streamNames, e) : e;
+        }
+    }
+
+    async Task<AppendEventsResult> AppendToStream(
+            SqliteConnection      connection,
+            SqliteTransaction     transaction,
+            StreamName            stream,
+            ExpectedStreamVersion expectedVersion,
+            NewPersistedEvent[]   persistedEvents,
+            CancellationToken     cancellationToken
+        ) {
+        // Ensure stream exists (idempotent insert)
+        await using (var insertStreamCmd = connection.GetTextCommand(
+                         $"INSERT OR IGNORE INTO {Schema.StreamsTable} (stream_name, version) VALUES (@name, -1)",
+                         transaction
+                     )) {
+            insertStreamCmd.Parameters.AddWithValue("@name", stream.ToString());
+            await insertStreamCmd.ExecuteNonQueryAsync(cancellationToken).NoContext();
         }
 
-        string AsString(ReadOnlySpan<byte> bytes) => Encoding.UTF8.GetString(bytes);
+        // Get current stream state
+        int streamId;
+        int currentVersion;
+
+        await using (var selectCmd = connection.GetTextCommand(
+                         $"SELECT stream_id, version FROM {Schema.StreamsTable} WHERE stream_name = @name",
+                         transaction
+                     )) {
+            selectCmd.Parameters.AddWithValue("@name", stream.ToString());
+            await using var reader = await selectCmd.ExecuteReaderAsync(cancellationToken).NoContext();
+            await reader.ReadAsync(cancellationToken).NoContext();
+            streamId       = reader.GetInt32(0);
+            currentVersion = reader.GetInt32(1);
+        }
+
+        // Validate expected version
+        if (expectedVersion != ExpectedStreamVersion.Any && currentVersion != expectedVersion.Value) {
+            throw new AppendToStreamException(
+                stream,
+                new InvalidOperationException(
+                    $"WrongExpectedVersion {expectedVersion.Value}, current version {currentVersion}"
+                )
+            );
+        }
+
+        // Insert events
+        var  now                = DateTime.UtcNow.ToString("o");
+        long lastGlobalPosition = 0;
+
+        for (var i = 0; i < persistedEvents.Length; i++) {
+            var evt            = persistedEvents[i];
+            var streamPosition = currentVersion + i + 1;
+
+            await using var insertCmd = connection.GetTextCommand(
+                $"""
+                 INSERT INTO {Schema.MessagesTable}
+                     (message_id, message_type, stream_id, stream_position, json_data, json_metadata, created)
+                 VALUES (@message_id, @message_type, @stream_id, @stream_position, @json_data, @json_metadata, @created)
+                 RETURNING global_position
+                 """,
+                transaction
+            );
+
+            insertCmd.Parameters.AddWithValue("@message_id", evt.MessageId.ToString());
+            insertCmd.Parameters.AddWithValue("@message_type", evt.MessageType);
+            insertCmd.Parameters.AddWithValue("@stream_id", streamId);
+            insertCmd.Parameters.AddWithValue("@stream_position", streamPosition);
+            insertCmd.Parameters.AddWithValue("@json_data", evt.JsonData);
+            insertCmd.Parameters.AddWithValue("@json_metadata", (object?)evt.JsonMetadata ?? DBNull.Value);
+            insertCmd.Parameters.AddWithValue("@created", now);
+
+            var result = await insertCmd.ExecuteScalarAsync(cancellationToken).NoContext();
+            lastGlobalPosition = System.Convert.ToInt64(result);
+        }
+
+        // Update stream version
+        var newVersion = currentVersion + persistedEvents.Length;
+
+        await using (var updateCmd = connection.GetTextCommand(
+                         $"UPDATE {Schema.StreamsTable} SET version = @version WHERE stream_id = @id",
+                         transaction
+                     )) {
+            updateCmd.Parameters.AddWithValue("@version", newVersion);
+            updateCmd.Parameters.AddWithValue("@id", streamId);
+            await updateCmd.ExecuteNonQueryAsync(cancellationToken).NoContext();
+        }
+
+        return new((ulong)lastGlobalPosition, newVersion);
     }
+
+    [RequiresUnreferencedCode("Calls Eventuous.IEventSerializer.SerializeEvent(Object)")]
+    [RequiresDynamicCode("Calls Eventuous.IEventSerializer.SerializeEvent(Object)")]
+    NewPersistedEvent Convert(NewStreamEvent evt) {
+        var data = Serializer.SerializeEvent(evt.Payload!);
+        var meta = MetaSerializer.Serialize(evt.Metadata);
+
+        return new(evt.Id, data.EventType, AsString(data.Payload), AsString(meta));
+    }
+
+    static string AsString(ReadOnlySpan<byte> bytes) => Encoding.UTF8.GetString(bytes);
 
     protected override bool IsStreamNotFound(Exception exception) => false;
 
