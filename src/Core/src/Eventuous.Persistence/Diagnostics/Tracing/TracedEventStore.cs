@@ -32,6 +32,14 @@ public class TracedEventStore(IEventStore eventStore) : BaseTracer, IEventStore 
 
     [RequiresDynamicCode(AttrConstants.DynamicSerializationMessage)]
     [RequiresUnreferencedCode(AttrConstants.DynamicSerializationMessage)]
+    public Task<AppendEventsResult[]> AppendEvents(
+            IReadOnlyCollection<NewStreamAppend> appends,
+            CancellationToken                    cancellationToken
+        )
+        => Writer.AppendEvents(appends, cancellationToken);
+
+    [RequiresDynamicCode(AttrConstants.DynamicSerializationMessage)]
+    [RequiresUnreferencedCode(AttrConstants.DynamicSerializationMessage)]
     public Task<StreamEvent[]> ReadEvents(StreamName stream, StreamReadPosition start, int count, bool failIfNotFound, CancellationToken cancellationToken)
         => Reader.ReadEvents(stream, start, count, failIfNotFound, cancellationToken);
 
