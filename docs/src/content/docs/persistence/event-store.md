@@ -32,7 +32,34 @@ Right now, we only have four operations for an event store:
 | Function              | What's it for                                                                                                 |
 |-----------------------|---------------------------------------------------------------------------------------------------------------|
 | `AppendEvents`        | Append one or more events to a given stream.                                                                  |
+| `AppendEvents` (multi-stream) | Append events to multiple streams in a single operation.                                               |
 | `ReadEvents`          | Read events from a stream forwards, from a given start position.                                              |
+
+### Multi-stream append
+
+You can append events to multiple streams in a single operation using the multi-stream overload of `AppendEvents`:
+
+```csharp
+var appends = new NewStreamAppend[]
+{
+    new(orderStream, ExpectedStreamVersion.NoStream, orderEvents),
+    new(inventoryStream, new ExpectedStreamVersion(currentVersion), inventoryEvents)
+};
+
+AppendEventsResult[] results = await eventStore.AppendEvents(appends, cancellationToken);
+```
+
+Each element specifies a target stream, its expected version, and the events to append. The return array contains one `AppendEventsResult` per stream in the same order as the input.
+
+**Atomicity guarantees vary by store:**
+
+| Store | Atomicity |
+|---|---|
+| KurrentDB (25.1+) | Atomic — all streams updated or entire operation fails |
+| PostgreSQL | Atomic — uses a single database transaction |
+| SQL Server | Atomic — uses a single database transaction |
+| SQLite | Atomic — uses a single database transaction |
+| Default (other stores) | Not atomic — streams are written sequentially, fails on first error |
 
 Eventuous has several implementations of the event store: 
  * [KurrentDB](../../infra/esdb)
