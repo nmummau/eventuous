@@ -16,6 +16,17 @@ public interface IProducer {
     [RequiresDynamicCode(AttrConstants.DynamicSerializationMessage)]
     [RequiresUnreferencedCode(AttrConstants.DynamicSerializationMessage)]
     Task Produce(StreamName stream, IEnumerable<ProducedMessage> messages, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Produce messages to multiple streams in parallel.
+    /// </summary>
+    /// <param name="requests">Collection of produce requests, one per target stream</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [RequiresDynamicCode(AttrConstants.DynamicSerializationMessage)]
+    [RequiresUnreferencedCode(AttrConstants.DynamicSerializationMessage)]
+    Task Produce(IReadOnlyCollection<ProduceRequest> requests, CancellationToken cancellationToken = default)
+        => Task.WhenAll(requests.Select(r => Produce(r.Stream, r.Messages, cancellationToken)));
 }
 
 [PublicAPI]
