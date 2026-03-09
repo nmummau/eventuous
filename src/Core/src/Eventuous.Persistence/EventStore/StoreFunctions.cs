@@ -53,6 +53,37 @@ public static class StoreFunctions {
         }
     }
 
+    [RequiresDynamicCode(AttrConstants.DynamicSerializationMessage)]
+    [RequiresUnreferencedCode(AttrConstants.DynamicSerializationMessage)]
+    public static async Task<AppendEventsResult[]> Store(
+            this IEventWriter eventWriter,
+            IReadOnlyCollection<(StreamName StreamName, ExpectedStreamVersion ExpectedVersion, IReadOnlyCollection<object> Changes)> streams,
+            AmendEvent?       amendEvent        = null,
+            CancellationToken cancellationToken = default
+        ) {
+        if (streams.Count == 0) return [];
+
+        var appends = streams.Select(s => new NewStreamAppend(
+            s.StreamName,
+            s.ExpectedVersion,
+            s.Changes.Select(evt => ToStreamEvent(evt, amendEvent)).ToArray()
+        )).ToArray();
+
+        try {
+            return await eventWriter.AppendEvents(appends, cancellationToken).NoContext();
+        } catch (Exception e) {
+            throw e.InnerException?.Message.Contains("WrongExpectedVersion") == true
+                ? new OptimisticConcurrencyException(
+                    new StreamName(string.Join(", ", streams.Select(s => s.StreamName.ToString()))), e)
+                : e;
+        }
+
+        static NewStreamEvent ToStreamEvent(object evt, AmendEvent? amendEvent) {
+            var streamEvent = new NewStreamEvent(Guid.NewGuid(), evt, new());
+            return amendEvent?.Invoke(streamEvent) ?? streamEvent;
+        }
+    }
+
     /// <summary>
     /// Reads a stream from the event store to a collection of <seealso cref="StreamEvent"/>
     /// </summary>

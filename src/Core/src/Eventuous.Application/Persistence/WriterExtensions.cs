@@ -31,4 +31,35 @@ static class WriterExtensions {
             return amendEvent?.Invoke(streamEvent) ?? streamEvent;
         }
     }
+
+    [RequiresDynamicCode(AttrConstants.DynamicSerializationMessage)]
+    [RequiresUnreferencedCode(AttrConstants.DynamicSerializationMessage)]
+    public static async Task<AppendEventsResult[]> Store(
+        this IEventWriter writer,
+        IReadOnlyCollection<ProposedAppend> appends,
+        AmendEvent? amendEvent,
+        CancellationToken cancellationToken
+    ) {
+        if (appends.Count == 0) return [];
+
+        var streamAppends = appends.Select(a => new NewStreamAppend(
+            a.StreamName,
+            a.ExpectedVersion,
+            a.Events.Select(evt => ToStreamEvent(evt, amendEvent)).ToArray()
+        )).ToArray();
+
+        try {
+            return await writer.AppendEvents(streamAppends, cancellationToken).NoContext();
+        } catch (Exception e) {
+            throw e.InnerException?.Message.Contains("WrongExpectedVersion") == true
+                ? new OptimisticConcurrencyException(
+                    new StreamName(string.Join(", ", appends.Select(a => a.StreamName.ToString()))), e)
+                : e;
+        }
+
+        static NewStreamEvent ToStreamEvent(ProposedEvent evt, AmendEvent? amendEvent) {
+            var streamEvent = new NewStreamEvent(Guid.NewGuid(), evt.Data, evt.Metadata);
+            return amendEvent?.Invoke(streamEvent) ?? streamEvent;
+        }
+    }
 }
