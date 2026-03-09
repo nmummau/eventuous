@@ -54,4 +54,22 @@ public abstract class BaseProducer<TProduceOptions> : IProducer<TProduceOptions>
             return (act, [producedMessage]);
         }
     }
+
+    /// <inheritdoc />
+    [RequiresDynamicCode(AttrConstants.DynamicSerializationMessage)]
+    [RequiresUnreferencedCode(AttrConstants.DynamicSerializationMessage)]
+    public Task Produce(IReadOnlyCollection<ProduceRequest<TProduceOptions>> requests, CancellationToken cancellationToken = default) {
+        if (requests.Count == 0) return Task.CompletedTask;
+
+        return Task.WhenAll(requests.Select(r => Produce(r.Stream, r.Messages, r.Options, cancellationToken)));
+    }
+
+    /// <inheritdoc />
+    [RequiresDynamicCode(AttrConstants.DynamicSerializationMessage)]
+    [RequiresUnreferencedCode(AttrConstants.DynamicSerializationMessage)]
+    public Task Produce(IReadOnlyCollection<ProduceRequest> requests, CancellationToken cancellationToken = default) {
+        if (requests.Count == 0) return Task.CompletedTask;
+
+        return Task.WhenAll(requests.Select(r => Produce(r.Stream, r.Messages, cancellationToken)));
+    }
 }
