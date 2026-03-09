@@ -17,7 +17,8 @@ public class AzureServiceBusFixture : IAsyncInitializer, IAsyncDisposable {
         .Build();
 
     public async Task InitializeAsync() {
-        await Container.StartAsync();
+        using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
+        await Container.StartAsync(cts.Token);
 
         ConnectionString = Container.GetConnectionString();
 
