@@ -12,6 +12,22 @@ class GatewayProducer<T>(IProducer<T> inner) : IProducer<T> where T : class {
         await inner.Produce(stream, messages, options, cancellationToken).NoContext();
     }
 
+    public async Task Produce(IReadOnlyCollection<ProduceRequest<T>> requests, CancellationToken cancellationToken = default) {
+        if (_isHostedService) { await WaitForInner(inner, cancellationToken).NoContext(); }
+
+        if (inner is BaseProducer<T> baseProducer) {
+            await baseProducer.Produce(requests, cancellationToken).NoContext();
+        } else {
+            await Task.WhenAll(requests.Select(r => inner.Produce(r.Stream, r.Messages, r.Options, cancellationToken))).NoContext();
+        }
+    }
+
+    public async Task Produce(IReadOnlyCollection<ProduceRequest> requests, CancellationToken cancellationToken = default) {
+        if (_isHostedService) { await WaitForInner(inner, cancellationToken).NoContext(); }
+
+        await ((IProducer)inner).Produce(requests, cancellationToken).NoContext();
+    }
+
     static async ValueTask WaitForInner(IProducer<T> inner, CancellationToken cancellationToken) {
         if (inner is not IHostedProducer hosted) return;
 

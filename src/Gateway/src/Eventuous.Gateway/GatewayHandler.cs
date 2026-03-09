@@ -35,27 +35,24 @@ class GatewayHandler<TProduceOptions>(
         }
 
         try {
-            var grouped = shovelMessages.GroupBy(x => x.TargetStream);
+            var contextMeta = GatewayMetaHelper.GetContextMeta(context);
 
-            await grouped.Select(x => ProduceToStream(x.Key, x)).WhenAll().NoContext();
+            var requests = shovelMessages
+                .GroupBy(x => x.TargetStream)
+                .Select(g => new ProduceRequest<TProduceOptions>(
+                    g.Key,
+                    g.Select(x => new ProducedMessage(x.Message, x.GetMeta(context), contextMeta) { OnAck = onAck, OnNack = onFail }),
+                    g.First().ProduceOptions
+                ))
+                .ToArray();
+
+            if (producer is GatewayProducer<TProduceOptions> gp)
+                await gp.Produce(requests, context.CancellationToken).NoContext();
+            else
+                await Task.WhenAll(requests.Select(r => producer.Produce(r.Stream, r.Messages, r.Options, context.CancellationToken))).NoContext();
         } catch (OperationCanceledException e) { context.Nack<GatewayHandler<TProduceOptions>>(e); }
 
         return awaitProduce ? EventHandlingStatus.Success : EventHandlingStatus.Pending;
-
-        Task ProduceToStream(StreamName streamName, IEnumerable<GatewayMessage<TProduceOptions>> toProduce)
-            => toProduce.Select(
-                    x => producer.Produce(
-                        streamName,
-                        x.Message,
-                        x.GetMeta(context),
-                        x.ProduceOptions,
-                        GatewayMetaHelper.GetContextMeta(context),
-                        onAck,
-                        onFail,
-                        context.CancellationToken
-                    )
-                )
-                .WhenAll();
     }
 }
 
