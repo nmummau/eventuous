@@ -21,4 +21,30 @@ public interface IEventWriter {
             IReadOnlyCollection<NewStreamEvent> events,
             CancellationToken                   cancellationToken
         );
+
+    /// <summary>
+    /// Append events to multiple streams. Default implementation calls single-stream AppendEvents
+    /// sequentially with fail-fast semantics (no cross-stream atomicity guarantee).
+    /// Stores that support atomic multi-stream writes should override this method.
+    /// </summary>
+    /// <param name="appends">Collection of stream appends to perform</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Array of append results, one per stream in the same order as input</returns>
+    [RequiresDynamicCode(AttrConstants.DynamicSerializationMessage)]
+    [RequiresUnreferencedCode(AttrConstants.DynamicSerializationMessage)]
+    async Task<AppendEventsResult[]> AppendEvents(
+        IReadOnlyCollection<NewStreamAppend> appends,
+        CancellationToken                    cancellationToken
+    ) {
+        var results = new AppendEventsResult[appends.Count];
+        var i = 0;
+
+        foreach (var append in appends) {
+            results[i++] = append.Events.Count == 0
+                ? AppendEventsResult.NoOp
+                : await AppendEvents(append.StreamName, append.ExpectedVersion, append.Events, cancellationToken);
+        }
+
+        return results;
+    }
 }

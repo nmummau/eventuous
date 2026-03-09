@@ -9,4 +9,11 @@ namespace Eventuous;
 public record struct NewStreamEvent(Guid Id, object? Payload, Metadata Metadata);
 
 [StructLayout(LayoutKind.Auto)]
+public record struct NewStreamAppend(
+    StreamName StreamName,
+    ExpectedStreamVersion ExpectedVersion,
+    IReadOnlyCollection<NewStreamEvent> Events
+);
+
+[StructLayout(LayoutKind.Auto)]
 public record struct StreamEvent(Guid Id, object? Payload, Metadata Metadata, string ContentType, long Revision, bool FromArchive = false);
