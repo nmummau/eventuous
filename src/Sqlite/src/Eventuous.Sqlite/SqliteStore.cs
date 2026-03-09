@@ -109,10 +109,7 @@ public class SqliteStore : SqlEventStoreBase<SqliteConnection, SqliteTransaction
     /// <inheritdoc />
     [RequiresDynamicCode("Only works with AOT when using DefaultStaticEventSerializer")]
     [RequiresUnreferencedCode("Only works with AOT when using DefaultStaticEventSerializer")]
-    public override async Task<AppendEventsResult[]> AppendEvents(
-            IReadOnlyCollection<NewStreamAppend> appends,
-            CancellationToken                    cancellationToken
-        ) {
+    public override async Task<AppendEventsResult[]> AppendEvents(IReadOnlyCollection<NewStreamAppend> appends, CancellationToken cancellationToken) {
         if (appends.Count == 0) return [];
 
         await using var connection  = await OpenConnection(cancellationToken).NoContext();
@@ -120,7 +117,7 @@ public class SqliteStore : SqlEventStoreBase<SqliteConnection, SqliteTransaction
 
         try {
             var results = new AppendEventsResult[appends.Count];
-            var i = 0;
+            var i       = 0;
 
             foreach (var append in appends) {
                 if (append.Events.Count == 0) {
@@ -162,8 +159,9 @@ public class SqliteStore : SqlEventStoreBase<SqliteConnection, SqliteTransaction
         ) {
         // Ensure stream exists (idempotent insert)
         await using (var insertStreamCmd = connection.GetTextCommand(
-            $"INSERT OR IGNORE INTO {Schema.StreamsTable} (stream_name, version) VALUES (@name, -1)", transaction
-        )) {
+                         $"INSERT OR IGNORE INTO {Schema.StreamsTable} (stream_name, version) VALUES (@name, -1)",
+                         transaction
+                     )) {
             insertStreamCmd.Parameters.AddWithValue("@name", stream.ToString());
             await insertStreamCmd.ExecuteNonQueryAsync(cancellationToken).NoContext();
         }
@@ -173,8 +171,9 @@ public class SqliteStore : SqlEventStoreBase<SqliteConnection, SqliteTransaction
         int currentVersion;
 
         await using (var selectCmd = connection.GetTextCommand(
-            $"SELECT stream_id, version FROM {Schema.StreamsTable} WHERE stream_name = @name", transaction
-        )) {
+                         $"SELECT stream_id, version FROM {Schema.StreamsTable} WHERE stream_name = @name",
+                         transaction
+                     )) {
             selectCmd.Parameters.AddWithValue("@name", stream.ToString());
             await using var reader = await selectCmd.ExecuteReaderAsync(cancellationToken).NoContext();
             await reader.ReadAsync(cancellationToken).NoContext();
@@ -193,7 +192,7 @@ public class SqliteStore : SqlEventStoreBase<SqliteConnection, SqliteTransaction
         }
 
         // Insert events
-        var  now                 = DateTime.UtcNow.ToString("o");
+        var  now                = DateTime.UtcNow.ToString("o");
         long lastGlobalPosition = 0;
 
         for (var i = 0; i < persistedEvents.Length; i++) {
@@ -226,14 +225,15 @@ public class SqliteStore : SqlEventStoreBase<SqliteConnection, SqliteTransaction
         var newVersion = currentVersion + persistedEvents.Length;
 
         await using (var updateCmd = connection.GetTextCommand(
-            $"UPDATE {Schema.StreamsTable} SET version = @version WHERE stream_id = @id", transaction
-        )) {
+                         $"UPDATE {Schema.StreamsTable} SET version = @version WHERE stream_id = @id",
+                         transaction
+                     )) {
             updateCmd.Parameters.AddWithValue("@version", newVersion);
             updateCmd.Parameters.AddWithValue("@id", streamId);
             await updateCmd.ExecuteNonQueryAsync(cancellationToken).NoContext();
         }
 
-        return new AppendEventsResult((ulong)lastGlobalPosition, newVersion);
+        return new((ulong)lastGlobalPosition, newVersion);
     }
 
     [RequiresUnreferencedCode("Calls Eventuous.IEventSerializer.SerializeEvent(Object)")]

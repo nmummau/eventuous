@@ -28,16 +28,14 @@ public class InMemoryEventStore : IEventStore {
     }
 
     /// <inheritdoc />
-    public Task<AppendEventsResult[]> AppendEvents(
-        IReadOnlyCollection<NewStreamAppend> appends,
-        CancellationToken cancellationToken
-    ) {
+    public Task<AppendEventsResult[]> AppendEvents(IReadOnlyCollection<NewStreamAppend> appends, CancellationToken cancellationToken) {
         var results = new AppendEventsResult[appends.Count];
-        var i = 0;
+        var i       = 0;
 
         foreach (var append in appends) {
             if (append.Events.Count == 0) {
                 results[i++] = AppendEventsResult.NoOp;
+
                 continue;
             }
 

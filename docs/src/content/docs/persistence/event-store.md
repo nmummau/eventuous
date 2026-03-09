@@ -29,22 +29,21 @@ All of those are immutable records.
 
 Right now, we only have four operations for an event store:
 
-| Function              | What's it for                                                                                                 |
-|-----------------------|---------------------------------------------------------------------------------------------------------------|
-| `AppendEvents`        | Append one or more events to a given stream.                                                                  |
-| `AppendEvents` (multi-stream) | Append events to multiple streams in a single operation.                                               |
-| `ReadEvents`          | Read events from a stream forwards, from a given start position.                                              |
+| Function                      | What's it for                                                    |
+|-------------------------------|------------------------------------------------------------------|
+| `AppendEvents`                | Append one or more events to a given stream.                     |
+| `AppendEvents` (multi-stream) | Append events to multiple streams in a single operation.         |
+| `ReadEvents`                  | Read events from a stream forwards, from a given start position. |
 
 ### Multi-stream append
 
 You can append events to multiple streams in a single operation using the multi-stream overload of `AppendEvents`:
 
 ```csharp
-var appends = new NewStreamAppend[]
-{
+NewStreamAppend[] appends = [
     new(orderStream, ExpectedStreamVersion.NoStream, orderEvents),
     new(inventoryStream, new ExpectedStreamVersion(currentVersion), inventoryEvents)
-};
+];
 
 AppendEventsResult[] results = await eventStore.AppendEvents(appends, cancellationToken);
 ```
@@ -53,22 +52,22 @@ Each element specifies a target stream, its expected version, and the events to 
 
 **Atomicity guarantees vary by store:**
 
-| Store | Atomicity |
-|---|---|
-| KurrentDB (25.1+) | Atomic — all streams updated or entire operation fails |
-| PostgreSQL | Atomic — uses a single database transaction |
-| SQL Server | Atomic — uses a single database transaction |
-| SQLite | Atomic — uses a single database transaction |
+| Store                  | Atomicity                                                           |
+|------------------------|---------------------------------------------------------------------|
+| KurrentDB (25.1+)      | Atomic — all streams updated or entire operation fails              |
+| PostgreSQL             | Atomic — uses a single database transaction                         |
+| SQL Server             | Atomic — uses a single database transaction                         |
+| SQLite                 | Atomic — uses a single database transaction                         |
 | Default (other stores) | Not atomic — streams are written sequentially, fails on first error |
 
-Eventuous has several implementations of the event store: 
+Eventuous has several implementations of the event store:
  * [KurrentDB](../../infra/esdb)
  * [PostgreSQL](../../infra/postgres)
  * [Microsoft SQL Server](../../infra/mssql)
  * [SQLite](../../infra/sqlite)
  * [Elasticsearch](../../infra/elastic)
 
-If you use one of the implementations provided, you won't need to know about the event store abstraction. It is required though if you want to implement it for your preferred database. 
+If you use one of the implementations provided, you won't need to know about the event store abstraction. It is required though if you want to implement it for your preferred database.
 
 :::tip
 Preferring KurrentDB will save you lots of time!

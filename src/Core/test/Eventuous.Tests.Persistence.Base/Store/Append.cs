@@ -63,7 +63,6 @@ public abstract class StoreAppendTests<T> where T : StoreFixtureBase {
         await Assert.That(() => _fixture.AppendEvent(stream, evt, new(3))!).Throws<AppendToStreamException>();
     }
 
-
     [Test]
     [Category("Store")]
     public async Task ShouldFailOnWrongVersionWithOptimisticConcurrencyException() {
@@ -87,8 +86,8 @@ public abstract class StoreAppendTests<T> where T : StoreFixtureBase {
 
         var results = await _fixture.AppendEventsToMultipleStreams(
             [
-                new NewStreamAppend(stream1, ExpectedStreamVersion.NoStream, [new NewStreamEvent(Guid.NewGuid(), evt1, new())]),
-                new NewStreamAppend(stream2, ExpectedStreamVersion.NoStream, [new NewStreamEvent(Guid.NewGuid(), evt2, new())])
+                new(stream1, ExpectedStreamVersion.NoStream, [new(Guid.NewGuid(), evt1, new())]),
+                new(stream2, ExpectedStreamVersion.NoStream, [new(Guid.NewGuid(), evt2, new())])
             ]
         );
 
@@ -108,8 +107,8 @@ public abstract class StoreAppendTests<T> where T : StoreFixtureBase {
 
         var results = await _fixture.AppendEventsToMultipleStreams(
             [
-                new NewStreamAppend(stream1, new(r1.NextExpectedVersion), [new NewStreamEvent(Guid.NewGuid(), Helpers.CreateEvent(), new())]),
-                new NewStreamAppend(stream2, new(r2.NextExpectedVersion), [new NewStreamEvent(Guid.NewGuid(), Helpers.CreateEvent(), new())])
+                new(stream1, new(r1.NextExpectedVersion), [new(Guid.NewGuid(), Helpers.CreateEvent(), new())]),
+                new(stream2, new(r2.NextExpectedVersion), [new(Guid.NewGuid(), Helpers.CreateEvent(), new())])
             ]
         );
 

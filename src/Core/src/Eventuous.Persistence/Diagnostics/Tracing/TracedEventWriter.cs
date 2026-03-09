@@ -44,22 +44,21 @@ public class TracedEventWriter(IEventWriter writer) : BaseTracer, IEventWriter {
 
     [RequiresDynamicCode(AttrConstants.DynamicSerializationMessage)]
     [RequiresUnreferencedCode(AttrConstants.DynamicSerializationMessage)]
-    public async Task<AppendEventsResult[]> AppendEvents(
-            IReadOnlyCollection<NewStreamAppend> appends,
-            CancellationToken                    cancellationToken
-        ) {
+    public async Task<AppendEventsResult[]> AppendEvents(IReadOnlyCollection<NewStreamAppend> appends, CancellationToken cancellationToken) {
         if (appends.Count == 0) return [];
 
-        var streamNames = new StreamName(string.Join(", ", appends.Select(a => a.StreamName.ToString())));
-        using var activity = StartActivity(streamNames, Operations.AppendEvents);
+        var       streamNames = new StreamName(string.Join(", ", appends.Select(a => a.StreamName.ToString())));
+        using var activity    = StartActivity(streamNames, Operations.AppendEvents);
 
         using var measure = Measure.Start(MetricsSource, new PersistenceMetricsContext(ComponentName, Operations.AppendEvents));
 
         var tracedAppends = appends.Select(a => new NewStreamAppend(
-            a.StreamName,
-            a.ExpectedVersion,
-            a.Events.Select(x => x with { Metadata = x.Metadata.AddActivityTags(activity) }).ToArray()
-        )).ToArray();
+                    a.StreamName,
+                    a.ExpectedVersion,
+                    a.Events.Select(x => x with { Metadata = x.Metadata.AddActivityTags(activity) }).ToArray()
+                )
+            )
+            .ToArray();
 
         try {
             var results = await writer.AppendEvents(tracedAppends, cancellationToken).NoContext();

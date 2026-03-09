@@ -35,10 +35,8 @@ public class TieredEventStore(IEventStore hotStore, IEventReader archiveReader) 
 
     [RequiresDynamicCode(AttrConstants.DynamicSerializationMessage)]
     [RequiresUnreferencedCode(AttrConstants.DynamicSerializationMessage)]
-    public Task<AppendEventsResult[]> AppendEvents(
-            IReadOnlyCollection<NewStreamAppend> appends,
-            CancellationToken                    cancellationToken
-        ) => hotStore.AppendEvents(appends, cancellationToken);
+    public Task<AppendEventsResult[]> AppendEvents(IReadOnlyCollection<NewStreamAppend> appends, CancellationToken cancellationToken)
+        => hotStore.AppendEvents(appends, cancellationToken);
 
     public async Task<bool> StreamExists(StreamName stream, CancellationToken cancellationToken = default) {
         var hotExists     = await hotStore.StreamExists(stream, cancellationToken);

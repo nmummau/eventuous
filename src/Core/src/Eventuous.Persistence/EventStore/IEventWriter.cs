@@ -32,12 +32,9 @@ public interface IEventWriter {
     /// <returns>Array of append results, one per stream in the same order as input</returns>
     [RequiresDynamicCode(AttrConstants.DynamicSerializationMessage)]
     [RequiresUnreferencedCode(AttrConstants.DynamicSerializationMessage)]
-    async Task<AppendEventsResult[]> AppendEvents(
-        IReadOnlyCollection<NewStreamAppend> appends,
-        CancellationToken                    cancellationToken
-    ) {
+    async Task<AppendEventsResult[]> AppendEvents(IReadOnlyCollection<NewStreamAppend> appends, CancellationToken cancellationToken) {
         var results = new AppendEventsResult[appends.Count];
-        var i = 0;
+        var i       = 0;
 
         foreach (var append in appends) {
             results[i++] = append.Events.Count == 0

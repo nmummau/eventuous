@@ -143,6 +143,7 @@ public abstract class SqlEventStoreBase<TConnection, TTransaction>(IEventSeriali
             FailedToDeserialize failed       => throw new SerializationException($"Can't deserialize {evt.MessageType}: {failed.Error}"),
             _                                => throw new("Unknown deserialization result")
         };
+
         StreamEvent AsStreamEvent(object payload) => new(evt.MessageId, payload, meta ?? new Metadata(), ContentType, evt.StreamPosition);
     }
 
@@ -194,10 +195,7 @@ public abstract class SqlEventStoreBase<TConnection, TTransaction>(IEventSeriali
     /// <inheritdoc />
     [RequiresDynamicCode(Constants.DynamicSerializationMessage)]
     [RequiresUnreferencedCode(Constants.DynamicSerializationMessage)]
-    public virtual async Task<AppendEventsResult[]> AppendEvents(
-            IReadOnlyCollection<NewStreamAppend> appends,
-            CancellationToken                    cancellationToken
-        ) {
+    public virtual async Task<AppendEventsResult[]> AppendEvents(IReadOnlyCollection<NewStreamAppend> appends, CancellationToken cancellationToken) {
         if (appends.Count == 0) return [];
 
         await using var connection  = await OpenConnection(cancellationToken).NoContext();
@@ -205,7 +203,7 @@ public abstract class SqlEventStoreBase<TConnection, TTransaction>(IEventSeriali
 
         try {
             var results = new AppendEventsResult[appends.Count];
-            var i = 0;
+            var i       = 0;
 
             foreach (var append in appends) {
                 if (append.Events.Count == 0) {
@@ -215,6 +213,7 @@ public abstract class SqlEventStoreBase<TConnection, TTransaction>(IEventSeriali
                 }
 
                 var persistedEvents = append.Events.Where(x => x.Payload != null).Select(Convert).ToArray();
+
                 await using var cmd = GetAppendCommand(connection, (TTransaction)transaction, append.StreamName, append.ExpectedVersion, persistedEvents);
 
                 await using var reader = await cmd.ExecuteReaderAsync(cancellationToken).NoContext();
