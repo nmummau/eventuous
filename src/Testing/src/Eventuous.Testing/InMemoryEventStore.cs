@@ -28,6 +28,29 @@ public class InMemoryEventStore : IEventStore {
     }
 
     /// <inheritdoc />
+    public Task<AppendEventsResult[]> AppendEvents(
+        IReadOnlyCollection<NewStreamAppend> appends,
+        CancellationToken cancellationToken
+    ) {
+        var results = new AppendEventsResult[appends.Count];
+        var i = 0;
+
+        foreach (var append in appends) {
+            if (append.Events.Count == 0) {
+                results[i++] = AppendEventsResult.NoOp;
+                continue;
+            }
+
+            var existing = _storage.GetOrAdd(append.StreamName, s => new(s));
+            existing.AppendEvents(append.ExpectedVersion, append.Events);
+            _global.AddRange(append.Events.Select((x, j) => new StreamEvent(x.Id, x.Payload, x.Metadata, "application/json", _global.Count + j)));
+            results[i++] = new AppendEventsResult((ulong)(_global.Count - 1), existing.Version);
+        }
+
+        return Task.FromResult(results);
+    }
+
+    /// <inheritdoc />
     public Task<StreamEvent[]> ReadEvents(StreamName stream, StreamReadPosition start, int count, bool failIfNotFound, CancellationToken cancellationToken)
         => Task.FromResult(FindStream(stream, failIfNotFound).GetEvents(start, count).ToArray());
 
