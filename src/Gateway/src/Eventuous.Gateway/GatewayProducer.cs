@@ -4,16 +4,14 @@
 namespace Eventuous.Gateway;
 
 class GatewayProducer<T>(IProducer<T> inner) : IProducer<T> where T : class {
-    readonly bool _isHostedService = inner is not IHostedProducer;
-
     public async Task Produce(StreamName stream, IEnumerable<ProducedMessage> messages, T? options, CancellationToken cancellationToken = default) {
-        if (_isHostedService) { await WaitForInner(inner, cancellationToken).NoContext(); }
+        await WaitForInner(inner, cancellationToken).NoContext();
 
         await inner.Produce(stream, messages, options, cancellationToken).NoContext();
     }
 
     public async Task Produce(IReadOnlyCollection<ProduceRequest<T>> requests, CancellationToken cancellationToken = default) {
-        if (_isHostedService) { await WaitForInner(inner, cancellationToken).NoContext(); }
+        await WaitForInner(inner, cancellationToken).NoContext();
 
         if (inner is BaseProducer<T> baseProducer) {
             await baseProducer.Produce(requests, cancellationToken).NoContext();
@@ -23,7 +21,7 @@ class GatewayProducer<T>(IProducer<T> inner) : IProducer<T> where T : class {
     }
 
     public async Task Produce(IReadOnlyCollection<ProduceRequest> requests, CancellationToken cancellationToken = default) {
-        if (_isHostedService) { await WaitForInner(inner, cancellationToken).NoContext(); }
+        await WaitForInner(inner, cancellationToken).NoContext();
 
         await ((IProducer)inner).Produce(requests, cancellationToken).NoContext();
     }
