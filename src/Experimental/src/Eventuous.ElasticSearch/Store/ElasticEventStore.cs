@@ -31,7 +31,7 @@ public class ElasticEventStore(IElasticClient client, ElasticEventStoreOptions? 
                 (ulong)position + 1,
                 evt.Payload,
                 evt.Metadata.ToHeaders(),
-                DateTime.Now
+                DateTime.UtcNow
             );
     }
 
