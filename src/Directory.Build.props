@@ -23,6 +23,7 @@
         <Optimize Condition=" '$(Optimize)' == '' ">false</Optimize>
     </PropertyGroup>
     <Import Project="$(RepoRoot)\props\Common.props"/>
+    <Import Project="$(RepoRoot)\props\PackAsAnalyzer.targets"/>
     <PropertyGroup Condition="$(MSBuildProjectName.StartsWith('Eventuous.Tests'))">
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>

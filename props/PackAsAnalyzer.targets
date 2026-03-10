@@ -1,0 +1,33 @@
+<Project>
+    <!--
+        Implements the PackAsAnalyzer convention used by dotnet/runtime.
+        ProjectReferences with PackAsAnalyzer="true" will:
+          1. Be treated as analyzers during build (OutputItemType=Analyzer)
+          2. Have their DLL included in analyzers/dotnet/cs/ in the NuGet package
+    -->
+    <Target Name="_ResolveAnalyzerProjectReferences"
+            BeforeTargets="CoreCompile"
+            Condition="@(ProjectReference->AnyHaveMetadataValue('PackAsAnalyzer', 'true'))">
+        <ItemGroup>
+            <ProjectReference Condition="'%(ProjectReference.PackAsAnalyzer)' == 'true'"
+                              OutputItemType="Analyzer"
+                              SetTargetFramework="TargetFramework=netstandard2.0" />
+        </ItemGroup>
+    </Target>
+
+    <Target Name="_IncludeAnalyzersInPackage"
+            BeforeTargets="_GetPackageFiles"
+            Condition="'$(IsPackable)' == 'true' and @(ProjectReference->AnyHaveMetadataValue('PackAsAnalyzer', 'true'))">
+        <MSBuild Projects="@(ProjectReference->WithMetadataValue('PackAsAnalyzer', 'true'))"
+                 Targets="GetTargetPath"
+                 Properties="TargetFramework=netstandard2.0">
+            <Output TaskParameter="TargetOutputs" ItemName="_AnalyzerDll" />
+        </MSBuild>
+        <ItemGroup>
+            <None Include="@(_AnalyzerDll)"
+                  Pack="true"
+                  PackagePath="analyzers/dotnet/cs"
+                  Visible="false" />
+        </ItemGroup>
+    </Target>
+</Project>
