@@ -382,7 +382,8 @@ public partial class KurrentDBEventStore : IEventStore {
                 payload,
                 DeserializeMetadata() ?? new Metadata(),
                 resolvedEvent.Event.ContentType,
-                resolvedEvent.Event.EventNumber.ToInt64()
+                resolvedEvent.Event.EventNumber.ToInt64(),
+                resolvedEvent.Event.Created
             );
     }
 

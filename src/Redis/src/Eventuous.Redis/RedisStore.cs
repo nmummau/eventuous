@@ -127,6 +127,6 @@ public class RedisStore : IEventReader, IEventWriter {
         };
 
         StreamEvent AsStreamEvent(object payload)
-            => new(Guid.Parse(evt[MessageId].ToString()), payload, meta ?? new Metadata(), ContentType, evt.Id.ToLong());
+            => new(Guid.Parse(evt[MessageId].ToString()), payload, meta ?? new Metadata(), ContentType, evt.Id.ToLong(), DateTime.Parse(evt[Created]!, CultureInfo.InvariantCulture));
     }
 }

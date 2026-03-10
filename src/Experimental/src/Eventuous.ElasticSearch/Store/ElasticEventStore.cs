@@ -31,7 +31,7 @@ public class ElasticEventStore(IElasticClient client, ElasticEventStoreOptions? 
                 (ulong)position + 1,
                 evt.Payload,
                 evt.Metadata.ToHeaders(),
-                DateTime.Now
+                DateTime.UtcNow
             );
     }
 
@@ -87,7 +87,8 @@ public class ElasticEventStore(IElasticClient client, ElasticEventStoreOptions? 
                     x.Message,
                     Metadata.FromHeaders(x.Metadata),
                     x.ContentType,
-                    x.StreamPosition
+                    x.StreamPosition,
+                    x.Created
                 )
             )
             .ToArray();
