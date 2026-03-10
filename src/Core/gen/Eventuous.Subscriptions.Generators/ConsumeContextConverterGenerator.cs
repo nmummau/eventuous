@@ -112,7 +112,10 @@ public sealed class ConsumeContextConverterGenerator : IIncrementalGenerator {
         return null;
     }
 
-    static string GetTypeSyntax(ITypeSymbol symbol) {
+    static string? GetTypeSyntax(ITypeSymbol symbol) {
+        // Skip unresolved generic type parameters (e.g. T in IMessageConsumeContext<T>)
+        if (symbol.TypeKind == TypeKind.TypeParameter) return null;
+
         // Use fully qualified name with global:: prefix
         var name = symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
         return name.StartsWith("global::", StringComparison.Ordinal) ? name : $"global::{name}";
