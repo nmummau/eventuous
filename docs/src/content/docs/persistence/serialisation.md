@@ -52,18 +52,29 @@ Then, you can call this code in your bootstrap code:
 BookingEvents.MapBookingEvents();
 ```
 
-### Auto-registration of types
+### Auto-registration with source generator
 
-For convenience purposes, you can avoid manual mapping between type names and types by using the `EventType` attribute.
+The recommended way to register event types is to use the `[EventType]` attribute combined with the Eventuous source generator. The generator automatically discovers all types decorated with `[EventType]` in your project and generates a module initializer that registers them at startup — no manual registration code needed.
 
-Annotate your events with it like this:
+Annotate your events with the `[EventType]` attribute:
 
 ```csharp
 [EventType("V1.FullyPaid")]
 public record BookingFullyPaid(string BookingId, DateTimeOffset FullyPaidAt);
+
+[EventType("V1.RoomBooked")]
+public record RoomBooked(string RoomId, LocalDate CheckIn, LocalDate CheckOut, float Price);
 ```
 
-Then, use the registration code in the bootstrap code:
+That's it. The source generator produces a module initializer class per assembly, which calls `TypeMap.Instance.AddType(...)` for each annotated event type. Registration happens automatically when the assembly is loaded — you don't need to write any startup code.
+
+:::tip
+Eventuous also includes a diagnostic analyzer (`EVTC001`) that warns you when an event type is used in aggregates or state projections but is missing the `[EventType]` attribute.
+:::
+
+### Reflection-based registration
+
+As an alternative to the source generator, you can use reflection-based registration. This scans assemblies at runtime for types decorated with `[EventType]`:
 
 ```csharp
 TypeMap.RegisterKnownEventTypes();
@@ -75,23 +86,9 @@ The registration won't work if event classes are defined in another assembly, wh
 TypeMap.RegisterKnownEventTypes(typeof(BookingFullyPaid).Assembly);
 ```
 
-If you use the .NET version that supports module initializers, you can register event types in the module. For example, if the domain event classes are located in a separate project, add the file `DomainModule.cs` to that project with the following code:
-
-```csharp title="DomainModule.cs"
-using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
-using Eventuous;
-
-namespace Bookings.Domain; 
-
-static class DomainModule {
-    [ModuleInitializer]
-    [SuppressMessage("Usage", "CA2255", MessageId = "The \'ModuleInitializer\' attribute should not be used in libraries")]
-    internal static void InitializeDomainModule() => TypeMap.RegisterKnownEventTypes();
-}
-```
-
-Then, you won't need to call the `TypeMap` registration in the application code at all.
+:::note
+With the source generator in place, calling `RegisterKnownEventTypes()` is typically unnecessary. The generator handles registration at compile time, which is both more reliable and avoids the overhead of runtime assembly scanning.
+:::
 
 ### Default serializer
 

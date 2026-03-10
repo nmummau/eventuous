@@ -144,7 +144,7 @@ public abstract class SqlEventStoreBase<TConnection, TTransaction>(IEventSeriali
             _                                => throw new("Unknown deserialization result")
         };
 
-        StreamEvent AsStreamEvent(object payload) => new(evt.MessageId, payload, meta ?? new Metadata(), ContentType, evt.StreamPosition);
+        StreamEvent AsStreamEvent(object payload) => new(evt.MessageId, payload, meta ?? new Metadata(), ContentType, evt.StreamPosition, evt.Created);
     }
 
     /// <inheritdoc />

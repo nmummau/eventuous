@@ -22,7 +22,8 @@ public class InMemoryEventStore : IEventStore {
         ) {
         var existing = _storage.GetOrAdd(stream, s => new(s));
         existing.AppendEvents(expectedVersion, events);
-        _global.AddRange(events.Select((x, i) => new StreamEvent(x.Id, x.Payload, x.Metadata, "application/json", _global.Count + i)));
+        var now = DateTime.UtcNow;
+        _global.AddRange(events.Select((x, i) => new StreamEvent(x.Id, x.Payload, x.Metadata, "application/json", _global.Count + i, now)));
 
         return Task.FromResult(new AppendEventsResult((ulong)(_global.Count - 1), existing.Version));
     }
@@ -33,9 +34,10 @@ public class InMemoryEventStore : IEventStore {
         var i       = 0;
 
         foreach (var append in appends) {
+            var now      = DateTime.UtcNow;
             var existing = _storage.GetOrAdd(append.StreamName, s => new(s));
             existing.AppendEvents(append.ExpectedVersion, append.Events);
-            _global.AddRange(append.Events.Select((x, j) => new StreamEvent(x.Id, x.Payload, x.Metadata, "application/json", _global.Count + j)));
+            _global.AddRange(append.Events.Select((x, j) => new StreamEvent(x.Id, x.Payload, x.Metadata, "application/json", _global.Count + j, now)));
             results[i++] = new AppendEventsResult((ulong)(_global.Count - 1), existing.Version);
         }
 
@@ -97,7 +99,7 @@ class InMemoryStream(StreamName name) {
 
         foreach (var newEvent in events) {
             var version     = ++Version;
-            var streamEvent = new StreamEvent(newEvent.Id, newEvent.Payload, newEvent.Metadata, "application/json", version);
+            var streamEvent = new StreamEvent(newEvent.Id, newEvent.Payload, newEvent.Metadata, "application/json", version, DateTime.UtcNow);
             _events.Add(new(streamEvent, version));
         }
     }

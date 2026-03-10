@@ -18,5 +18,6 @@ public record struct StreamEvent(
         Metadata Metadata,
         string   ContentType,
         long     Revision,
+        DateTime Created     = default,
         bool     FromArchive = false
     );

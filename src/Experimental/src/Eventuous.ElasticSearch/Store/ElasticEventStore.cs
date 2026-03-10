@@ -87,7 +87,8 @@ public class ElasticEventStore(IElasticClient client, ElasticEventStoreOptions? 
                     x.Message,
                     Metadata.FromHeaders(x.Metadata),
                     x.ContentType,
-                    x.StreamPosition
+                    x.StreamPosition,
+                    x.Created
                 )
             )
             .ToArray();
