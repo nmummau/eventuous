@@ -1,6 +1,8 @@
 ---
 title: "Serialization"
 description: "How events are serialized and deserialized"
+sidebar:
+  order: 40
 ---
 
 As described on the [Domain events](../../domain/domain-events) page, events must be (de)serializable. Eventuous doesn't care about the serialization format, but requires you to provide a serializer instance, which implements the `IEventSerializer` interface.
@@ -121,4 +123,4 @@ In many cases you might want to store event metadata in addition to the event pa
 
 Eventuous only uses the metadata serializer when the event store implementation, or a producer can store metadata as a byte array. For example, KurrentDB supports that, but Google PubSub doesn't. Therefore, the event store and producer that use KurrentDB will use the metadata serializer, but the Google PubSub producer will add metadata to events as headers, and won't use the metadata serializer.
 
-For the metadata serializer the same principles apply as for the event serializer. Eventuous has a separate interface `IMetadataSerializer`, which has a default instance created on startup by implicitly. You can register a custom metadata serializer as a singleton or override the default one by calling `DefaultMetadataSerializer.SetDefaultSerializer` function. 
+For the metadata serializer the same principles apply as for the event serializer. Eventuous has a separate interface `IMetadataSerializer`, which has a default instance created on startup by implicitly. You can register a custom metadata serializer as a singleton or override the default one by calling `DefaultMetadataSerializer.SetDefaultSerializer` function.
