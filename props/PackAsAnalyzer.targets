@@ -4,16 +4,16 @@
         ProjectReferences with PackAsAnalyzer="true" will:
           1. Be treated as analyzers during build (OutputItemType=Analyzer)
           2. Have their DLL included in analyzers/dotnet/cs/ in the NuGet package
+
+        Must be imported from Directory.Build.targets (not .props) so that
+        ProjectReference items are already defined when the ItemGroup update
+        below is evaluated — before ResolveProjectReferences consumes them.
     -->
-    <Target Name="_ResolveAnalyzerProjectReferences"
-            BeforeTargets="CoreCompile"
-            Condition="@(ProjectReference->AnyHaveMetadataValue('PackAsAnalyzer', 'true'))">
-        <ItemGroup>
-            <ProjectReference Condition="'%(ProjectReference.PackAsAnalyzer)' == 'true'"
-                              OutputItemType="Analyzer"
-                              SetTargetFramework="TargetFramework=netstandard2.0" />
-        </ItemGroup>
-    </Target>
+    <ItemGroup>
+        <ProjectReference Update="@(ProjectReference->WithMetadataValue('PackAsAnalyzer', 'true'))"
+                          OutputItemType="Analyzer"
+                          SetTargetFramework="TargetFramework=netstandard2.0" />
+    </ItemGroup>
 
     <Target Name="_IncludeAnalyzersInPackage"
             BeforeTargets="_GetPackageFiles"
