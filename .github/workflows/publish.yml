@@ -24,7 +24,7 @@ jobs:
         name: Setup .NET
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: '10.0.1xx'
+          dotnet-version: '10.0.104'
       -
         name: Checkout code
         uses: actions/checkout@v6
@@ -34,7 +34,7 @@ jobs:
         name: Setup .NET
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: '10.0.1xx'
+          dotnet-version: '10.0.104'
       -
         name: Login to Docker Hub
         if: ${{ github.event.pull_request.head.repo.fork == false }}

@@ -37,7 +37,7 @@ jobs:
           dotnet-version: |
             8.0.x
             9.0.x
-            10.0.1xx
+            10.0.104
       -
         name: Login to Docker Hub
         if: ${{ github.event.pull_request.head.repo.fork == false }}
