@@ -1,6 +1,8 @@
 ---
 title: "Available producers"
 description: "List of producers available in Eventuous"
+sidebar:
+  order: 20
 ---
 
 Eventuous supports the following producers:

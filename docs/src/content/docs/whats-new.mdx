@@ -127,6 +127,36 @@ A new diagnostic analyzer (`EVTC001`) warns at compile time when event types use
 
 A new analyzer detects route mismatches and state type mismatches in HTTP command mappings. A companion generator can map HTTP commands and emits warnings on duplicate routes.
 
+### Multi-stream append
+
+The `IEventWriter` interface now supports appending events to multiple streams in a single operation. Each append specifies a target stream, expected version, and events. Atomicity depends on the store implementation — relational stores use a single transaction, KurrentDB 25.1+ uses native multi-stream append, and the default fallback writes sequentially.
+
+```csharp
+NewStreamAppend[] appends = [
+    new(orderStream, ExpectedStreamVersion.NoStream, orderEvents),
+    new(inventoryStream, new ExpectedStreamVersion(currentVersion), inventoryEvents)
+];
+
+AppendEventsResult[] results = await eventStore.AppendEvents(appends, cancellationToken);
+```
+
+See the [event store documentation](../persistence/event-store) for atomicity guarantees per store.
+
+### Multi-stream produce
+
+Producers now support sending messages to multiple streams in parallel via a collection of `ProduceRequest`:
+
+```csharp
+var requests = new ProduceRequest[] {
+    new(stream1, messages1),
+    new(stream2, messages2)
+};
+
+await producer.Produce(requests, cancellationToken);
+```
+
+The default implementation fans out to individual `Produce` calls using `Task.WhenAll`. Custom producer implementations can override this for more efficient batching.
+
 ### Checkpoint initial position
 
 Subscriptions with checkpoints now support configuring the **initial position** when no checkpoint exists. Previously, subscriptions always started from the beginning. You can now choose:
