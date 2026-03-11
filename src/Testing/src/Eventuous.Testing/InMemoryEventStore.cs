@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Runtime.CompilerServices;
 
 namespace Eventuous.Testing;
 
@@ -45,12 +46,20 @@ public class InMemoryEventStore : IEventStore {
     }
 
     /// <inheritdoc />
-    public Task<StreamEvent[]> ReadEvents(StreamName stream, StreamReadPosition start, int count, bool failIfNotFound, CancellationToken cancellationToken)
-        => Task.FromResult(FindStream(stream, failIfNotFound).GetEvents(start, count).ToArray());
+#pragma warning disable CS1998 // Async method lacks 'await' operators
+    public async IAsyncEnumerable<StreamEvent> ReadEvents(StreamName stream, StreamReadPosition start, int count, [EnumeratorCancellation] CancellationToken cancellationToken) {
+        foreach (var evt in FindStream(stream, true).GetEvents(start, count)) {
+            yield return evt;
+        }
+    }
 
     /// <inheritdoc />
-    public Task<StreamEvent[]> ReadEventsBackwards(StreamName stream, StreamReadPosition start, int count, bool failIfNotFound, CancellationToken cancellationToken)
-        => Task.FromResult(FindStream(stream, failIfNotFound).GetEventsBackwards(start, count).ToArray());
+    public async IAsyncEnumerable<StreamEvent> ReadEventsBackwards(StreamName stream, StreamReadPosition start, int count, [EnumeratorCancellation] CancellationToken cancellationToken) {
+        foreach (var evt in FindStream(stream, true).GetEventsBackwards(start, count)) {
+            yield return evt;
+        }
+    }
+#pragma warning restore CS1998
 
     /// <inheritdoc />
     public Task TruncateStream(

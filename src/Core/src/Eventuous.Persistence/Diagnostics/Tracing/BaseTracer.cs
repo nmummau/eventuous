@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0.
 
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Eventuous.Diagnostics.Metrics;
 
 namespace Eventuous.Diagnostics.Tracing;
@@ -45,6 +46,39 @@ public abstract class BaseTracer {
 
             throw;
         }
+    }
+
+    protected async IAsyncEnumerable<T> TraceEnumerable<T>(
+            StreamName             stream,
+            string                 operation,
+            IAsyncEnumerable<T>    source,
+            [EnumeratorCancellation] CancellationToken cancellationToken = default
+        ) {
+        using var activity = StartActivity(stream, operation);
+        using var measure  = Measure.Start(MetricsSource, new PersistenceMetricsContext(ComponentName, operation));
+
+        var enumerator = source.GetAsyncEnumerator(cancellationToken);
+
+        await using (enumerator.ConfigureAwait(false)) {
+            while (true) {
+                bool moved;
+
+                try {
+                    moved = await enumerator.MoveNextAsync().ConfigureAwait(false);
+                } catch (Exception e) {
+                    activity?.SetActivityStatus(ActivityStatus.Error(e));
+                    measure.SetError();
+
+                    throw;
+                }
+
+                if (!moved) break;
+
+                yield return enumerator.Current;
+            }
+        }
+
+        activity?.SetActivityStatus(ActivityStatus.Ok());
     }
 
     protected static Activity? StartActivity(StreamName stream, string operationName) {
