@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0.
 
 using System.Data.Common;
+using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Text;
 using Eventuous.Diagnostics;
@@ -92,30 +93,46 @@ public abstract class SqlEventStoreBase<TConnection, TTransaction>(IEventSeriali
     /// <inheritdoc />
     [RequiresDynamicCode(Constants.DynamicSerializationMessage)]
     [RequiresUnreferencedCode(Constants.DynamicSerializationMessage)]
-    public async Task<StreamEvent[]> ReadEvents(StreamName stream, StreamReadPosition start, int count, bool failIfNotFound, CancellationToken cancellationToken) {
-        if (count <= 0 || start == StreamReadPosition.End) return [];
+    public async IAsyncEnumerable<StreamEvent> ReadEvents(StreamName stream, StreamReadPosition start, int count, [EnumeratorCancellation] CancellationToken cancellationToken) {
+        if (count <= 0 || start == StreamReadPosition.End) yield break;
 
-        await using var connection = await OpenConnection(cancellationToken).NoContext();
-        await using var cmd        = GetReadCommand(connection, stream, start, count);
+        var events = await ReadInternal(stream, start, count, cancellationToken).NoContext();
 
-        return await ReadInternal(cmd, stream, failIfNotFound, cancellationToken).NoContext();
+        foreach (var evt in events) yield return evt;
     }
 
     /// <inheritdoc />
     [RequiresDynamicCode(Constants.DynamicSerializationMessage)]
     [RequiresUnreferencedCode(Constants.DynamicSerializationMessage)]
-    public async Task<StreamEvent[]> ReadEventsBackwards(StreamName stream, StreamReadPosition start, int count, bool failIfNotFound, CancellationToken cancellationToken) {
-        if (count <= 0) return [];
+    public async IAsyncEnumerable<StreamEvent> ReadEventsBackwards(StreamName stream, StreamReadPosition start, int count, [EnumeratorCancellation] CancellationToken cancellationToken) {
+        if (count <= 0) yield break;
 
-        await using var connection = await OpenConnection(cancellationToken).NoContext();
-        await using var cmd        = GetReadBackwardsCommand(connection, stream, start, count);
+        var events = await ReadInternalBackwards(stream, start, count, cancellationToken).NoContext();
 
-        return await ReadInternal(cmd, stream, failIfNotFound, cancellationToken).NoContext();
+        foreach (var evt in events) yield return evt;
     }
 
     [RequiresDynamicCode("Calls Eventuous.Sql.Base.SqlEventStoreBase<TConnection, TTransaction>.ToStreamEvent(PersistedEvent)")]
     [RequiresUnreferencedCode("Calls Eventuous.Sql.Base.SqlEventStoreBase<TConnection, TTransaction>.ToStreamEvent(PersistedEvent)")]
-    async Task<StreamEvent[]> ReadInternal(DbCommand cmd, StreamName stream, bool failIfNotFound, CancellationToken cancellationToken) {
+    async Task<StreamEvent[]> ReadInternal(StreamName stream, StreamReadPosition start, int count, CancellationToken cancellationToken) {
+        await using var connection = await OpenConnection(cancellationToken).NoContext();
+        await using var cmd        = GetReadCommand(connection, stream, start, count);
+
+        return await ReadFromCommand(cmd, stream, cancellationToken).NoContext();
+    }
+
+    [RequiresDynamicCode("Calls Eventuous.Sql.Base.SqlEventStoreBase<TConnection, TTransaction>.ToStreamEvent(PersistedEvent)")]
+    [RequiresUnreferencedCode("Calls Eventuous.Sql.Base.SqlEventStoreBase<TConnection, TTransaction>.ToStreamEvent(PersistedEvent)")]
+    async Task<StreamEvent[]> ReadInternalBackwards(StreamName stream, StreamReadPosition start, int count, CancellationToken cancellationToken) {
+        await using var connection = await OpenConnection(cancellationToken).NoContext();
+        await using var cmd        = GetReadBackwardsCommand(connection, stream, start, count);
+
+        return await ReadFromCommand(cmd, stream, cancellationToken).NoContext();
+    }
+
+    [RequiresDynamicCode("Calls Eventuous.Sql.Base.SqlEventStoreBase<TConnection, TTransaction>.ToStreamEvent(PersistedEvent)")]
+    [RequiresUnreferencedCode("Calls Eventuous.Sql.Base.SqlEventStoreBase<TConnection, TTransaction>.ToStreamEvent(PersistedEvent)")]
+    async Task<StreamEvent[]> ReadFromCommand(DbCommand cmd, StreamName stream, CancellationToken cancellationToken) {
         try {
             await using var reader = await cmd.ExecuteReaderAsync(cancellationToken).NoContext();
 
@@ -123,9 +140,7 @@ public abstract class SqlEventStoreBase<TConnection, TTransaction>(IEventSeriali
 
             return await result.Select(ToStreamEvent).ToArrayAsync(cancellationToken).NoContext();
         } catch (Exception e) {
-            if (IsStreamNotFound(e)) {
-                return failIfNotFound ? throw new StreamNotFound(stream) : [];
-            }
+            if (IsStreamNotFound(e)) throw new StreamNotFound(stream);
 
             throw new ReadFromStreamException(stream, e);
         }

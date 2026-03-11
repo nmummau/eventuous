@@ -5,28 +5,28 @@ namespace Eventuous;
 
 public interface IEventReader {
     /// <summary>
-    /// Read a fixed number of events from an existing stream to an array
+    /// Read a fixed number of events from an existing stream as an async enumerable.
+    /// Throws <see cref="StreamNotFound"/> if the stream does not exist.
     /// </summary>
     /// <param name="stream">Stream name</param>
     /// <param name="start">Where to start reading events</param>
     /// <param name="count">How many events to read</param>
-    /// <param name="failIfNotFound">Throw an exception if the stream is not found</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>An array with events retrieved from the stream</returns>
+    /// <returns>An async enumerable of events retrieved from the stream</returns>
     [RequiresDynamicCode(AttrConstants.DynamicSerializationMessage)]
     [RequiresUnreferencedCode(AttrConstants.DynamicSerializationMessage)]
-    Task<StreamEvent[]> ReadEvents(StreamName stream, StreamReadPosition start, int count, bool failIfNotFound, CancellationToken cancellationToken);
+    IAsyncEnumerable<StreamEvent> ReadEvents(StreamName stream, StreamReadPosition start, int count, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Read a number of events from a given stream, backwards (from the stream end)
+    /// Read a number of events from a given stream, backwards (from the stream end).
+    /// Throws <see cref="StreamNotFound"/> if the stream does not exist.
     /// </summary>
     /// <param name="stream">Stream name</param>
     /// <param name="start">Where to start reading events</param>
     /// <param name="count">How many events to read</param>
-    /// <param name="failIfNotFound">Throw an exception if the stream is not found</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>An array with events retrieved from the stream</returns>
+    /// <returns>An async enumerable of events retrieved from the stream</returns>
     [RequiresDynamicCode(AttrConstants.DynamicSerializationMessage)]
     [RequiresUnreferencedCode(AttrConstants.DynamicSerializationMessage)]
-    Task<StreamEvent[]> ReadEventsBackwards(StreamName stream, StreamReadPosition start, int count, bool failIfNotFound, CancellationToken cancellationToken);
+    IAsyncEnumerable<StreamEvent> ReadEventsBackwards(StreamName stream, StreamReadPosition start, int count, CancellationToken cancellationToken);
 }

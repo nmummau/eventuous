@@ -225,34 +225,28 @@ public partial class KurrentDBEventStore : IEventStore {
     /// <inheritdoc/>
     [RequiresDynamicCode(AttrConstants.DynamicSerializationMessage)]
     [RequiresUnreferencedCode(AttrConstants.DynamicSerializationMessage)]
-    public async Task<StreamEvent[]> ReadEvents(StreamName stream, StreamReadPosition start, int count, bool failIfNotFound, CancellationToken cancellationToken = default) {
+    public async IAsyncEnumerable<StreamEvent> ReadEvents(StreamName stream, StreamReadPosition start, int count, [EnumeratorCancellation] CancellationToken cancellationToken = default) {
         var read = _client.ReadStreamAsync(Direction.Forwards, stream, start.AsStreamPosition(), count, cancellationToken: cancellationToken);
 
-        try {
-            return await TryExecute(
-                async () => {
-                    var resolvedEvents = await read.ToArrayAsync(cancellationToken).NoContext();
+        var events = await TryExecute(
+            async () => {
+                var resolvedEvents = await read.ToArrayAsync(cancellationToken).NoContext();
 
-                    return ToStreamEvents(resolvedEvents);
-                },
-                stream,
-                failIfNotFound,
-                () => new("Unable to read {Count} starting at {Start} events from {Stream}", count, start, stream),
-                (s, ex) => new ReadFromStreamException(s, ex)
-            );
-        } catch (StreamNotFound) {
-            if (failIfNotFound) {
-                throw;
-            }
+                return ToStreamEvents(resolvedEvents);
+            },
+            stream,
+            true,
+            () => new("Unable to read {Count} starting at {Start} events from {Stream}", count, start, stream),
+            (s, ex) => new ReadFromStreamException(s, ex)
+        );
 
-            return [];
-        }
+        foreach (var evt in events) yield return evt;
     }
 
     /// <inheritdoc/>
     [RequiresDynamicCode(AttrConstants.DynamicSerializationMessage)]
     [RequiresUnreferencedCode(AttrConstants.DynamicSerializationMessage)]
-    public async Task<StreamEvent[]> ReadEventsBackwards(StreamName stream, StreamReadPosition start, int count, bool failIfNotFound, CancellationToken cancellationToken = default) {
+    public async IAsyncEnumerable<StreamEvent> ReadEventsBackwards(StreamName stream, StreamReadPosition start, int count, [EnumeratorCancellation] CancellationToken cancellationToken = default) {
         var read = _client.ReadStreamAsync(
             Direction.Backwards,
             stream,
@@ -262,25 +256,19 @@ public partial class KurrentDBEventStore : IEventStore {
             cancellationToken: cancellationToken
         );
 
-        try {
-            return await TryExecute(
-                async () => {
-                    var resolvedEvents = await read.ToArrayAsync(cancellationToken).NoContext();
+        var events = await TryExecute(
+            async () => {
+                var resolvedEvents = await read.ToArrayAsync(cancellationToken).NoContext();
 
-                    return ToStreamEvents(resolvedEvents);
-                },
-                stream,
-                failIfNotFound,
-                () => new("Unable to read {Count} events backwards from {Stream}", count, stream),
-                (s, ex) => new ReadFromStreamException(s, ex)
-            );
-        } catch (StreamNotFound) {
-            if (failIfNotFound) {
-                throw;
-            }
+                return ToStreamEvents(resolvedEvents);
+            },
+            stream,
+            true,
+            () => new("Unable to read {Count} events backwards from {Stream}", count, stream),
+            (s, ex) => new ReadFromStreamException(s, ex)
+        );
 
-            return [];
-        }
+        foreach (var evt in events) yield return evt;
     }
 
     /// <inheritdoc/>
