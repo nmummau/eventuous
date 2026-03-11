@@ -57,8 +57,25 @@ public abstract class BaseTracer {
         using var activity = StartActivity(stream, operation);
         using var measure  = Measure.Start(MetricsSource, new PersistenceMetricsContext(ComponentName, operation));
 
-        await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false)) {
-            yield return item;
+        var enumerator = source.GetAsyncEnumerator(cancellationToken);
+
+        await using (enumerator.ConfigureAwait(false)) {
+            while (true) {
+                bool moved;
+
+                try {
+                    moved = await enumerator.MoveNextAsync().ConfigureAwait(false);
+                } catch (Exception e) {
+                    activity?.SetActivityStatus(ActivityStatus.Error(e));
+                    measure.SetError();
+
+                    throw;
+                }
+
+                if (!moved) break;
+
+                yield return enumerator.Current;
+            }
         }
 
         activity?.SetActivityStatus(ActivityStatus.Ok());
