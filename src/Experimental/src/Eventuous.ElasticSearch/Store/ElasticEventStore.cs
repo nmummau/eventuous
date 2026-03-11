@@ -49,7 +49,9 @@ public class ElasticEventStore(IElasticClient client, ElasticEventStoreOptions? 
             cancellationToken
         );
 
-        if (response.Length == 0) throw new StreamNotFound(stream);
+        if (response.Length == 0 && !await StreamExists(stream, cancellationToken)) {
+            throw new StreamNotFound(stream);
+        }
 
         foreach (var evt in response) yield return evt;
     }
@@ -66,7 +68,9 @@ public class ElasticEventStore(IElasticClient client, ElasticEventStoreOptions? 
             cancellationToken
         );
 
-        if (response.Length == 0) throw new StreamNotFound(stream);
+        if (response.Length == 0 && !await StreamExists(stream, cancellationToken)) {
+            throw new StreamNotFound(stream);
+        }
 
         foreach (var evt in response.OrderByDescending(x => x.Revision)) yield return evt;
     }
