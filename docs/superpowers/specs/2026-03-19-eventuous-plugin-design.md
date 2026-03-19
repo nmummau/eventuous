@@ -5,48 +5,33 @@
 
 ## Goal
 
-Create a Claude Code plugin that packages Eventuous skills and an expert agent so that developers building event-sourced .NET applications with Eventuous can install it and get contextual guidance directly in their IDE.
+Create a Claude Code plugin in a separate repository (`Eventuous/eventuous-plugin`) that packages Eventuous skills and an expert agent as a marketplace. Developers building event-sourced .NET applications with Eventuous can install it and get contextual guidance directly in their IDE.
 
-## Plugin Location
+## Repository
 
-`plugin/` directory at the repository root. The existing `skills/` directory content moves into `plugin/skills/`.
+New repository: `Eventuous/eventuous-plugin`
+
+This is the **source of truth** for all Eventuous skill content. The existing `/skills/` directory in the main `Eventuous/eventuous` repo is removed after migration.
 
 ## Installation
 
-Users install from the GitHub repository:
+Users install via the marketplace:
 
 ```bash
-claude plugin add https://github.com/Eventuous/eventuous --path plugin
+# Add the marketplace (one-time)
+/plugin marketplace add Eventuous/eventuous-plugin
+
+# Install the plugin
+/plugin install eventuous
 ```
-
-## Plugin Manifest
-
-`plugin/.claude-plugin/plugin.json`:
-
-```json
-{
-  "name": "eventuous",
-  "version": "1.0.0",
-  "description": "Skills and agents for building event-sourced .NET applications with Eventuous",
-  "author": {
-    "name": "Eventuous",
-    "url": "https://eventuous.dev"
-  },
-  "homepage": "https://eventuous.dev",
-  "repository": "https://github.com/Eventuous/eventuous",
-  "license": "Apache-2.0",
-  "keywords": ["event-sourcing", "ddd", "dotnet", "cqrs", "eventuous"]
-}
-```
-
-Versioning is manual — updated by hand when releasing.
 
 ## Directory Structure
 
 ```
-plugin/
+eventuous-plugin/              # repo root
 ├── .claude-plugin/
-│   └── plugin.json
+│   ├── plugin.json            # Plugin manifest with explicit skill/agent lists
+│   └── marketplace.json       # Marketplace catalog
 ├── README.md
 ├── agents/
 │   └── eventuous-expert.md
@@ -73,26 +58,90 @@ plugin/
         └── SKILL.md
 ```
 
+## Marketplace Catalog
+
+`.claude-plugin/marketplace.json`:
+
+```json
+{
+  "name": "eventuous-plugin",
+  "description": "Claude Code marketplace for building event-sourced .NET applications with Eventuous",
+  "owner": {
+    "name": "Eventuous",
+    "url": "https://eventuous.dev"
+  },
+  "repository": "https://github.com/Eventuous/eventuous-plugin",
+  "plugins": [
+    {
+      "name": "eventuous",
+      "source": "./",
+      "version": "1.0.0",
+      "description": "Skills and agents for building event-sourced .NET applications with Eventuous — domain modeling, command services, event stores, subscriptions, producers, and infrastructure integrations"
+    }
+  ]
+}
+```
+
+## Plugin Manifest
+
+`.claude-plugin/plugin.json`:
+
+```json
+{
+  "name": "eventuous",
+  "version": "1.0.0",
+  "description": "Skills and agents for building event-sourced .NET applications with Eventuous",
+  "author": {
+    "name": "Eventuous",
+    "url": "https://eventuous.dev"
+  },
+  "homepage": "https://eventuous.dev",
+  "repository": "https://github.com/Eventuous/eventuous-plugin",
+  "license": "Apache-2.0",
+  "skills": [
+    "./skills/eventuous",
+    "./skills/eventuous-postgres",
+    "./skills/eventuous-kurrentdb",
+    "./skills/eventuous-mongodb",
+    "./skills/eventuous-rabbitmq",
+    "./skills/eventuous-kafka",
+    "./skills/eventuous-sqlserver",
+    "./skills/eventuous-google-pubsub",
+    "./skills/eventuous-azure-servicebus",
+    "./skills/eventuous-gateway"
+  ],
+  "agents": [
+    "./agents/eventuous-expert.md"
+  ]
+}
+```
+
+Versioning is manual — updated by hand when plugin content changes materially.
+
 ## Skills
 
 ### Source Migration
 
-The 10 existing markdown files in `/skills/` move into the plugin structure:
+The 10 existing markdown files in `Eventuous/eventuous/skills/` move to the new repo:
 
-| Source file | Target |
+| Source (eventuous repo) | Target (eventuous-plugin repo) |
 |---|---|
-| `skills/eventuous.md` | `plugin/skills/eventuous/SKILL.md` |
-| `skills/eventuous-postgres.md` | `plugin/skills/eventuous-postgres/SKILL.md` |
-| `skills/eventuous-kurrentdb.md` | `plugin/skills/eventuous-kurrentdb/SKILL.md` |
-| `skills/eventuous-mongodb.md` | `plugin/skills/eventuous-mongodb/SKILL.md` |
-| `skills/eventuous-rabbitmq.md` | `plugin/skills/eventuous-rabbitmq/SKILL.md` |
-| `skills/eventuous-kafka.md` | `plugin/skills/eventuous-kafka/SKILL.md` |
-| `skills/eventuous-sqlserver.md` | `plugin/skills/eventuous-sqlserver/SKILL.md` |
-| `skills/eventuous-google-pubsub.md` | `plugin/skills/eventuous-google-pubsub/SKILL.md` |
-| `skills/eventuous-azure-servicebus.md` | `plugin/skills/eventuous-azure-servicebus/SKILL.md` |
-| `skills/eventuous-gateway.md` | `plugin/skills/eventuous-gateway/SKILL.md` |
+| `skills/eventuous.md` | `skills/eventuous/SKILL.md` |
+| `skills/eventuous-postgres.md` | `skills/eventuous-postgres/SKILL.md` |
+| `skills/eventuous-kurrentdb.md` | `skills/eventuous-kurrentdb/SKILL.md` |
+| `skills/eventuous-mongodb.md` | `skills/eventuous-mongodb/SKILL.md` |
+| `skills/eventuous-rabbitmq.md` | `skills/eventuous-rabbitmq/SKILL.md` |
+| `skills/eventuous-kafka.md` | `skills/eventuous-kafka/SKILL.md` |
+| `skills/eventuous-sqlserver.md` | `skills/eventuous-sqlserver/SKILL.md` |
+| `skills/eventuous-google-pubsub.md` | `skills/eventuous-google-pubsub/SKILL.md` |
+| `skills/eventuous-azure-servicebus.md` | `skills/eventuous-azure-servicebus/SKILL.md` |
+| `skills/eventuous-gateway.md` | `skills/eventuous-gateway/SKILL.md` |
 
-The original `/skills/` directory is removed after migration.
+The original `/skills/` directory in the main Eventuous repo is removed after migration.
+
+### Skill Body Content
+
+The existing markdown content is copied verbatim into each `SKILL.md`. The only change is prepending YAML frontmatter (`name` and `description`) to each file.
 
 ### Frontmatter Format
 
@@ -171,7 +220,7 @@ description: "Use when implementing cross-context event routing with Eventuous G
 
 ## Agent: Eventuous Expert
 
-`plugin/agents/eventuous-expert.md`
+`agents/eventuous-expert.md`
 
 ### Frontmatter
 
@@ -222,34 +271,31 @@ The agent body defines its role and behavior:
 - **Knowledge base**: All plugin skills are available to the agent automatically (same plugin); the system prompt directs it to read relevant skill files from `${CLAUDE_PLUGIN_ROOT}/skills/` when it needs reference material
 - **Process**: Understand the user's context, identify which Eventuous concerns are involved, reference the relevant skills, provide concrete code examples following Eventuous conventions
 
-## Skill Body Content
+## Cleanup in Main Repo
 
-The existing markdown content in `/skills/*.md` is copied verbatim into each `SKILL.md` — no body modifications needed. The only change is prepending YAML frontmatter (`name` and `description`) to each file.
-
-## CLAUDE.md
-
-No changes to `CLAUDE.md`. The plugin is a separate install path for external users. Contributors working in this repo already have the skills content available via the project's existing documentation.
+After migration to the new repo:
+1. Remove `/skills/` directory from `Eventuous/eventuous`
+2. Update or remove the `wc` permission in `.claude/settings.local.json` that references the old path
+3. No changes to `CLAUDE.md` — the plugin is a separate install path for external users
 
 ## Versioning
 
-Plugin version in `plugin.json` is independent of the NuGet library version. Update it manually when the plugin content changes materially (new skills, significant content updates, agent changes). Minor fixes don't require a bump.
-
-## Migration Notes
-
-The only reference to the old `/skills/` path outside the spec is a `wc` permission in `.claude/settings.local.json` (local dev convenience). This will be updated or removed during migration. No CI, documentation, or shared configuration references the old path.
+Plugin version in `plugin.json` and `marketplace.json` is independent of the NuGet library version. Update manually when plugin content changes materially (new skills, significant content updates, agent changes). Minor fixes don't require a bump.
 
 ## Verification
 
 After implementation, verify by:
-1. Install the plugin locally: `claude plugin add --path ./plugin`
-2. Start a new session and confirm all 10 skills appear in the skill list
-3. Ask an Eventuous question (e.g., "how do I set up a PostgreSQL event store with Eventuous?") and confirm the relevant skill activates
-4. Ask a cross-cutting question and confirm the eventuous-expert agent is dispatched
+1. Create the `Eventuous/eventuous-plugin` repo on GitHub
+2. Add the marketplace: `/plugin marketplace add Eventuous/eventuous-plugin`
+3. Install the plugin: `/plugin install eventuous`
+4. Start a new session and confirm all 10 skills appear in the skill list
+5. Ask an Eventuous question (e.g., "how do I set up a PostgreSQL event store with Eventuous?") and confirm the relevant skill activates
+6. Ask a cross-cutting question and confirm the eventuous-expert agent is dispatched
 
 ## README
 
-`plugin/README.md` documents:
+`README.md` at repo root documents:
 - What the plugin provides (10 skills + 1 agent)
-- Installation command
+- Installation commands (marketplace add + plugin install)
 - List of available skills with brief descriptions
 - How skills activate (contextually, based on what you're working on)
