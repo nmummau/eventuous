@@ -173,21 +173,78 @@ description: "Use when implementing cross-context event routing with Eventuous G
 
 `plugin/agents/eventuous-expert.md`
 
-### Purpose
+### Frontmatter
 
-A general-purpose Eventuous specialist subagent that can answer questions about any part of the library, help design event-sourced systems, debug issues, and guide implementation. It reasons across multiple skills when a task spans concerns (e.g., "build an order system with PostgreSQL and project to MongoDB").
+```yaml
+---
+name: eventuous-expert
+description: Use this agent when the task requires deep Eventuous knowledge spanning multiple concerns — designing event-sourced systems, implementing aggregates/services/subscriptions, configuring infrastructure integrations, debugging Eventuous issues, or choosing between approaches. Examples:
 
-### Trigger Description
+<example>
+Context: User is starting a new event-sourced service with Eventuous
+user: "I need to build an order management system with PostgreSQL for the event store and MongoDB for read models"
+assistant: "I'll use the eventuous-expert agent to help design and implement this system."
+<commentary>
+Task spans domain modeling, PostgreSQL event store, and MongoDB projections — needs cross-cutting Eventuous expertise.
+</commentary>
+</example>
 
-Dispatched when the task needs deep Eventuous knowledge: designing event-sourced systems, implementing aggregates/services/subscriptions, configuring infrastructure integrations, debugging Eventuous issues, or choosing between approaches (aggregate-based vs functional services, event store selection, subscription topologies).
+<example>
+Context: User is debugging an Eventuous subscription issue
+user: "My subscription keeps replaying events from the beginning instead of from the checkpoint"
+assistant: "I'll use the eventuous-expert agent to diagnose the checkpoint issue."
+<commentary>
+Debugging Eventuous subscription behavior requires deep knowledge of checkpoint management and subscription lifecycle.
+</commentary>
+</example>
 
-### Behavior
+<example>
+Context: User is choosing between Eventuous approaches
+user: "Should I use aggregate-based or functional command services for my use case?"
+assistant: "I'll use the eventuous-expert agent to help evaluate the trade-offs."
+<commentary>
+Architectural decision about Eventuous patterns requires opinionated guidance.
+</commentary>
+</example>
 
-- Opinionated toward Eventuous best practices
-- Recommends KurrentDB as the default event store
-- Prefers functional command services for simple cases
-- Uses `IEventReader`/`IEventWriter` extension methods, not deprecated `IAggregateStore`
-- References the skills as its knowledge base
+model: inherit
+color: cyan
+tools: ["Read", "Grep", "Glob", "Bash", "Write", "Edit"]
+---
+```
+
+### System Prompt
+
+The agent body defines its role and behavior:
+
+- **Role**: Eventuous specialist helping design, implement, and debug event-sourced .NET applications
+- **Opinionated defaults**: Recommends KurrentDB as the default event store, prefers functional command services for simple cases, uses `IEventReader`/`IEventWriter` extension methods (not deprecated `IAggregateStore`)
+- **Knowledge base**: All plugin skills are available to the agent automatically (same plugin); the system prompt directs it to read relevant skill files from `${CLAUDE_PLUGIN_ROOT}/skills/` when it needs reference material
+- **Process**: Understand the user's context, identify which Eventuous concerns are involved, reference the relevant skills, provide concrete code examples following Eventuous conventions
+
+## Skill Body Content
+
+The existing markdown content in `/skills/*.md` is copied verbatim into each `SKILL.md` — no body modifications needed. The only change is prepending YAML frontmatter (`name` and `description`) to each file.
+
+## CLAUDE.md
+
+No changes to `CLAUDE.md`. The plugin is a separate install path for external users. Contributors working in this repo already have the skills content available via the project's existing documentation.
+
+## Versioning
+
+Plugin version in `plugin.json` is independent of the NuGet library version. Update it manually when the plugin content changes materially (new skills, significant content updates, agent changes). Minor fixes don't require a bump.
+
+## Migration Notes
+
+The only reference to the old `/skills/` path outside the spec is a `wc` permission in `.claude/settings.local.json` (local dev convenience). This will be updated or removed during migration. No CI, documentation, or shared configuration references the old path.
+
+## Verification
+
+After implementation, verify by:
+1. Install the plugin locally: `claude plugin add --path ./plugin`
+2. Start a new session and confirm all 10 skills appear in the skill list
+3. Ask an Eventuous question (e.g., "how do I set up a PostgreSQL event store with Eventuous?") and confirm the relevant skill activates
+4. Ask a cross-cutting question and confirm the eventuous-expert agent is dispatched
 
 ## README
 
