@@ -34,10 +34,14 @@ public record StreamEventEnvelope {
     public required DateTime Timestamp { get; init; }
     public required string JsonPayload { get; init; }
     public string? JsonMetadata { get; init; }
+    public string? TraceId { get; init; }
+    public string? SpanId { get; init; }
 }
 ```
 
 The payload is pre-serialized JSON on the server side. This avoids polymorphic serialization issues (`StreamEvent.Payload` is `object?`) and lets the client deserialize with `TypeMap` when typed consumption is used.
+
+`TraceId` and `SpanId` carry the W3C distributed trace context from the server's produce activity. The client can use these to continue the trace (e.g., create a child span for event processing), enabling end-to-end observability from event store → server subscription → SignalR transport → client handler.
 
 **Position semantics:** The envelope carries both `StreamPosition` (position within the subscribed stream) and `GlobalPosition` (position in the global commit log). For per-stream subscriptions, the client uses `StreamPosition` for resume and deduplication. `GlobalPosition` is included for consumers that need cross-stream ordering or may later subscribe to `$all`.
 
@@ -81,10 +85,11 @@ The existing Eventuous Gateway provides `GatewayHandler<TProduceOptions>` — a 
 ```csharp
 public record SignalRProduceOptions(string ConnectionId);
 
-public class SignalRProducer<THub>(IHubContext<THub> hubContext) : IProducer<SignalRProduceOptions>
+public class SignalRProducer<THub>(IHubContext<THub> hubContext)
+    : BaseProducer<SignalRProduceOptions>(new ProducerTracingOptions { ProducerName = "signalr" })
     where THub : Hub {
 
-    public async Task Produce(
+    protected override async Task ProduceMessages(
         StreamName stream,
         IEnumerable<ProducedMessage> messages,
         SignalRProduceOptions? options,
@@ -92,15 +97,24 @@ public class SignalRProducer<THub>(IHubContext<THub> hubContext) : IProducer<Sig
     ) {
         var client = hubContext.Clients.Client(options!.ConnectionId);
         foreach (var msg in messages) {
+            // BaseProducer already stamped trace/span into metadata via ProducerActivity.
+            // Extract and attach to the envelope for client-side trace continuation.
+            var envelope = (StreamEventEnvelope)msg.Message!;
+            var traced = envelope with {
+                TraceId = Activity.Current?.TraceId.ToString(),
+                SpanId  = Activity.Current?.SpanId.ToString()
+            };
             await client.SendAsync(
                 SignalRSubscriptionMethods.StreamEvent,
-                msg.Message, // already a StreamEventEnvelope
+                traced,
                 ct
             );
         }
     }
 }
 ```
+
+By extending `BaseProducer`, the producer gets automatic OpenTelemetry `Activity` creation via `ProducerActivity.Start`. The `BaseProducer.Produce` method creates a produce activity, stamps trace context into message metadata, then calls `ProduceMessages`. The `SignalRProducer` reads `Activity.Current` (set by `BaseProducer`) and propagates trace/span IDs into the envelope for the client.
 
 The `RouteAndTransform` serializes events to envelopes:
 
