@@ -66,13 +66,72 @@ public static class SignalRSubscriptionMethods {
 
 ### Eventuous.SignalR.Server
 
-Server-side gateway that manages per-connection Eventuous subscriptions and forwards events over SignalR.
+Server-side gateway that manages per-connection Eventuous subscriptions and forwards events over SignalR. Builds on the existing Eventuous Gateway pattern (`GatewayHandler` + `IProducer`).
 
-**Dependencies:** Eventuous.Subscriptions, Microsoft.AspNetCore.SignalR.Core
+**Dependencies:** Eventuous.SignalR.Server depends on Eventuous.Subscriptions, Eventuous.Gateway, Microsoft.AspNetCore.SignalR.Core
+
+#### Reusing the Gateway Pattern
+
+The existing Eventuous Gateway provides `GatewayHandler<TProduceOptions>` — a `BaseEventHandler` that takes events from a subscription, runs them through a `RouteAndTransform` function, and produces them via an `IProducer<TProduceOptions>`. The SignalR server reuses this directly:
+
+- **`SignalRProducer`** implements `IProducer<SignalRProduceOptions>` — sends `StreamEventEnvelope` to a specific SignalR connection via `IHubContext`
+- **`RouteAndTransform<SignalRProduceOptions>`** — serializes `IMessageConsumeContext` into a `StreamEventEnvelope`, wraps it in a `GatewayMessage` with the target stream and connection options
+- **`GatewayHandler<SignalRProduceOptions>`** — the existing gateway handler, used as-is
+
+```csharp
+public record SignalRProduceOptions(string ConnectionId);
+
+public class SignalRProducer<THub>(IHubContext<THub> hubContext) : IProducer<SignalRProduceOptions>
+    where THub : Hub {
+
+    public async Task Produce(
+        StreamName stream,
+        IEnumerable<ProducedMessage> messages,
+        SignalRProduceOptions? options,
+        CancellationToken ct = default
+    ) {
+        var client = hubContext.Clients.Client(options!.ConnectionId);
+        foreach (var msg in messages) {
+            await client.SendAsync(
+                SignalRSubscriptionMethods.StreamEvent,
+                msg.Message, // already a StreamEventEnvelope
+                ct
+            );
+        }
+    }
+}
+```
+
+The `RouteAndTransform` serializes events to envelopes:
+
+```csharp
+RouteAndTransform<SignalRProduceOptions> CreateTransform(
+    string connectionId, string stream, IEventSerializer serializer
+) => ctx => {
+    var result = serializer.SerializeEvent(ctx.Message!);
+    var envelope = new StreamEventEnvelope {
+        EventId        = Guid.Parse(ctx.MessageId),
+        Stream         = stream,
+        EventType      = ctx.MessageType,
+        StreamPosition = ctx.StreamPosition,
+        GlobalPosition = ctx.GlobalPosition,
+        Timestamp      = ctx.Created,
+        JsonPayload    = Encoding.UTF8.GetString(result.Payload),
+        JsonMetadata   = /* serialize metadata if present */
+    };
+    return ValueTask.FromResult(new[] {
+        new GatewayMessage<SignalRProduceOptions>(
+            new StreamName(stream), envelope, null, new SignalRProduceOptions(connectionId)
+        )
+    });
+};
+```
+
+**Event serialization note:** `IEventSerializer.SerializeEvent` returns `SerializationResult` containing `byte[] Payload`. The transform converts UTF-8 bytes to a string for the envelope. This involves a deserialize-then-reserialize round-trip (the subscription already deserialized the event). This is acceptable — the alternative (raw bytes from the store) isn't available on `IMessageConsumeContext`.
 
 #### SubscriptionGateway
 
-The core service. Injectable as a singleton, manages subscription lifecycle per connection. Uses `IHubContext<THub>` (singleton-safe) rather than `IHubClients` (hub-invocation-scoped) to avoid lifetime issues when sending from background subscription threads.
+Manages dynamic per-connection subscription lifecycle. Uses `IHubContext<THub>` (singleton-safe) rather than `IHubClients` (hub-invocation-scoped).
 
 ```csharp
 public class SubscriptionGateway<THub> : IAsyncDisposable where THub : Hub {
@@ -94,23 +153,16 @@ public class SubscriptionGateway<THub> : IAsyncDisposable where THub : Hub {
 }
 ```
 
-Internally, each `(connectionId, stream)` pair gets its own Eventuous subscription. The gateway:
+On each `SubscribeAsync` call, the gateway:
 
-1. Creates a `ForwardingHandler` (extends `BaseEventHandler`) that serializes events and sends via `hubContext.Clients.Client(connectionId).SendAsync`
-2. Assembles the consume pipeline: creates a `ConsumePipe`, wraps the handler in a `DefaultConsumer`, adds a `ConsumerFilter` to the pipe
-3. Calls the `SubscriptionFactory` to create a store-specific subscription with the assembled pipe
-4. Tracks active subscriptions in a `ConcurrentDictionary<(string connectionId, string stream), SubscriptionState>`
-5. On unsubscribe or disconnect, cancels and disposes the subscription
+1. Creates a `RouteAndTransform` for this connection + stream (serializes events to envelopes)
+2. Creates a `GatewayHandler<SignalRProduceOptions>` with the `SignalRProducer` + transform
+3. Assembles the consume pipeline (handler → `DefaultConsumer` → `ConsumerFilter` → `ConsumePipe`)
+4. Calls the `SubscriptionFactory` to create a store-specific subscription
+5. Tracks in `ConcurrentDictionary<(string connectionId, string stream), SubscriptionState>`
+6. Starts the subscription in a background task
 
-**Consume pipeline assembly detail:**
-
-```csharp
-var handler = new ForwardingHandler(hubContext.Clients, connectionId, stream, eventSerializer);
-var consumer = new DefaultConsumer([handler]);
-var pipe = new ConsumePipe();
-pipe.AddFilterLast(new ConsumerFilter(consumer));
-var subscription = subscriptionFactory(streamName, fromPosition, pipe, subscriptionId);
-```
+On unsubscribe or disconnect, cancels and disposes.
 
 **Store-agnostic subscription factory:**
 
@@ -123,9 +175,7 @@ public delegate IMessageSubscription SubscriptionFactory(
 );
 ```
 
-This keeps the gateway independent of KurrentDB, EventStoreDB, PostgreSQL, etc. Each store provides its own factory via a DI extension method.
-
-**Event serialization note:** `IEventSerializer.SerializeEvent` returns `SerializationResult` containing `byte[] Payload`. The `ForwardingHandler` converts these UTF-8 bytes to a string for `StreamEventEnvelope.JsonPayload`. This involves a deserialize-then-reserialize round-trip (the subscription already deserialized the event from the store). This is acceptable for the relay use case — the alternative (passing raw bytes from the event store) would require access to the original wire data, which is not available on `IMessageConsumeContext`.
+Registered once at startup. The factory captures common dependencies (client, logger factory) from DI. The gateway calls it each time a new per-connection subscription is needed.
 
 #### Ready-Made Hub
 
@@ -146,10 +196,10 @@ Delegates entirely to `SubscriptionGateway<SignalRSubscriptionHub>`. Application
 
 ```csharp
 // Register gateway with KurrentDB subscription factory
-services.AddSignalRSubscriptionGateway<SignalRSubscriptionHub>(sp => {
+services.AddSignalRSubscriptionGateway<SignalRSubscriptionHub>((sp, options) => {
     var client = sp.GetRequiredService<KurrentDBClient>();
     var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
-    return (stream, fromPosition, pipe, subscriptionId) =>
+    options.SubscriptionFactory = (stream, fromPosition, pipe, subscriptionId) =>
         new StreamSubscription(client, new StreamSubscriptionOptions {
             StreamName = stream,
             SubscriptionId = subscriptionId
@@ -261,16 +311,16 @@ Disconnect + Reconnect:
 ```
 SubscribeAsync(connId, "Session-abc", 42)
   │
-  ├─ Create ForwardingHandler (serializes + sends via hubContext.Clients)
+  ├─ Create RouteAndTransform (serializes events → StreamEventEnvelope)
+  ├─ Create GatewayHandler<SignalRProduceOptions>(signalRProducer, transform)
   ├─ Wrap in DefaultConsumer → ConsumerFilter → ConsumePipe
   ├─ Call SubscriptionFactory(stream, position, pipe, id)
   ├─ Store SubscriptionState { CTS, IMessageSubscription } in _subscriptions[(connId, "Session-abc")]
   └─ Start subscription.Subscribe(...) in background Task
 
-ForwardingHandler.HandleEvent(context):
-  ├─ Serialize context.Message via IEventSerializer → byte[] → UTF-8 string
-  ├─ Build StreamEventEnvelope (StreamPosition from context.StreamPosition, GlobalPosition from context.GlobalPosition)
-  └─ hubContext.Clients.Client(connId).SendAsync("StreamEvent", envelope)
+GatewayHandler.HandleEvent(context):
+  ├─ Calls RouteAndTransform → StreamEventEnvelope
+  └─ Calls SignalRProducer.Produce → hubContext.Clients.Client(connId).SendAsync("StreamEvent", envelope)
 
 UnsubscribeAsync(connId, "Session-abc"):
   ├─ Cancel CTS
