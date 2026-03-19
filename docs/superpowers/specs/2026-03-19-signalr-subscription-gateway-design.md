@@ -240,7 +240,7 @@ Manages the hub connection and active subscriptions:
 
 ```csharp
 public class SignalRSubscriptionClient : IAsyncDisposable {
-    SignalRSubscriptionClient(HubConnection connection, IEventSerializer? serializer = null);
+    SignalRSubscriptionClient(HubConnection connection, SignalRSubscriptionClientOptions? options = null);
 
     /// Raw streaming — returns envelopes as they arrive.
     IAsyncEnumerable<StreamEventEnvelope> SubscribeAsync(
@@ -279,7 +279,22 @@ public class TypedStreamSubscription : IAsyncDisposable {
 public record StreamMeta(string Stream, ulong Position, DateTime Timestamp);
 ```
 
+```csharp
+public class SignalRSubscriptionClientOptions {
+    /// Serializer for deserializing event payloads in typed mode. Uses DefaultEventSerializer if null.
+    public IEventSerializer? Serializer { get; set; }
+
+    /// When true, the client creates an Activity for each received event, linked to the
+    /// trace context from metadata ($traceId/$spanId). Default: false.
+    /// Enable when the client has an OpenTelemetry collector configured and wants to
+    /// participate in distributed traces. Disable for UI consumers that don't report telemetry.
+    public bool EnableTracing { get; set; }
+}
+```
+
 Deserializes `JsonPayload` using `IEventSerializer`, dispatches to the matching `On<T>` handler based on `EventType` resolved via `TypeMap`. Unrecognized event types are silently skipped (same behavior as `EventHandler.Ignored`).
+
+When `EnableTracing` is false (default), metadata is still carried on the envelope and available via `StreamMeta` for inspection, but no `Activity` is created. When true, the client deserializes `JsonMetadata` → `Metadata` → `GetTracingMeta()` → `ToActivityContext()` and starts a consume `Activity` with that parent context before invoking the handler.
 
 Disposing a `TypedStreamSubscription` without calling `StartAsync` is safe (no server-side subscription was created). `StartAsync` is what triggers the `SubscribeToStream` call to the server.
 
