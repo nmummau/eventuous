@@ -34,14 +34,12 @@ public record StreamEventEnvelope {
     public required DateTime Timestamp { get; init; }
     public required string JsonPayload { get; init; }
     public string? JsonMetadata { get; init; }
-    public string? TraceId { get; init; }
-    public string? SpanId { get; init; }
 }
 ```
 
 The payload is pre-serialized JSON on the server side. This avoids polymorphic serialization issues (`StreamEvent.Payload` is `object?`) and lets the client deserialize with `TypeMap` when typed consumption is used.
 
-`TraceId` and `SpanId` carry the W3C distributed trace context from the server's produce activity. The client can use these to continue the trace (e.g., create a child span for event processing), enabling end-to-end observability from event store → server subscription → SignalR transport → client handler.
+**Distributed tracing:** Trace context flows through `JsonMetadata`, not as separate fields. The server's `BaseProducer` stamps `$traceId` and `$spanId` into the `ProducedMessage.Metadata` via `AddActivityTags`. The `RouteAndTransform` serializes this metadata into `JsonMetadata`. On the client, the `TypedStreamSubscription` deserializes `JsonMetadata` back into a `Metadata` dictionary, calls `GetTracingMeta()` to extract `TracingMeta(traceId, spanId)`, creates a parent `ActivityContext` via `ToActivityContext()`, and starts a consume `Activity` linked to the original trace. This mirrors exactly how normal Eventuous subscriptions restore trace context from event metadata — the SignalR transport is transparent to the tracing pipeline.
 
 **Position semantics:** The envelope carries both `StreamPosition` (position within the subscribed stream) and `GlobalPosition` (position in the global commit log). For per-stream subscriptions, the client uses `StreamPosition` for resume and deduplication. `GlobalPosition` is included for consumers that need cross-stream ordering or may later subscribe to `$all`.
 
@@ -97,16 +95,9 @@ public class SignalRProducer<THub>(IHubContext<THub> hubContext)
     ) {
         var client = hubContext.Clients.Client(options!.ConnectionId);
         foreach (var msg in messages) {
-            // BaseProducer already stamped trace/span into metadata via ProducerActivity.
-            // Extract and attach to the envelope for client-side trace continuation.
-            var envelope = (StreamEventEnvelope)msg.Message!;
-            var traced = envelope with {
-                TraceId = Activity.Current?.TraceId.ToString(),
-                SpanId  = Activity.Current?.SpanId.ToString()
-            };
             await client.SendAsync(
                 SignalRSubscriptionMethods.StreamEvent,
-                traced,
+                msg.Message, // StreamEventEnvelope — metadata already has $traceId/$spanId
                 ct
             );
         }
@@ -114,9 +105,11 @@ public class SignalRProducer<THub>(IHubContext<THub> hubContext)
 }
 ```
 
-By extending `BaseProducer`, the producer gets automatic OpenTelemetry `Activity` creation via `ProducerActivity.Start`. The `BaseProducer.Produce` method creates a produce activity, stamps trace context into message metadata, then calls `ProduceMessages`. The `SignalRProducer` reads `Activity.Current` (set by `BaseProducer`) and propagates trace/span IDs into the envelope for the client.
+By extending `BaseProducer`, the producer gets automatic OpenTelemetry `Activity` creation via `ProducerActivity.Start`. The `BaseProducer.Produce` method creates a produce activity, stamps trace context (`$traceId`, `$spanId`) into `ProducedMessage.Metadata` via `AddActivityTags`, then calls `ProduceMessages`. The `RouteAndTransform` serializes this enriched metadata into `StreamEventEnvelope.JsonMetadata`, so trace context flows through the existing metadata pipeline — no special handling needed in the producer.
 
-The `RouteAndTransform` serializes events to envelopes:
+The `RouteAndTransform` serializes events to envelopes. Metadata from the consume context (which includes trace context from the original event) is serialized into `JsonMetadata`. The `BaseProducer` later enriches the `ProducedMessage.Metadata` with produce-side trace tags, but the `RouteAndTransform` runs first — so the transform serializes the original event metadata. The produce-side trace context is what `BaseProducer` adds to `ProducedMessage.Metadata`, which then gets passed to `ProduceMessages`. To ensure the produce-side trace IDs flow to the client, the `SignalRProducer.ProduceMessages` should re-serialize metadata from `msg.Metadata` (the enriched one) rather than using the pre-built envelope's `JsonMetadata`.
+
+Alternatively, the simpler approach: the `RouteAndTransform` builds the envelope with `JsonMetadata` from `ctx.Metadata` (which already has `$traceId`/`$spanId` if the event was originally stored with trace context). For events that don't have trace context in their metadata, the client simply won't have a parent trace — which is acceptable.
 
 ```csharp
 RouteAndTransform<SignalRProduceOptions> CreateTransform(
@@ -131,15 +124,19 @@ RouteAndTransform<SignalRProduceOptions> CreateTransform(
         GlobalPosition = ctx.GlobalPosition,
         Timestamp      = ctx.Created,
         JsonPayload    = Encoding.UTF8.GetString(result.Payload),
-        JsonMetadata   = /* serialize metadata if present */
+        JsonMetadata   = ctx.Metadata is { Count: > 0 }
+            ? JsonSerializer.Serialize(ctx.Metadata.ToDictionary(kv => kv.Key, kv => kv.Value))
+            : null
     };
     return ValueTask.FromResult(new[] {
         new GatewayMessage<SignalRProduceOptions>(
-            new StreamName(stream), envelope, null, new SignalRProduceOptions(connectionId)
+            new StreamName(stream), envelope, ctx.Metadata, new SignalRProduceOptions(connectionId)
         )
     });
 };
 ```
+
+Note: `GatewayMessage.Metadata` is passed through so `GatewayMetaHelper.GetMeta` can propagate causation IDs. The `GatewayHandler` uses this metadata when constructing the `ProducedMessage`, and `BaseProducer` enriches it with produce-side trace context.
 
 **Event serialization note:** `IEventSerializer.SerializeEvent` returns `SerializationResult` containing `byte[] Payload`. The transform converts UTF-8 bytes to a string for the envelope. This involves a deserialize-then-reserialize round-trip (the subscription already deserialized the event). This is acceptable — the alternative (raw bytes from the store) isn't available on `IMessageConsumeContext`.
 
