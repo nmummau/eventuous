@@ -9,23 +9,18 @@ Applications using Eventuous often need to push real-time event streams to remot
 
 ## Goal
 
-Provide three NuGet packages that handle the subscription-to-SignalR relay as reusable infrastructure:
+Provide two NuGet packages that handle the subscription-to-SignalR relay as reusable infrastructure:
 
-- **`Eventuous.SignalR`** — shared wire contracts
-- **`Eventuous.SignalR.Server`** — server-side gateway that bridges Eventuous subscriptions to SignalR
-- **`Eventuous.SignalR.Client`** — client-side subscription API with auto-reconnect
+- **`Eventuous.SignalR.Server`** — server-side gateway that bridges Eventuous subscriptions to SignalR, owns the wire contract source files
+- **`Eventuous.SignalR.Client`** — client-side subscription API with auto-reconnect, links to contract sources from Server
 
-The split ensures clients never pull in server-side subscription or event store dependencies.
+The split ensures clients never pull in server-side subscription or event store dependencies. Wire contracts (`StreamEventEnvelope`, etc.) are source files owned by the Server project and compiled into the Client via `<Compile Include="...">` links — no shared binary package needed, since these are serialization DTOs that never cross assembly boundaries at runtime.
 
 ## Package Design
 
-### Eventuous.SignalR (Core)
+### Wire Contracts (source-shared)
 
-Shared contracts referenced by both server and client. No dependency on Eventuous.Subscriptions or SignalR server packages.
-
-**Dependencies:** None (pure .NET)
-
-**Contents:**
+These types live in `src/SignalR/src/Eventuous.SignalR.Server/Contracts/` and are linked into the Client project. They define the serialization format for the SignalR transport.
 
 `StreamEventEnvelope` — the wire DTO sent over SignalR:
 
@@ -73,7 +68,7 @@ public static class SignalRSubscriptionMethods {
 
 Server-side gateway that manages per-connection Eventuous subscriptions and forwards events over SignalR.
 
-**Dependencies:** Eventuous.SignalR, Eventuous.Subscriptions, Microsoft.AspNetCore.SignalR.Core
+**Dependencies:** Eventuous.Subscriptions, Microsoft.AspNetCore.SignalR.Core
 
 #### SubscriptionGateway
 
@@ -170,12 +165,13 @@ app.MapHub<SignalRSubscriptionHub>("/subscriptions");
 Client-side subscription management with auto-reconnect and two consumption APIs.
 
 **Dependencies:**
-- `Eventuous.SignalR` — wire contracts
 - `Microsoft.AspNetCore.SignalR.Client` — hub connection
 - `Eventuous.Shared` — `TypeMap` / `ITypeMapper` for typed consumption
 - `Eventuous.Serialization` — `IEventSerializer` for deserialization
 
-Note: `Eventuous.Subscriptions` is NOT needed. The typed consumption uses `TypeMap` (from `Eventuous.Shared`) and `IEventSerializer` (from `Eventuous.Serialization`) directly.
+Wire contracts are compiled from linked source files (`<Compile Include="../Eventuous.SignalR.Server/Contracts/*.cs" />`), not from a package reference.
+
+Note: `Eventuous.Subscriptions` is NOT needed on the client. The typed consumption uses `TypeMap` (from `Eventuous.Shared`) and `IEventSerializer` (from `Eventuous.Serialization`) directly.
 
 #### SignalRSubscriptionClient
 
