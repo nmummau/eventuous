@@ -36,7 +36,7 @@ class ServiceBusMessageBuilder(
             CorrelationId = message.Metadata?.GetCorrelationId(),
             To = metadata?.GetValueOrDefault(attributes.To, options?.To)?.ToString(),
             ReplyTo = metadata?.GetValueOrDefault(attributes.ReplyTo, options?.ReplyTo)?.ToString(),
-            ReplyToSessionId = options?.ReplyToSessionId,
+            ReplyToSessionId = options?.ReplyToSessionId
         };
 
         // We set the SessionId only when a value is present because

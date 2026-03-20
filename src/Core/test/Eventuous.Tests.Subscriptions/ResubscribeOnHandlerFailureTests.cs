@@ -45,7 +45,7 @@ public class ResubscribeOnHandlerFailureTests {
 
         // Act
         await subscription.Subscribe(
-            id => Interlocked.Increment(ref subscribedCount),
+            _ => Interlocked.Increment(ref subscribedCount),
             (id, reason, ex) => droppedTcs.TrySetResult((id, reason, ex)),
             ct
         );
@@ -55,7 +55,7 @@ public class ResubscribeOnHandlerFailureTests {
 
         // Assert
         if (completedTask == droppedTcs.Task) {
-            var (id, reason, ex) = await droppedTcs.Task;
+            var (id, _, _) = await droppedTcs.Task;
             id.ShouldBe("test-handler-failure");
             // Subscription should have been dropped due to error
             subscription.IsDropped.ShouldBeTrue("Subscription should be marked as dropped after handler failure");
@@ -152,10 +152,7 @@ public class ResubscribeOnHandlerFailureTests {
         public override ValueTask<EventHandlingStatus> HandleEvent(IMessageConsumeContext context) {
             var count = Interlocked.Increment(ref HandledCount);
 
-            if (count == failOnEvent)
-                throw new InvalidOperationException($"Simulated handler failure on event #{count}");
-
-            return new(EventHandlingStatus.Success);
+            return count == failOnEvent ? throw new InvalidOperationException($"Simulated handler failure on event #{count}") : new(EventHandlingStatus.Success);
         }
     }
 
@@ -215,7 +212,7 @@ public class ResubscribeOnHandlerFailureTests {
                     Sequence++,
                     DateTime.UtcNow,
                     new { EventNumber = i },
-                    new Metadata(),
+                    new(),
                     Options.SubscriptionId,
                     cancellationToken
                 ) { LogContext = Log };
