@@ -89,6 +89,9 @@ public class SignalRSubscriptionClient : IAsyncDisposable {
 
     internal HubConnection Connection => _connection;
 
+    public TypedStreamSubscription SubscribeTyped(string stream, ulong? fromPosition)
+        => new TypedStreamSubscription(this, stream, fromPosition);
+
     void OnStreamEvent(StreamEventEnvelope envelope) {
         if (!_subscriptions.TryGetValue(envelope.Stream, out var state)) return;
 

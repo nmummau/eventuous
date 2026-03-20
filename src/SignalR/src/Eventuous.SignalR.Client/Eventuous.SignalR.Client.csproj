@@ -2,6 +2,7 @@
     <ItemGroup>
         <ProjectReference Include="$(CoreRoot)\Eventuous.Shared\Eventuous.Shared.csproj" />
         <ProjectReference Include="$(CoreRoot)\Eventuous.Serialization\Eventuous.Serialization.csproj" />
+        <ProjectReference Include="$(CoreRoot)\Eventuous.Diagnostics\Eventuous.Diagnostics.csproj" />
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" />
