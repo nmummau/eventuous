@@ -11,14 +11,14 @@ using Microsoft.AspNetCore.SignalR.Client;
 namespace Eventuous.SignalR.Client;
 
 public class TypedStreamSubscription : IAsyncDisposable {
-    readonly SignalRSubscriptionClient                              _client;
-    readonly string                                                _stream;
-    readonly ulong?                                                _fromPosition;
+    readonly SignalRSubscriptionClient                                _client;
+    readonly string                                                  _stream;
+    readonly ulong?                                                  _fromPosition;
     readonly Dictionary<string, Func<object, StreamMeta, ValueTask>> _handlers = new();
-    Action<StreamSubscriptionError>?                               _errorHandler;
-    CancellationTokenSource?                                       _cts;
-    Task?                                                          _consumeTask;
-    bool                                                           _started;
+    Action<StreamSubscriptionError>?                                 _errorHandler;
+    CancellationTokenSource?                                         _cts;
+    Task?                                                            _consumeTask;
+    bool                                                             _started;
 
     internal TypedStreamSubscription(SignalRSubscriptionClient client, string stream, ulong? fromPosition) {
         _client       = client;
@@ -55,7 +55,7 @@ public class TypedStreamSubscription : IAsyncDisposable {
             _stream,
             _fromPosition,
             _cts.Token
-        ).ConfigureAwait(false);
+        ).NoContext();
 
         _consumeTask = ConsumeLoop(channel.Reader, _cts.Token);
     }
@@ -65,7 +65,7 @@ public class TypedStreamSubscription : IAsyncDisposable {
         var enableTracing = _client.TracingEnabled;
 
         try {
-            await foreach (var envelope in reader.ReadAllAsync(ct).ConfigureAwait(false)) {
+            await foreach (var envelope in reader.ReadAllAsync(ct).NoContext(ct)) {
                 if (!_handlers.TryGetValue(envelope.EventType, out var handler)) continue;
 
                 var payload = Encoding.UTF8.GetBytes(envelope.JsonPayload);
@@ -81,19 +81,23 @@ public class TypedStreamSubscription : IAsyncDisposable {
                         activity = StartTraceActivity(envelope.JsonMetadata);
                     }
 
-                    await handler(deserialized.Payload, meta).ConfigureAwait(false);
+                    await handler(deserialized.Payload, meta).NoContext();
                 } finally {
                     activity?.Dispose();
                 }
             }
         } catch (OperationCanceledException) {
             // Expected on dispose/cancellation
-        } catch (ChannelClosedException) {
-            // Channel completed (server error or connection closed)
+        } catch (ChannelClosedException ex) {
+            // Channel completed with error (server subscription failure or connection closed)
+            _errorHandler?.Invoke(new StreamSubscriptionError {
+                Stream  = _stream,
+                Message = ex.InnerException?.Message ?? "Subscription channel closed"
+            });
         } catch (Exception ex) {
             _errorHandler?.Invoke(new StreamSubscriptionError {
                 Stream  = _stream,
-                Message = ex.Message
+                Message = ex.ToString()
             });
         }
     }
@@ -114,17 +118,18 @@ public class TypedStreamSubscription : IAsyncDisposable {
                 ActivityKind.Consumer,
                 parentContext.Value
             );
-        } catch {
+        } catch (Exception) {
+            // Tracing is best-effort; malformed metadata must not break event consumption
             return null;
         }
     }
 
     public async ValueTask DisposeAsync() {
         if (_cts != null) {
-            await _cts.CancelAsync().ConfigureAwait(false);
+            await _cts.CancelAsync().NoContext();
 
             if (_consumeTask != null) {
-                try { await _consumeTask.ConfigureAwait(false); } catch { /* expected */ }
+                try { await _consumeTask.NoContext(); } catch (OperationCanceledException) { /* expected */ }
             }
 
             _cts.Dispose();
@@ -136,9 +141,11 @@ public class TypedStreamSubscription : IAsyncDisposable {
                 await _client.Connection.InvokeAsync(
                     SignalRSubscriptionMethods.Unsubscribe,
                     _stream
-                ).ConfigureAwait(false);
-            } catch {
-                // Best effort
+                ).NoContext();
+            } catch (OperationCanceledException) {
+                // Expected during shutdown
+            } catch (ObjectDisposedException) {
+                // Connection already torn down
             }
         }
     }

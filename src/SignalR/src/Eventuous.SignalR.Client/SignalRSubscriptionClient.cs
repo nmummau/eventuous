@@ -42,22 +42,28 @@ public class SignalRSubscriptionClient : IAsyncDisposable {
             new UnboundedChannelOptions { SingleReader = true, SingleWriter = true }
         );
 
+        // Complete any existing subscription for this stream before replacing
+        if (_subscriptions.TryRemove(stream, out var previous)) {
+            previous.Channel.Writer.TryComplete();
+        }
+
         var state = new SubscriptionState(channel, fromPosition);
         _subscriptions[stream] = state;
 
-        await _connection.InvokeAsync(
-            SignalRSubscriptionMethods.Subscribe,
-            stream,
-            fromPosition,
-            ct
-        ).ConfigureAwait(false);
+        try {
+            await _connection.InvokeAsync(
+                SignalRSubscriptionMethods.Subscribe,
+                stream,
+                fromPosition,
+                ct
+            ).NoContext();
 
-        await foreach (var envelope in channel.Reader.ReadAllAsync(ct).ConfigureAwait(false)) {
-            yield return envelope;
+            await foreach (var envelope in channel.Reader.ReadAllAsync(ct).NoContext(ct)) {
+                yield return envelope;
+            }
+        } finally {
+            _subscriptions.TryRemove(stream, out _);
         }
-
-        // Cleanup when enumeration stops
-        _subscriptions.TryRemove(stream, out _);
     }
 
     public async Task UnsubscribeAsync(string stream) {
@@ -66,7 +72,7 @@ public class SignalRSubscriptionClient : IAsyncDisposable {
             await _connection.InvokeAsync(
                 SignalRSubscriptionMethods.Unsubscribe,
                 stream
-            ).ConfigureAwait(false);
+            ).NoContext();
         }
     }
 
@@ -90,7 +96,7 @@ public class SignalRSubscriptionClient : IAsyncDisposable {
     internal HubConnection Connection => _connection;
 
     public TypedStreamSubscription SubscribeTyped(string stream, ulong? fromPosition)
-        => new TypedStreamSubscription(this, stream, fromPosition);
+        => new(this, stream, fromPosition);
 
     void OnStreamEvent(StreamEventEnvelope envelope) {
         if (!_subscriptions.TryGetValue(envelope.Stream, out var state)) return;
@@ -116,15 +122,17 @@ public class SignalRSubscriptionClient : IAsyncDisposable {
                     stream,
                     state.LastPosition,
                     CancellationToken.None
-                ).ConfigureAwait(false);
-            } catch {
-                // Best-effort reconnection
+                ).NoContext();
+            } catch (OperationCanceledException) {
+                // Connection was disposed during reconnect
+            } catch (ObjectDisposedException) {
+                // Connection already torn down
             }
         }
     }
 
     Task OnClosed(Exception? exception) {
-        foreach (var (stream, state) in _subscriptions) {
+        foreach (var (_, state) in _subscriptions) {
             state.Channel.Writer.TryComplete(exception);
         }
         return Task.CompletedTask;
@@ -143,9 +151,11 @@ public class SignalRSubscriptionClient : IAsyncDisposable {
                 await _connection.InvokeAsync(
                     SignalRSubscriptionMethods.Unsubscribe,
                     stream
-                ).ConfigureAwait(false);
-            } catch {
-                // Best effort
+                ).NoContext();
+            } catch (OperationCanceledException) {
+                // Expected during shutdown
+            } catch (ObjectDisposedException) {
+                // Connection already torn down
             }
         }
 

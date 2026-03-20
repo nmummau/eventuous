@@ -10,4 +10,10 @@
     <ItemGroup>
         <Compile Include="..\Eventuous.SignalR.Server\Contracts\*.cs" LinkBase="Contracts" />
     </ItemGroup>
+    <ItemGroup>
+        <Compile Include="$(CoreRoot)\Eventuous.Shared\Tools\TaskExtensions.cs">
+            <Link>Tools\TaskExtensions.cs</Link>
+        </Compile>
+        <Using Include="Eventuous.Tools" />
+    </ItemGroup>
 </Project>

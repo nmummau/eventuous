@@ -9,18 +9,21 @@ using Microsoft.Extensions.Logging;
 namespace Eventuous.SignalR.Server;
 
 public class SubscriptionGateway<THub> : IAsyncDisposable where THub : Hub {
-    readonly SignalRProducer<THub>                                                          _producer;
-    readonly SubscriptionFactory                                                            _subscriptionFactory;
-    readonly IEventSerializer                                                               _eventSerializer;
-    readonly ILogger                                                                        _logger;
-    readonly ConcurrentDictionary<(string ConnectionId, string Stream), SubscriptionState> _subscriptions = new();
+    readonly IHubContext<THub>                                                                _hubContext;
+    readonly SignalRProducer<THub>                                                            _producer;
+    readonly SubscriptionFactory                                                              _subscriptionFactory;
+    readonly IEventSerializer                                                                 _eventSerializer;
+    readonly ILogger                                                                          _logger;
+    readonly ConcurrentDictionary<(string ConnectionId, string Stream), SubscriptionState>   _subscriptions = new();
 
     public SubscriptionGateway(
+        IHubContext<THub>      hubContext,
         SignalRProducer<THub>  producer,
         SignalRGatewayOptions  options,
         IEventSerializer       eventSerializer,
         ILoggerFactory         loggerFactory
     ) {
+        _hubContext          = hubContext;
         _producer            = producer;
         _subscriptionFactory = options.SubscriptionFactory;
         _eventSerializer     = eventSerializer;
@@ -61,6 +64,18 @@ public class SubscriptionGateway<THub> : IAsyncDisposable where THub : Hub {
             } catch (Exception ex) {
                 _logger.LogError(ex, "Subscription {SubscriptionId} failed", subscriptionId);
                 _subscriptions.TryRemove(key, out _);
+
+                // Notify the client about the failure
+                try {
+                    var client = _hubContext.Clients.Client(connectionId);
+                    await client.SendAsync(
+                        SignalRSubscriptionMethods.StreamError,
+                        new StreamSubscriptionError { Stream = stream, Message = ex.Message },
+                        CancellationToken.None
+                    ).NoContext();
+                } catch (Exception notifyEx) {
+                    _logger.LogDebug(notifyEx, "Failed to notify client {ConnectionId} about subscription error", connectionId);
+                }
             }
         }, cts.Token);
     }
@@ -72,20 +87,21 @@ public class SubscriptionGateway<THub> : IAsyncDisposable where THub : Hub {
     }
 
     public async Task RemoveConnectionAsync(string connectionId) {
-        var keys = _subscriptions.Keys.Where(k => k.ConnectionId == connectionId).ToList();
-        foreach (var key in keys) {
+        foreach (var key in _subscriptions.Keys.Where(k => k.ConnectionId == connectionId).ToList()) {
             if (_subscriptions.TryRemove(key, out var state)) {
                 await StopSubscription(state).NoContext();
             }
         }
     }
 
-    static async Task StopSubscription(SubscriptionState state) {
+    async Task StopSubscription(SubscriptionState state) {
         await state.Cts.CancelAsync();
         try {
             await state.Subscription.Unsubscribe(_ => { }, CancellationToken.None).NoContext();
-        } catch {
-            // Best effort cleanup
+        } catch (OperationCanceledException) {
+            // Expected during cancellation
+        } catch (Exception ex) {
+            _logger.LogWarning(ex, "Error during subscription unsubscribe cleanup");
         }
         await state.Pipe.DisposeAsync().NoContext();
         state.Cts.Dispose();

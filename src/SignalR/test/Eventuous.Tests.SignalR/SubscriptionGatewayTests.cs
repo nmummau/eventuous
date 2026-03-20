@@ -33,7 +33,7 @@ public class SubscriptionGatewayTests {
                     .Returns(ci => new ValueTask(Task.Run(async () => {
                         var token = ci.ArgAt<CancellationToken>(2);
                         try { await Task.Delay(Timeout.Infinite, token); }
-                        catch (OperationCanceledException) { }
+                        catch (OperationCanceledException) { /* Expected: cancelled when unsubscribed */ }
                     })));
                 sub.Unsubscribe(Arg.Any<OnUnsubscribed>(), Arg.Any<CancellationToken>())
                     .Returns(ValueTask.CompletedTask);
@@ -43,7 +43,7 @@ public class SubscriptionGatewayTests {
         };
         var serializer = DefaultEventSerializer.Instance;
 
-        return new SubscriptionGateway<TestHub>(producer, options, serializer, NullLoggerFactory.Instance);
+        return new SubscriptionGateway<TestHub>(hubContext, producer, options, serializer, NullLoggerFactory.Instance);
     }
 
     [Test]

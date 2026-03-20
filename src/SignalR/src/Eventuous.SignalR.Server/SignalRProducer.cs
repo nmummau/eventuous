@@ -18,7 +18,8 @@ public class SignalRProducer<THub>(IHubContext<THub> hubContext)
         SignalRProduceOptions?       options,
         CancellationToken            cancellationToken = default
     ) {
-        var client = hubContext.Clients.Client(options!.ConnectionId);
+        ArgumentNullException.ThrowIfNull(options);
+        var client = hubContext.Clients.Client(options.ConnectionId);
 
         foreach (var msg in messages) {
             await client.SendAsync(
