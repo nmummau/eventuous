@@ -3,4 +3,8 @@
 
 namespace Eventuous.SignalR.Server;
 
+/// <summary>
+/// Options for producing events to a specific SignalR client.
+/// </summary>
+/// <param name="ConnectionId">The SignalR connection ID of the target client.</param>
 public record SignalRProduceOptions(string ConnectionId);

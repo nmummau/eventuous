@@ -1,7 +1,6 @@
 // Copyright (C) Eventuous HQ OÜ. All rights reserved
 // Licensed under the Apache License, Version 2.0.
 
-using Eventuous.SignalR;
 using Eventuous.SignalR.Server;
 using Microsoft.AspNetCore.SignalR;
 using NSubstitute;
@@ -18,7 +17,8 @@ public class SignalRProducerTests {
         hubClients.Client("conn-1").Returns(clientProxy);
 
         var producer = new SignalRProducer<TestHub>(hubContext);
-        var envelope = new Eventuous.SignalR.StreamEventEnvelope {
+
+        var envelope = new StreamEventEnvelope {
             EventId        = Guid.NewGuid(),
             Stream         = "Test-1",
             EventType      = "TestEvent",
@@ -28,17 +28,15 @@ public class SignalRProducerTests {
             JsonPayload    = "{}"
         };
 
-        await producer.Produce(
-            new StreamName("Test-1"),
-            [new ProducedMessage(envelope, new Metadata())],
-            new SignalRProduceOptions("conn-1")
-        );
+        await producer.Produce(new("Test-1"), [new(envelope, new())], new SignalRProduceOptions("conn-1"));
 
-        await clientProxy.Received(1).SendCoreAsync(
-            Eventuous.SignalR.SignalRSubscriptionMethods.StreamEvent,
-            Arg.Is<object?[]>(args => args.Length == 1 && args[0] is Eventuous.SignalR.StreamEventEnvelope),
-            Arg.Any<CancellationToken>()
-        ).ConfigureAwait(false);
+        await clientProxy.Received(1)
+            .SendCoreAsync(
+                SignalRSubscriptionMethods.StreamEvent,
+                Arg.Is<object?[]>(args => args.Length == 1 && args[0] is StreamEventEnvelope),
+                Arg.Any<CancellationToken>()
+            )
+            .ConfigureAwait(false);
     }
 }
 

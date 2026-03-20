@@ -4,7 +4,6 @@
 using System.Collections.Concurrent;
 using Eventuous.SignalR.Server;
 using Eventuous.Subscriptions;
-using Eventuous.Subscriptions.Filters;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
@@ -12,8 +11,8 @@ using NSubstitute;
 namespace Eventuous.Tests.SignalR;
 
 public class SubscriptionGatewayTests {
-    readonly List<(StreamName Stream, string SubId)>            _factoryCalls          = [];
-    readonly ConcurrentDictionary<string, IMessageSubscription> _createdSubscriptions  = new();
+    readonly List<(StreamName Stream, string SubId)>            _factoryCalls         = [];
+    readonly ConcurrentDictionary<string, IMessageSubscription> _createdSubscriptions = new();
 
     SubscriptionGateway<TestHub> CreateGateway() {
         var hubContext  = Substitute.For<IHubContext<TestHub>>();
@@ -23,25 +22,35 @@ public class SubscriptionGatewayTests {
         hubClients.Client(Arg.Any<string>()).Returns(clientProxy);
 
         var producer = new SignalRProducer<TestHub>(hubContext);
+
         var options = new SignalRGatewayOptions {
-            SubscriptionFactory = (stream, fromPosition, pipe, subscriptionId) => {
+            SubscriptionFactory = (stream, _, _, subscriptionId) => {
                 _factoryCalls.Add((stream, subscriptionId));
                 var sub = Substitute.For<IMessageSubscription>();
                 sub.SubscriptionId.Returns(subscriptionId);
+
                 // Make Subscribe block until cancelled
                 sub.Subscribe(Arg.Any<OnSubscribed>(), Arg.Any<OnDropped>(), Arg.Any<CancellationToken>())
-                    .Returns(ci => new ValueTask(Task.Run(async () => {
-                        var token = ci.ArgAt<CancellationToken>(2);
-                        try { await Task.Delay(Timeout.Infinite, token); }
-                        catch (OperationCanceledException) { /* Expected: cancelled when unsubscribed */ }
-                    })));
-                sub.Unsubscribe(Arg.Any<OnUnsubscribed>(), Arg.Any<CancellationToken>())
-                    .Returns(ValueTask.CompletedTask);
+                    .Returns(ci => new(
+                            Task.Run(async () => {
+                                    var token = ci.ArgAt<CancellationToken>(2);
+
+                                    try { await Task.Delay(Timeout.Infinite, token); } catch (OperationCanceledException) {
+                                        /* Expected: cancelled when unsubscribed */
+                                    }
+                                }
+                            )
+                        )
+                    );
+
+                sub.Unsubscribe(Arg.Any<OnUnsubscribed>(), Arg.Any<CancellationToken>()).Returns(ValueTask.CompletedTask);
                 _createdSubscriptions[subscriptionId] = sub;
+
                 return sub;
             }
         };
-        return new SubscriptionGateway<TestHub>(hubContext, producer, options, NullLoggerFactory.Instance);
+
+        return new(hubContext, producer, options, NullLoggerFactory.Instance);
     }
 
     [Test]

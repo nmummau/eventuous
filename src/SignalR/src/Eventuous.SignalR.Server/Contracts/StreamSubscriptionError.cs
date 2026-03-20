@@ -3,7 +3,13 @@
 
 namespace Eventuous.SignalR;
 
+/// <summary>
+/// Error notification sent to the client when a server-side subscription fails.
+/// </summary>
 public record StreamSubscriptionError {
+    /// <summary>The stream that experienced the error.</summary>
     public required string Stream { get; init; }
+
+    /// <summary>Human-readable error message.</summary>
     public required string Message { get; init; }
 }

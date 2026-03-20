@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0.
 
 extern alias SignalRClient;
-
 using SignalRClient::Eventuous.SignalR.Client;
 using Microsoft.AspNetCore.SignalR.Client;
 

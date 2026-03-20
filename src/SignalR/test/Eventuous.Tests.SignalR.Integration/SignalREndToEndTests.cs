@@ -1,23 +1,17 @@
 extern alias SignalRClient;
-
 using System.Runtime.InteropServices;
 using Eventuous.KurrentDB;
 using Eventuous.SignalR.Server;
-using Eventuous.Subscriptions.Filters;
 using KurrentDB.Client;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Testcontainers.KurrentDb;
 using ClientTypes = SignalRClient::Eventuous.SignalR.Client;
+using KurrentStreamSubscription = Eventuous.KurrentDB.Subscriptions.StreamSubscription;
 
 namespace Eventuous.Tests.SignalR.Integration;
-
-using KurrentStreamSubscription = Eventuous.KurrentDB.Subscriptions.StreamSubscription;
-using KurrentStreamSubscriptionOptions = Eventuous.KurrentDB.Subscriptions.StreamSubscriptionOptions;
 
 [EventType("TestOrderPlaced")]
 record TestOrderPlaced(string OrderId, decimal Amount);
@@ -55,21 +49,19 @@ public class SignalREndToEndTests : IAsyncDisposable {
         builder.Services.AddEventStore<KurrentDBEventStore>();
 
         builder.Services.AddSignalRSubscriptionGateway<SignalRSubscriptionHub>((sp, options) => {
-            var client        = sp.GetRequiredService<KurrentDBClient>();
-            var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
+                var client        = sp.GetRequiredService<KurrentDBClient>();
+                var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
 
-            options.SubscriptionFactory = (stream, fromPosition, pipe, subscriptionId) =>
-                new KurrentStreamSubscription(
-                    client,
-                    new KurrentStreamSubscriptionOptions {
-                        StreamName     = stream,
-                        SubscriptionId = subscriptionId
-                    },
-                    new NoOpCheckpointStore(fromPosition),
-                    pipe,
-                    loggerFactory
-                );
-        });
+                options.SubscriptionFactory = (stream, fromPosition, pipe, subscriptionId) =>
+                    new KurrentStreamSubscription(
+                        client,
+                        new() { StreamName = stream, SubscriptionId = subscriptionId },
+                        new NoOpCheckpointStore(fromPosition),
+                        pipe,
+                        loggerFactory
+                    );
+            }
+        );
 
         _app = builder.Build();
         _app.MapHub<SignalRSubscriptionHub>("/subscriptions");
@@ -90,25 +82,17 @@ public class SignalREndToEndTests : IAsyncDisposable {
 
     async Task AppendEvents(string stream, params object[] events) {
         var streamEvents = events
-            .Select(e => new NewStreamEvent(Guid.NewGuid(), e, new Metadata()))
+            .Select(e => new NewStreamEvent(Guid.NewGuid(), e, new()))
             .ToArray();
 
-        await _eventStore.AppendEvents(
-            new StreamName(stream),
-            ExpectedStreamVersion.Any,
-            streamEvents,
-            default
-        );
+        await _eventStore.AppendEvents(new(stream), ExpectedStreamVersion.Any, streamEvents, default);
     }
 
     [Test]
     public async Task RawStreaming_ReceivesAppendedEvents() {
         var stream = $"Order-{Guid.NewGuid():N}";
 
-        await AppendEvents(stream,
-            new TestOrderPlaced("order-1", 99.99m),
-            new TestOrderShipped("order-1", "TRACK-123")
-        );
+        await AppendEvents(stream, new TestOrderPlaced("order-1", 99.99m), new TestOrderShipped("order-1", "TRACK-123"));
 
         var connection = CreateHubConnection();
         await connection.StartAsync();
@@ -119,6 +103,7 @@ public class SignalREndToEndTests : IAsyncDisposable {
 
         await foreach (var envelope in client.SubscribeAsync(stream, null, cts.Token)) {
             received.Add(envelope);
+
             if (received.Count >= 2) break;
         }
 
@@ -137,10 +122,7 @@ public class SignalREndToEndTests : IAsyncDisposable {
     public async Task TypedSubscription_DispatchesToCorrectHandlers() {
         var stream = $"Order-{Guid.NewGuid():N}";
 
-        await AppendEvents(stream,
-            new TestOrderPlaced("order-2", 149.99m),
-            new TestOrderShipped("order-2", "TRACK-456")
-        );
+        await AppendEvents(stream, new TestOrderPlaced("order-2", 149.99m), new TestOrderShipped("order-2", "TRACK-456"));
 
         var connection = CreateHubConnection();
         await connection.StartAsync();
@@ -152,16 +134,20 @@ public class SignalREndToEndTests : IAsyncDisposable {
         var count         = 0;
 
         var sub = client.SubscribeTyped(stream, null)
-            .On<TestOrderPlaced>((evt, meta) => {
-                placedEvents.Add(evt);
-                if (Interlocked.Increment(ref count) >= 2) done.TrySetResult();
-                return ValueTask.CompletedTask;
-            })
-            .On<TestOrderShipped>((evt, meta) => {
-                shippedEvents.Add(evt);
-                if (Interlocked.Increment(ref count) >= 2) done.TrySetResult();
-                return ValueTask.CompletedTask;
-            });
+            .On<TestOrderPlaced>((evt, _) => {
+                    placedEvents.Add(evt);
+                    if (Interlocked.Increment(ref count) >= 2) done.TrySetResult();
+
+                    return ValueTask.CompletedTask;
+                }
+            )
+            .On<TestOrderShipped>((evt, _) => {
+                    shippedEvents.Add(evt);
+                    if (Interlocked.Increment(ref count) >= 2) done.TrySetResult();
+
+                    return ValueTask.CompletedTask;
+                }
+            );
 
         await sub.StartAsync();
 
@@ -191,22 +177,23 @@ public class SignalREndToEndTests : IAsyncDisposable {
         var received = new List<SignalRClient::Eventuous.SignalR.StreamEventEnvelope>();
         var cts      = new CancellationTokenSource(TimeSpan.FromSeconds(10));
 
-        var consumeTask = Task.Run(async () => {
-            await foreach (var envelope in client.SubscribeAsync(stream, null, cts.Token)) {
-                received.Add(envelope);
-                if (received.Count >= 2) break;
-            }
-        }, cts.Token);
+        var consumeTask = Task.Run(
+            async () => {
+                await foreach (var envelope in client.SubscribeAsync(stream, null, cts.Token)) {
+                    received.Add(envelope);
 
-        // Give the subscription time to start on the server
-        await Task.Delay(1000);
-
-        await AppendEvents(stream,
-            new TestOrderPlaced("order-3", 200m),
-            new TestOrderShipped("order-3", "TRACK-789")
+                    if (received.Count >= 2) break;
+                }
+            },
+            cts.Token
         );
 
-        await consumeTask.WaitAsync(TimeSpan.FromSeconds(10));
+        // Give the subscription time to start on the server
+        await Task.Delay(1000, cts.Token);
+
+        await AppendEvents(stream, new TestOrderPlaced("order-3", 200m), new TestOrderShipped("order-3", "TRACK-789"));
+
+        await consumeTask.WaitAsync(TimeSpan.FromSeconds(10), cts.Token);
 
         await Assert.That(received).HasCount().EqualTo(2);
         await Assert.That(received[0].EventType).IsEqualTo("TestOrderPlaced");
