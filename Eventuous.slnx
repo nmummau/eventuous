@@ -169,6 +169,7 @@
     </Folder>
     <Folder Name="/SignalR/test/">
         <Project Path="src/SignalR/test/Eventuous.Tests.SignalR/Eventuous.Tests.SignalR.csproj" />
+        <Project Path="src/SignalR/test/Eventuous.Tests.SignalR.Integration/Eventuous.Tests.SignalR.Integration.csproj" />
     </Folder>
     <Folder Name="/Testing/" />
     <Folder Name="/Testing/src/">
