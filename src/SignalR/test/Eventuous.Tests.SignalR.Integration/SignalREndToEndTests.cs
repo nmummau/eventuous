@@ -53,7 +53,6 @@ public class SignalREndToEndTests : IAsyncDisposable {
         builder.Services.AddSignalR();
         builder.Services.AddKurrentDBClient(_container.GetConnectionString());
         builder.Services.AddEventStore<KurrentDBEventStore>();
-        builder.Services.AddSingleton<IEventSerializer>(DefaultEventSerializer.Instance);
 
         builder.Services.AddSignalRSubscriptionGateway<SignalRSubscriptionHub>((sp, options) => {
             var client        = sp.GetRequiredService<KurrentDBClient>();

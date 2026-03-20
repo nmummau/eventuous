@@ -41,9 +41,7 @@ public class SubscriptionGatewayTests {
                 return sub;
             }
         };
-        var serializer = DefaultEventSerializer.Instance;
-
-        return new SubscriptionGateway<TestHub>(hubContext, producer, options, serializer, NullLoggerFactory.Instance);
+        return new SubscriptionGateway<TestHub>(hubContext, producer, options, NullLoggerFactory.Instance);
     }
 
     [Test]

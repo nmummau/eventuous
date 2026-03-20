@@ -20,13 +20,13 @@ public class SubscriptionGateway<THub> : IAsyncDisposable where THub : Hub {
         IHubContext<THub>      hubContext,
         SignalRProducer<THub>  producer,
         SignalRGatewayOptions  options,
-        IEventSerializer       eventSerializer,
-        ILoggerFactory         loggerFactory
+        ILoggerFactory         loggerFactory,
+        IEventSerializer?      eventSerializer = null
     ) {
         _hubContext          = hubContext;
         _producer            = producer;
         _subscriptionFactory = options.SubscriptionFactory;
-        _eventSerializer     = eventSerializer;
+        _eventSerializer     = eventSerializer ?? DefaultEventSerializer.Instance;
         _logger              = loggerFactory.CreateLogger<SubscriptionGateway<THub>>();
     }
 
