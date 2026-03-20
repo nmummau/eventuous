@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="$(LocalRoot)\Eventuous.SignalR.Server\Eventuous.SignalR.Server.csproj" />
+        <ProjectReference Include="$(LocalRoot)\Eventuous.SignalR.Client\Eventuous.SignalR.Client.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="NSubstitute" />
+    </ItemGroup>
+</Project>

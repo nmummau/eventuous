@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <ItemGroup>
+        <ProjectReference Include="$(CoreRoot)\Eventuous.Shared\Eventuous.Shared.csproj" />
+        <ProjectReference Include="$(CoreRoot)\Eventuous.Serialization\Eventuous.Serialization.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" />
+    </ItemGroup>
+    <ItemGroup>
+        <Compile Include="..\Eventuous.SignalR.Server\Contracts\*.cs" LinkBase="Contracts" />
+    </ItemGroup>
+</Project>
