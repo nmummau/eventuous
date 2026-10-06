@@ -12,34 +12,41 @@ public class ProjectWithBulkBuilder(IntegrationFixture fixture) : ProjectionTest
     [Test]
     public async Task ShouldProjectImported(CancellationToken cancellationToken) {
         await InitializeAsync();
-        var evt    = DomainFixture.CreateImportBookingEvent();
-        var id     = new BookingId(CreateId());
-        var stream = StreamNameFactory.For<Booking, BookingState, BookingId>(id);
 
-        var first = await Act(stream, evt, cancellationToken);
+        BookingDocument expected;
+        (AppendEventsResult Append, BookingDocument? Doc) second;
 
-        var expected = new BookingDocument(id.ToString()) {
-            RoomId         = evt.RoomId,
-            CheckInDate    = evt.CheckIn,
-            CheckOutDate   = evt.CheckOut,
-            BookingPrice   = evt.Price,
-            Outstanding    = evt.Price,
-            Position       = first.Append.GlobalPosition,
-            StreamPosition = (ulong)first.Append.NextExpectedVersion
-        };
+        try {
+            var evt    = DomainFixture.CreateImportBookingEvent();
+            var id     = new BookingId(CreateId());
+            var stream = StreamNameFactory.For<Booking, BookingState, BookingId>(id);
 
-        await Assert.That(first.Doc).IsEquivalentTo(expected);
+            var first = await Act(stream, evt, cancellationToken);
 
-        var payment = new BookingPaymentRegistered(Guid.NewGuid().ToString(), evt.Price);
+            expected = new BookingDocument(id.ToString()) {
+                RoomId         = evt.RoomId,
+                CheckInDate    = evt.CheckIn,
+                CheckOutDate   = evt.CheckOut,
+                BookingPrice   = evt.Price,
+                Outstanding    = evt.Price,
+                Position       = first.Append.GlobalPosition,
+                StreamPosition = (ulong)first.Append.NextExpectedVersion
+            };
 
-        var second = await Act(stream, payment, cancellationToken);
-        await DisposeAsync();
+            await Assert.That(first.Doc).IsEquivalentTo(expected);
 
-        expected = expected with {
-            PaidAmount = payment.AmountPaid,
-            Position = second.Append.GlobalPosition,
-            StreamPosition = (ulong)second.Append.NextExpectedVersion
-        };
+            var payment = new BookingPaymentRegistered(Guid.NewGuid().ToString(), evt.Price);
+
+            second = await Act(stream, payment, cancellationToken);
+
+            expected = expected with {
+                PaidAmount = payment.AmountPaid,
+                Position = second.Append.GlobalPosition,
+                StreamPosition = (ulong)second.Append.NextExpectedVersion
+            };
+        } finally {
+            await DisposeAsync().ConfigureAwait(false);
+        }
 
         await Assert.That(second.Doc).IsEquivalentTo(expected);
     }

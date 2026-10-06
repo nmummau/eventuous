@@ -13,28 +13,31 @@ public sealed class ProjectingWithTypedHandlers(IntegrationFixture fixture)
     [Test]
     public async Task ShouldProjectImported(CancellationToken cancellationToken) {
         await InitializeAsync();
-        var evt    = DomainFixture.CreateImportBookingEvent();
-        var id     = new BookingId(CreateId());
-        var stream = StreamNameFactory.For<Booking, BookingState, BookingId>(id);
 
-        var append = await Fixture.AppendEvent(stream, evt);
+        try {
+            var evt    = DomainFixture.CreateImportBookingEvent();
+            var id     = new BookingId(CreateId());
+            var stream = StreamNameFactory.For<Booking, BookingState, BookingId>(id);
 
-        await WaitForPosition(append.GlobalPosition, cancellationToken);
+            var append = await Fixture.AppendEvent(stream, evt);
 
-        var expected = new BookingDocument(id.ToString()) {
-            RoomId         = evt.RoomId,
-            CheckInDate    = evt.CheckIn,
-            CheckOutDate   = evt.CheckOut,
-            BookingPrice   = evt.Price,
-            Outstanding    = evt.Price,
-            Position       = append.GlobalPosition,
-            StreamPosition = (ulong)append.NextExpectedVersion
-        };
+            await WaitForPosition(append.GlobalPosition, cancellationToken);
 
-        var actual = await Fixture.Mongo.LoadDocument<BookingDocument>(id.ToString(), cancellationToken: cancellationToken);
-        await Assert.That(actual).IsEquivalentTo(expected);
+            var expected = new BookingDocument(id.ToString()) {
+                RoomId         = evt.RoomId,
+                CheckInDate    = evt.CheckIn,
+                CheckOutDate   = evt.CheckOut,
+                BookingPrice   = evt.Price,
+                Outstanding    = evt.Price,
+                Position       = append.GlobalPosition,
+                StreamPosition = (ulong)append.NextExpectedVersion
+            };
 
-        await DisposeAsync();
+            var actual = await Fixture.Mongo.LoadDocument<BookingDocument>(id.ToString(), cancellationToken: cancellationToken);
+            await Assert.That(actual).IsEquivalentTo(expected);
+        } finally {
+            await DisposeAsync().ConfigureAwait(false);
+        }
     }
 
     public class SutProjection : MongoProjector<BookingDocument> {

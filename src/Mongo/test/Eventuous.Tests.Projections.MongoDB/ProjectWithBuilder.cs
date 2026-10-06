@@ -22,39 +22,44 @@ public class ProjectWithBuilder(IntegrationFixture fixture) {
 
         await projectionFixture.InitializeAsync();
 
-        var first = await Act(projectionFixture, stream, evt, cancellationToken);
+        BookingDocument? deletedDocument;
 
-        var expected = new BookingDocument(id.ToString()) {
-            RoomId         = evt.RoomId,
-            CheckInDate    = evt.CheckIn,
-            CheckOutDate   = evt.CheckOut,
-            BookingPrice   = evt.Price,
-            Outstanding    = evt.Price,
-            Position       = first.Append.GlobalPosition,
-            StreamPosition = (ulong)first.Append.NextExpectedVersion
-        };
+        try {
+            var first = await Act(projectionFixture, stream, evt, cancellationToken);
 
-        await Assert.That(first.Doc).IsEquivalentTo(expected);
+            var expected = new BookingDocument(id.ToString()) {
+                RoomId         = evt.RoomId,
+                CheckInDate    = evt.CheckIn,
+                CheckOutDate   = evt.CheckOut,
+                BookingPrice   = evt.Price,
+                Outstanding    = evt.Price,
+                Position       = first.Append.GlobalPosition,
+                StreamPosition = (ulong)first.Append.NextExpectedVersion
+            };
 
-        var payment = new BookingPaymentRegistered(Guid.NewGuid().ToString(), evt.Price);
+            await Assert.That(first.Doc).IsEquivalentTo(expected);
 
-        var second = await Act(projectionFixture, stream, payment, cancellationToken);
+            var payment = new BookingPaymentRegistered(Guid.NewGuid().ToString(), evt.Price);
 
-        expected = expected with {
-            PaidAmount = payment.AmountPaid,
-            Position = second.Append.GlobalPosition,
-            StreamPosition = (ulong)second.Append.NextExpectedVersion
-        };
+            var second = await Act(projectionFixture, stream, payment, cancellationToken);
 
-        await Assert.That(second.Doc).IsEquivalentTo(expected);
+            expected = expected with {
+                PaidAmount = payment.AmountPaid,
+                Position = second.Append.GlobalPosition,
+                StreamPosition = (ulong)second.Append.NextExpectedVersion
+            };
 
-        var cancellation = new BookingCancelled();
+            await Assert.That(second.Doc).IsEquivalentTo(expected);
 
-        var third = await Act(projectionFixture, stream, cancellation, cancellationToken);
+            var cancellation = new BookingCancelled();
 
-        await projectionFixture.DisposeAsync();
+            var third = await Act(projectionFixture, stream, cancellation, cancellationToken);
+            deletedDocument = third.Doc;
+        } finally {
+            await projectionFixture.DisposeAsync().ConfigureAwait(false);
+        }
 
-        await Assert.That(third.Doc).IsNull();
+        await Assert.That(deletedDocument).IsNull();
         
         // Extra test to make sure that generated context conversions were used
         await Assert.That(MessageConsumeContextConverter.ConversionCache).IsEmpty();
