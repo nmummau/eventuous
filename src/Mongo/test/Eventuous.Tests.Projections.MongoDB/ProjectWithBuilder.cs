@@ -14,7 +14,7 @@ public class ProjectWithBuilder(IntegrationFixture fixture) {
     [Test]
     [Retry(3)]
     [MethodDataSource(typeof(CollectionSource), nameof(CollectionSource.TestOptions))]
-    public async Task ShouldProjectImported(MongoProjectionOptions<BookingDocument>? options) {
+    public async Task ShouldProjectImported(MongoProjectionOptions<BookingDocument>? options, CancellationToken cancellationToken) {
         var evt               = DomainFixture.CreateImportBookingEvent();
         var projectionFixture = new ProjectionTestBase<SutProjection>(nameof(ProjectWithBuilder), fixture);
         var id                = new BookingId(projectionFixture.CreateId());
@@ -22,7 +22,7 @@ public class ProjectWithBuilder(IntegrationFixture fixture) {
 
         await projectionFixture.InitializeAsync();
 
-        var first = await Act(projectionFixture, stream, evt);
+        var first = await Act(projectionFixture, stream, evt, cancellationToken);
 
         var expected = new BookingDocument(id.ToString()) {
             RoomId         = evt.RoomId,
@@ -38,7 +38,7 @@ public class ProjectWithBuilder(IntegrationFixture fixture) {
 
         var payment = new BookingPaymentRegistered(Guid.NewGuid().ToString(), evt.Price);
 
-        var second = await Act(projectionFixture, stream, payment);
+        var second = await Act(projectionFixture, stream, payment, cancellationToken);
 
         expected = expected with {
             PaidAmount = payment.AmountPaid,
@@ -50,7 +50,7 @@ public class ProjectWithBuilder(IntegrationFixture fixture) {
 
         var cancellation = new BookingCancelled();
 
-        var third = await Act(projectionFixture, stream, cancellation);
+        var third = await Act(projectionFixture, stream, cancellation, cancellationToken);
 
         await projectionFixture.DisposeAsync();
 
@@ -60,10 +60,10 @@ public class ProjectWithBuilder(IntegrationFixture fixture) {
         await Assert.That(MessageConsumeContextConverter.ConversionCache).IsEmpty();
     }
     
-    static async Task<(AppendEventsResult Append, BookingDocument? Doc)> Act<T>(ProjectionTestBase<SutProjection> f, StreamName stream, T evt) where T : class {
+    static async Task<(AppendEventsResult Append, BookingDocument? Doc)> Act<T>(ProjectionTestBase<SutProjection> f, StreamName stream, T evt, CancellationToken cancellationToken) where T : class {
         var append = await f.Fixture.AppendEvent(stream, evt);
-        await f.WaitForPosition(append.GlobalPosition);
-        var actual = await f.Fixture.Mongo.LoadDocument<BookingDocument>(stream.GetId());
+        await f.WaitForPosition(append.GlobalPosition, cancellationToken);
+        var actual = await f.Fixture.Mongo.LoadDocument<BookingDocument>(stream.GetId(), cancellationToken: cancellationToken);
 
         return (append, actual);
     }

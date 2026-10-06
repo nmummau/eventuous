@@ -10,13 +10,13 @@ namespace Eventuous.Tests.Projections.MongoDB;
 [ClassDataSource<IntegrationFixture>]
 public class ProjectWithBulkBuilder(IntegrationFixture fixture) : ProjectionTestBase<ProjectWithBulkBuilder.SutBulkProjection>(nameof(ProjectWithBulkBuilder), fixture) {
     [Test]
-    public async Task ShouldProjectImported() {
+    public async Task ShouldProjectImported(CancellationToken cancellationToken) {
         await InitializeAsync();
         var evt    = DomainFixture.CreateImportBookingEvent();
         var id     = new BookingId(CreateId());
         var stream = StreamNameFactory.For<Booking, BookingState, BookingId>(id);
 
-        var first = await Act(stream, evt);
+        var first = await Act(stream, evt, cancellationToken);
 
         var expected = new BookingDocument(id.ToString()) {
             RoomId         = evt.RoomId,
@@ -32,7 +32,7 @@ public class ProjectWithBulkBuilder(IntegrationFixture fixture) : ProjectionTest
 
         var payment = new BookingPaymentRegistered(Guid.NewGuid().ToString(), evt.Price);
 
-        var second = await Act(stream, payment);
+        var second = await Act(stream, payment, cancellationToken);
         await DisposeAsync();
 
         expected = expected with {
@@ -44,11 +44,11 @@ public class ProjectWithBulkBuilder(IntegrationFixture fixture) : ProjectionTest
         await Assert.That(second.Doc).IsEquivalentTo(expected);
     }
 
-    async Task<(AppendEventsResult Append, BookingDocument? Doc)> Act<T>(StreamName stream, T evt)
+    async Task<(AppendEventsResult Append, BookingDocument? Doc)> Act<T>(StreamName stream, T evt, CancellationToken cancellationToken)
         where T : class {
         var append = await Fixture.AppendEvent(stream, evt);
-        await WaitForPosition(append.GlobalPosition);
-        var actual = await Fixture.Mongo.LoadDocument<BookingDocument>(stream.GetId());
+        await WaitForPosition(append.GlobalPosition, cancellationToken);
+        var actual = await Fixture.Mongo.LoadDocument<BookingDocument>(stream.GetId(), cancellationToken: cancellationToken);
 
         return (append, actual);
     }
