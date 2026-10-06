@@ -1,0 +1,12 @@
+<Configuration>
+  <CodeCoverage>
+    <ModulePaths>
+      <Include>
+        <ModulePath>.*Eventuous[^/\\]*\.dll$</ModulePath>
+      </Include>
+      <Exclude>
+        <ModulePath>.*Eventuous\.(Tests|Sut|TestHelpers)[^/\\]*\.dll$</ModulePath>
+      </Exclude>
+    </ModulePaths>
+  </CodeCoverage>
+</Configuration>

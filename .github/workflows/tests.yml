@@ -49,14 +49,27 @@ jobs:
           "
           for proj in $projects; do
             echo "::group::dotnet test $proj (net${{ matrix.dotnet-version }})"
-            dotnet test "$proj" -c "Debug CI" -f net${{ matrix.dotnet-version }}
+            if [[ '${{ matrix.dotnet-version }}' == '10.0' ]]; then
+              bash scripts/test-with-coverage.sh "$proj"
+            else
+              dotnet test "$proj" -c "Debug CI" -f net${{ matrix.dotnet-version }}
+            fi
             echo "::endgroup::"
           done
       -
         # Uses the sample apps as fixtures, which are pinned to net10.0 for the Aspire AppHost
         name: Run Spyglass tests
         if: matrix.dotnet-version == '10.0'
-        run: dotnet test src/Experimental/test/Eventuous.Tests.Spyglass/Eventuous.Tests.Spyglass.csproj -c "Debug CI" -f net10.0
+        run: bash scripts/test-with-coverage.sh src/Experimental/test/Eventuous.Tests.Spyglass/Eventuous.Tests.Spyglass.csproj
+      -
+        name: Upload coverage inputs
+        if: ${{ always() && matrix.dotnet-version == '10.0' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: Coverage Inputs core
+          path: coverage-results/
+          retention-days: 14
+          if-no-files-found: error
       -
         name: Upload Test Results
         if: always()
@@ -121,7 +134,18 @@ jobs:
             10.0.x
       -
         name: Run tests
-        run: dotnet test "${{ matrix.suite.project }}" -c "Debug CI" -f net10.0
+        env:
+          TEST_PROJECT: ${{ matrix.suite.project }}
+        run: bash scripts/test-with-coverage.sh "$TEST_PROJECT"
+      -
+        name: Upload coverage inputs
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: Coverage Inputs ${{ matrix.suite.name }}
+          path: coverage-results/
+          retention-days: 14
+          if-no-files-found: error
       -
         name: Upload Test Results
         if: always()
@@ -132,3 +156,61 @@ jobs:
             test-results/**/*.xml
             test-results/**/*.trx
             test-results/**/*.json
+
+  coverage:
+    name: Coverage report
+    needs: [unit-tests, integration-tests]
+    if: ${{ always() && !cancelled() }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Test coverage reporting
+        run: python3 -B -m unittest discover -s scripts -p 'test_*.py'
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+      - name: Restore reporting tool
+        run: dotnet tool restore
+      - name: Download coverage inputs
+        uses: actions/download-artifact@v8
+        with:
+          pattern: Coverage Inputs *
+          path: coverage-results/
+      - name: Validate suite coverage
+        id: coverage-inputs
+        if: ${{ always() && !cancelled() }}
+        run: python3 scripts/prepare-coverage.py
+      - name: Generate merged report
+        if: ${{ always() && !cancelled() && hashFiles('coverage-report/inputs/*.cobertura.xml') != '' }}
+        run: >-
+          dotnet tool run reportgenerator
+          '-reports:coverage-report/inputs/*.cobertura.xml'
+          '-targetdir:coverage-report/html'
+          '-reporttypes:Html;MarkdownSummaryGithub;Cobertura'
+          '-assemblyfilters:+Eventuous*;-Eventuous.Tests*;-Eventuous.Sut*;-Eventuous.TestHelpers*'
+          '-title:Eventuous coverage (${{ steps.coverage-inputs.outcome == 'success' && 'complete' || 'incomplete or failed run' }})'
+      - name: Publish coverage summary
+        if: ${{ always() && !cancelled() }}
+        run: |
+          if [[ -f coverage-report/status.md ]]; then
+            cat coverage-report/status.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'Coverage reporting failed before suite validation. Check the job logs.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+          if [[ -f coverage-report/html/SummaryGithub.md ]]; then
+            cat coverage-report/html/SummaryGithub.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Upload coverage report
+        if: ${{ always() && !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: Coverage Report
+          path: |
+            coverage-report/status.md
+            coverage-report/html/
+          retention-days: 14
+          if-no-files-found: error
