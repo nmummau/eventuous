@@ -29,7 +29,7 @@ public class ProjectorTests {
         await CreateSchema();
         var commands = await GenerateAndProduceEvents(100);
 
-        await Task.Delay(1000, cancellationToken);
+        await WaitForBookings(commands.Count, cancellationToken);
 
         await using var connection = await ConnectionFactory.GetConnection(_fixture.ConnectionString, cancellationToken);
 
@@ -45,9 +45,30 @@ public class ProjectorTests {
             await using var cmd = new SqlCommand(select, conn);
             cmd.Parameters.AddWithValue("@BookingId", command.BookingId);
             await using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
-            await reader.ReadAsync(cancellationToken);
+            await Assert.That(await reader.ReadAsync(cancellationToken)).IsTrue();
             await Assert.That(reader["CheckinDate"]).IsEqualTo(command.CheckIn.ToDateTimeUnspecified());
             await Assert.That(reader.GetDecimal(1)).IsEqualTo((decimal)command.Price);
+        }
+    }
+
+    async Task WaitForBookings(int expectedCount, CancellationToken cancellationToken) {
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        cts.CancelAfter(TimeSpan.FromSeconds(30));
+
+        var projectedCount = 0;
+
+        try {
+            await using var connection = await ConnectionFactory.GetConnection(_fixture.ConnectionString, cts.Token);
+            await using var cmd        = new SqlCommand($"SELECT COUNT(*) FROM {_fixture.SchemaName}.Bookings", connection);
+
+            while (true) {
+                projectedCount = (int)(await cmd.ExecuteScalarAsync(cts.Token))!;
+                if (projectedCount == expectedCount) return;
+
+                await Task.Delay(100, cts.Token);
+            }
+        } catch (OperationCanceledException ex) when (cts.IsCancellationRequested && !cancellationToken.IsCancellationRequested) {
+            throw new TimeoutException($"Expected {expectedCount} projected bookings within 30 seconds, but observed {projectedCount}.", ex);
         }
     }
 
