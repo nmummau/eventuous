@@ -19,7 +19,7 @@ public sealed class ProjectingWithTypedHandlers(IntegrationFixture fixture)
 
         var append = await Fixture.AppendEvent(stream, evt);
 
-        await WaitForPosition(append.GlobalPosition);
+        await WaitForPosition(append.GlobalPosition, cancellationToken);
 
         var expected = new BookingDocument(id.ToString()) {
             RoomId         = evt.RoomId,
