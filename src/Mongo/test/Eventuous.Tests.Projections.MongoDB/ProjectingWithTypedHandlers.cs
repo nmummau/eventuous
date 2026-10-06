@@ -2,6 +2,7 @@ using Eventuous.Projections.MongoDB;
 using Eventuous.Projections.MongoDB.Tools;
 using Eventuous.Sut.Domain;
 using Eventuous.Tests.Projections.MongoDB.Fixtures;
+using Eventuous.Tools;
 using MongoDB.Driver;
 using static Eventuous.Sut.Domain.BookingEvents;
 
@@ -36,7 +37,7 @@ public sealed class ProjectingWithTypedHandlers(IntegrationFixture fixture)
             var actual = await Fixture.Mongo.LoadDocument<BookingDocument>(id.ToString(), cancellationToken: cancellationToken);
             await Assert.That(actual).IsEquivalentTo(expected);
         } finally {
-            await DisposeAsync().ConfigureAwait(false);
+            await DisposeAsync().NoContext();
         }
     }
 

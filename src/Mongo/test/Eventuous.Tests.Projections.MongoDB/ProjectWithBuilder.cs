@@ -3,6 +3,7 @@ using Eventuous.Projections.MongoDB.Tools;
 using Eventuous.Subscriptions.Consumers;
 using Eventuous.Sut.Domain;
 using Eventuous.Tests.Projections.MongoDB.Fixtures;
+using Eventuous.Tools;
 using JetBrains.Annotations;
 using MongoDB.Driver;
 using static Eventuous.Sut.Domain.BookingEvents;
@@ -56,7 +57,7 @@ public class ProjectWithBuilder(IntegrationFixture fixture) {
             var third = await Act(projectionFixture, stream, cancellation, cancellationToken);
             deletedDocument = third.Doc;
         } finally {
-            await projectionFixture.DisposeAsync().ConfigureAwait(false);
+            await projectionFixture.DisposeAsync().NoContext();
         }
 
         await Assert.That(deletedDocument).IsNull();

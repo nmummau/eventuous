@@ -2,6 +2,7 @@ using Eventuous.Projections.MongoDB;
 using Eventuous.Projections.MongoDB.Tools;
 using Eventuous.Sut.Domain;
 using Eventuous.Tests.Projections.MongoDB.Fixtures;
+using Eventuous.Tools;
 using MongoDB.Driver;
 using static Eventuous.Sut.Domain.BookingEvents;
 
@@ -45,7 +46,7 @@ public class ProjectWithBulkBuilder(IntegrationFixture fixture) : ProjectionTest
                 StreamPosition = (ulong)second.Append.NextExpectedVersion
             };
         } finally {
-            await DisposeAsync().ConfigureAwait(false);
+            await DisposeAsync().NoContext();
         }
 
         await Assert.That(second.Doc).IsEquivalentTo(expected);
