@@ -87,7 +87,7 @@ public class SharedSourceGapMetricsTests {
             var result = await writer.AppendToStreamAsync(
                 stream, StreamState.Any, [new EventData(Uuid.NewUuid(), "shared-gap-event", "{}"u8.ToArray())],
                 cancellationToken: cancellationToken
-            );
+            ).NoContext();
             return result.LogPosition.CommitPosition;
         }
 
