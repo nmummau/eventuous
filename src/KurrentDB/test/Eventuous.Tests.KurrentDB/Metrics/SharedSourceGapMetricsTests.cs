@@ -22,13 +22,13 @@ public class SharedSourceGapMetricsTests {
             .WithEnvironment("KURRENTDB_RUN_PROJECTIONS", "None")
             .WithEnvironment("KURRENTDB_START_STANDARD_PROJECTIONS", "false")
             .Build();
-        await container.StartAsync(cancellationToken);
+        await container.StartAsync(cancellationToken).NoContext();
         using var writer = new KurrentDBClient(KurrentDBClientSettings.Create(container.GetConnectionString()));
         var stream = $"shared-gap-{Guid.NewGuid():N}";
         // KurrentDB global positions are byte offsets, not event counts. Use actual append positions.
-        var first = await Append();
-        var second = await Append();
-        var tail = await Append();
+        var first = await Append().NoContext();
+        var second = await Append().NoContext();
+        var tail = await Append().NoContext();
 
         using var requests = new TailReadCounter();
         var settings = KurrentDBClientSettings.Create(container.GetConnectionString());
@@ -46,9 +46,9 @@ public class SharedSourceGapMetricsTests {
         subscriptions.Distinct().Count().ShouldBe(3);
         using var metrics = new SubscriptionMetrics(provider.GetServices<GetSubscriptionEndOfStream>());
         // Do not start the subscriptions: advance deterministic checkpoints through the real commit handler.
-        await Commit("first", first);
-        await Commit("second", second);
-        await Commit("caught-up", tail);
+        await Commit("first", first).NoContext();
+        await Commit("second", second).NoContext();
+        await Commit("caught-up", tail).NoContext();
 
         Dictionary<string, long> gaps = new();
         using var listener = new MeterListener {
@@ -71,10 +71,10 @@ public class SharedSourceGapMetricsTests {
         gaps["caught-up"].ShouldBe(0);
         requests.Count.ShouldBe(1);
 
-        var advanced = await Append();
-        var newTail = await Append();
+        var advanced = await Append().NoContext();
+        var newTail = await Append().NoContext();
         newTail.ShouldBeGreaterThan(tail);
-        await Commit("second", advanced);
+        await Commit("second", advanced).NoContext();
         gaps.Clear();
         listener.RecordObservableInstruments();
         gaps.Count.ShouldBe(3);
@@ -97,8 +97,8 @@ public class SharedSourceGapMetricsTests {
                 committed.TrySetResult();
                 return new ValueTask<Checkpoint>(checkpoint);
             }, TimeSpan.FromMilliseconds(10));
-            (await handler.Commit(new(position, 0, DateTime.UtcNow), cancellationToken)).ShouldBeTrue();
-            await committed.Task.WaitAsync(TimeSpan.FromSeconds(10), cancellationToken);
+            (await handler.Commit(new(position, 0, DateTime.UtcNow), cancellationToken).NoContext()).ShouldBeTrue();
+            await committed.Task.WaitAsync(TimeSpan.FromSeconds(10), cancellationToken).NoContext();
         }
     }
 

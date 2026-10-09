@@ -1,6 +1,8 @@
 // Copyright (C) Eventuous HQ OÜ. All rights reserved
 // Licensed under the Apache License, Version 2.0.
 
+extern alias Sqlite;
+
 using System.Diagnostics.Metrics;
 using Eventuous.Sqlite;
 using Eventuous.Sqlite.Subscriptions;
@@ -11,6 +13,9 @@ using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
 using SQLitePCL;
+
+// Select the store helper explicitly: Persistence exposes the same internal extensions.
+using static Sqlite::Eventuous.Tools.TaskExtensions;
 
 namespace Eventuous.Tests.Sqlite.Metrics;
 
@@ -25,18 +30,18 @@ public class SharedSourceGapMetricsTests {
         // without overriding subscriptions or adding a production connection factory hook.
         var connectionString = $"Data Source=file:{schema.SchemaName}?mode=memory&cache=shared;Pooling=True";
         await using var keeper = new SqliteConnection(connectionString + ";Pooling=False");
-        await keeper.OpenAsync(cancellationToken);
+        await keeper.OpenAsync(cancellationToken).NoContext();
         await using (var command = keeper.CreateCommand()) {
             command.CommandText = "SELECT file FROM pragma_database_list WHERE name = 'main'";
-            (await command.ExecuteScalarAsync(cancellationToken)).ShouldBe("");
+            (await command.ExecuteScalarAsync(cancellationToken).NoContext()).ShouldBe("");
         }
-        await using var queries = await TailQueryCounter.Create(connectionString, $"SELECT MAX(global_position) FROM {schema.MessagesTable}", cancellationToken);
-        await schema.CreateSchema(connectionString, null, cancellationToken);
+        await using var queries = await TailQueryCounter.Create(connectionString, $"SELECT MAX(global_position) FROM {schema.MessagesTable}", cancellationToken).NoContext();
+        await schema.CreateSchema(connectionString, null, cancellationToken).NoContext();
         var mapper = new TypeMapper();
         mapper.AddType<GapEvent>("shared-gap-event");
         var store = new SqliteStore(new() { ConnectionString = connectionString, Schema = schema.SchemaName }, new DefaultEventSerializer(new(), mapper));
         // SQLite global positions start at one: ten events leave the tail at ten.
-        await Append(10);
+        await Append(10).NoContext();
 
         var services = new ServiceCollection();
         foreach (var id in new[] { "first", "second", "caught-up" }) {
@@ -53,9 +58,9 @@ public class SharedSourceGapMetricsTests {
         subscriptions.Distinct().Count().ShouldBe(3);
         using var metrics = new SubscriptionMetrics(provider.GetServices<GetSubscriptionEndOfStream>());
         // Keep polling stopped; commit deterministic positions through the production handler.
-        await Commit("first", 3);
-        await Commit("second", 7);
-        await Commit("caught-up", 10);
+        await Commit("first", 3).NoContext();
+        await Commit("second", 7).NoContext();
+        await Commit("caught-up", 10).NoContext();
 
         Dictionary<string, long> gaps = new();
         using var listener = new MeterListener {
@@ -76,8 +81,8 @@ public class SharedSourceGapMetricsTests {
         gaps["caught-up"].ShouldBe(0);
         queries.Count.ShouldBe(1);
 
-        await Append(10);
-        await Commit("second", 12);
+        await Append(10).NoContext();
+        await Commit("second", 12).NoContext();
         queries.Count.ShouldBe(1);
         gaps.Clear();
         listener.RecordObservableInstruments();
@@ -99,8 +104,8 @@ public class SharedSourceGapMetricsTests {
                 committed.TrySetResult();
                 return new ValueTask<Checkpoint>(checkpoint);
             }, TimeSpan.FromMilliseconds(10));
-            (await handler.Commit(new(position, 0, DateTime.UtcNow), cancellationToken)).ShouldBeTrue();
-            await committed.Task.WaitAsync(TimeSpan.FromSeconds(10), cancellationToken);
+            (await handler.Commit(new(position, 0, DateTime.UtcNow), cancellationToken).NoContext()).ShouldBeTrue();
+            await committed.Task.WaitAsync(TimeSpan.FromSeconds(10), cancellationToken).NoContext();
         }
     }
 
@@ -124,14 +129,14 @@ public class SharedSourceGapMetricsTests {
         public static async Task<TailQueryCounter> Create(string connectionString, string commandText, CancellationToken cancellationToken) {
             var connection = new SqliteConnection(connectionString);
             try {
-                await connection.OpenAsync(cancellationToken);
+                await connection.OpenAsync(cancellationToken).NoContext();
                 var counter = new TailQueryCounter(connection, commandText);
                 // Production opens/closes connections sequentially and reuses this native handle.
-                await connection.CloseAsync();
+                await connection.CloseAsync().NoContext();
                 return counter;
             } catch {
                 SqliteConnection.ClearPool(connection);
-                await connection.DisposeAsync();
+                await connection.DisposeAsync().NoContext();
                 throw;
             }
         }
@@ -140,13 +145,13 @@ public class SharedSourceGapMetricsTests {
 
         public async ValueTask DisposeAsync() {
             try {
-                await _connection.OpenAsync();
+                await _connection.OpenAsync().NoContext();
                 _connection.Handle.ShouldBeSameAs(_handle);
                 raw.sqlite3_profile(_handle, (strdelegate_profile)null!, null);
             } finally {
                 // Clear only this test's uniquely named pool, never other tests' pools.
                 SqliteConnection.ClearPool(_connection);
-                await _connection.DisposeAsync();
+                await _connection.DisposeAsync().NoContext();
             }
         }
     }

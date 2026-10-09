@@ -9,6 +9,7 @@ using Eventuous.Subscriptions.Checkpoints;
 using Eventuous.Subscriptions.Diagnostics;
 using Eventuous.Subscriptions.Registrations;
 using Eventuous.Tests.SqlServer.Fixtures;
+using Eventuous.Tools;
 using Microsoft.Data.SqlClient.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
@@ -20,19 +21,19 @@ public class SharedSourceGapMetricsTests {
     [Test]
     public async Task All_stream_subscriptions_read_shared_tail_once_per_collection(CancellationToken cancellationToken) {
         await using var container = SqlContainer.Create();
-        await container.StartAsync(cancellationToken);
+        await container.StartAsync(cancellationToken).NoContext();
         var connectionString = container.GetConnectionString();
         var schema = new Schema($"metrics_{Guid.NewGuid():N}");
         var storeOptions = new SqlServerStoreOptions {
             ConnectionString = connectionString, Schema = schema.SchemaName, InitializeDatabase = true
         };
         // Use the same startup retry as the metrics fixture: login readiness can precede tempdb readiness.
-        await new SchemaInitializer(storeOptions).StartAsync(cancellationToken);
+        await new SchemaInitializer(storeOptions).StartAsync(cancellationToken).NoContext();
         var mapper = new TypeMapper();
         mapper.AddType<GapEvent>("shared-gap-event");
         var store = new SqlServerStore(storeOptions, new DefaultEventSerializer(new(), mapper));
         // Global positions start at zero: appending eleven events leaves the tail at ten.
-        await Append(11);
+        await Append(11).NoContext();
 
         var services = new ServiceCollection();
         foreach (var id in new[] { "first", "second", "caught-up" }) {
@@ -49,9 +50,9 @@ public class SharedSourceGapMetricsTests {
         subscriptions.Distinct().Count().ShouldBe(3);
         using var metrics = new SubscriptionMetrics(provider.GetServices<GetSubscriptionEndOfStream>());
         // Keep polling stopped; commit deterministic positions through the production handler.
-        await Commit("first", 3);
-        await Commit("second", 7);
-        await Commit("caught-up", 10);
+        await Commit("first", 3).NoContext();
+        await Commit("second", 7).NoContext();
+        await Commit("caught-up", 10).NoContext();
 
         Dictionary<string, long> gaps = new();
         using var listener = new MeterListener {
@@ -74,8 +75,8 @@ public class SharedSourceGapMetricsTests {
         gaps["caught-up"].ShouldBe(0);
         queries.Count.ShouldBe(1);
 
-        await Append(10);
-        await Commit("second", 12);
+        await Append(10).NoContext();
+        await Commit("second", 12).NoContext();
         gaps.Clear();
         listener.RecordObservableInstruments();
         gaps.Count.ShouldBe(3);
@@ -96,8 +97,8 @@ public class SharedSourceGapMetricsTests {
                 committed.TrySetResult();
                 return new ValueTask<Checkpoint>(checkpoint);
             }, TimeSpan.FromMilliseconds(10));
-            (await handler.Commit(new(position, 0, DateTime.UtcNow), cancellationToken)).ShouldBeTrue();
-            await committed.Task.WaitAsync(TimeSpan.FromSeconds(10), cancellationToken);
+            (await handler.Commit(new(position, 0, DateTime.UtcNow), cancellationToken).NoContext()).ShouldBeTrue();
+            await committed.Task.WaitAsync(TimeSpan.FromSeconds(10), cancellationToken).NoContext();
         }
     }
 
