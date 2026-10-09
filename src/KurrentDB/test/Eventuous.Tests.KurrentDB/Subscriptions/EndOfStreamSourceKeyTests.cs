@@ -5,6 +5,7 @@ using Eventuous.KurrentDB.Subscriptions;
 using Eventuous.Subscriptions;
 using Eventuous.Subscriptions.Checkpoints;
 using KurrentDBClient = global::KurrentDB.Client.KurrentDBClient;
+using KurrentDBPersistentSubscriptionsClient = global::KurrentDB.Client.KurrentDBPersistentSubscriptionsClient;
 using KurrentDBClientSettings = global::KurrentDB.Client.KurrentDBClientSettings;
 
 namespace Eventuous.Tests.KurrentDB.Subscriptions;
@@ -19,6 +20,26 @@ public class EndOfStreamSourceKeyTests {
         await using var persistentStream = new DerivedPersistentStream(client);
         foreach (IMeasuredSubscription subscription in new IMeasuredSubscription[] { all, stream, persistentAll, persistentStream })
             await Assert.That(subscription.EndOfStreamSourceKey).IsNull();
+    }
+
+    [Test]
+    public async Task Persistent_client_keys_share_sources_but_separate_clients_and_streams() {
+        using var client = new KurrentDBPersistentSubscriptionsClient(KurrentDBClientSettings.Create("esdb://localhost:2113?tls=false"));
+        using var otherClient = new KurrentDBPersistentSubscriptionsClient(KurrentDBClientSettings.Create("esdb://localhost:2113?tls=false"));
+        await using var all = new AllPersistentSubscription(client, new() { SubscriptionId = "first" }, new());
+        await using var sameAll = new AllPersistentSubscription(client, new() { SubscriptionId = "second" }, new());
+        await using var otherAll = new AllPersistentSubscription(otherClient, new() { SubscriptionId = "other" }, new());
+        await using var stream = new StreamPersistentSubscription(client, new() { SubscriptionId = "stream", StreamName = new("one") }, new());
+        await using var sameStream = new StreamPersistentSubscription(client, new() { SubscriptionId = "same-stream", StreamName = new("one") }, new());
+        await using var otherStream = new StreamPersistentSubscription(client, new() { SubscriptionId = "other-stream", StreamName = new("two") }, new());
+        await using var otherClientStream = new StreamPersistentSubscription(otherClient, new() { SubscriptionId = "other-client-stream", StreamName = new("one") }, new());
+
+        await Assert.That(all.EndOfStreamSourceKey).IsEqualTo(sameAll.EndOfStreamSourceKey);
+        await Assert.That(all.EndOfStreamSourceKey).IsNotEqualTo(otherAll.EndOfStreamSourceKey);
+        await Assert.That(all.EndOfStreamSourceKey).IsNotEqualTo(stream.EndOfStreamSourceKey);
+        await Assert.That(stream.EndOfStreamSourceKey).IsEqualTo(sameStream.EndOfStreamSourceKey);
+        await Assert.That(stream.EndOfStreamSourceKey).IsNotEqualTo(otherStream.EndOfStreamSourceKey);
+        await Assert.That(stream.EndOfStreamSourceKey).IsNotEqualTo(otherClientStream.EndOfStreamSourceKey);
     }
 
     sealed class DerivedAll(KurrentDBClient client) : AllStreamSubscription(client, "derived-all", new NoOpCheckpointStore(), new());

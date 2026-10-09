@@ -112,7 +112,7 @@ public class StreamPersistentSubscription : PersistentSubscriptionBase<StreamPer
     /// <inheritdoc/>
     // Derived subscriptions must opt in explicitly: their measure may read a different source.
     public virtual object? EndOfStreamSourceKey
-        => GetType() == typeof(StreamPersistentSubscription) ? (typeof(StreamSubscriptionMeasure), Client, Options.StreamName) : null;
+        => GetType() == typeof(StreamPersistentSubscription) ? (typeof(StreamSubscriptionMeasure), SourceClient, Options.StreamName) : null;
 
     /// <inheritdoc/>
     public GetSubscriptionEndOfStream GetMeasure()
