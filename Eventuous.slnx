@@ -165,6 +165,9 @@
     <Folder Name="/Testing/src/">
         <Project Path="src/Testing/src/Eventuous.Testing/Eventuous.Testing.csproj" />
     </Folder>
+    <Folder Name="/Testing/test/">
+        <Project Path="src/Testing/test/Eventuous.Tests.Snapshots/Eventuous.Tests.Snapshots.csproj" />
+    </Folder>
     <Folder Name="/Tests/">
         <Project Path="test/Eventuous.Sut.App/Eventuous.Sut.App.csproj" />
         <Project Path="test/Eventuous.Sut.Domain/Eventuous.Sut.Domain.csproj" />

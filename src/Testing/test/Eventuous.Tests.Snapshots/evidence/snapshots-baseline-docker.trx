@@ -1,0 +1,1475 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="fb4a6349-7af1-4ac8-b46f-5b54f40e269d" name="@neal-XPS 2026-10-09 02:06:16.6839998" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-09T02:05:20.1648607Z" queuing="2026-10-09T02:05:20.1648607Z" start="2026-10-09T02:05:20.1648607Z" finish="2026-10-09T02:06:16.6850326Z" />
+  <TestSettings name="default" id="fb603354-9a39-4a83-b45c-6e1271e33a92">
+    <Deployment runDeploymentRoot="_neal-XPS_2026-10-09_02_06_16.6839998" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="bbf0b808-ac33-4300-a7f5-603b39defeef" testId="b426caf9-196a-34f1-710f-f07de147e2cf" testName="Missing_external_store_fails_before_any_event_is_committed" computerName="neal-XPS" duration="00:00:00.1491770" startTime="2026-10-09T02:06:01.4166633+00:00" endTime="2026-10-09T02:06:01.5658403+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="bbf0b808-ac33-4300-a7f5-603b39defeef" />
+    <UnitTestResult executionId="4e9d8864-ca8b-4206-bce0-d125b91f3c5a" testId="a6aa62a2-2625-24a7-9a39-601ee22e4758" testName="Snapshot_write_failure_reports_error_after_commit_and_retry_duplicates_business_event(False)" computerName="neal-XPS" duration="00:00:00.3008072" startTime="2026-10-09T02:06:01.4165756+00:00" endTime="2026-10-09T02:06:01.7173828+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="4e9d8864-ca8b-4206-bce0-d125b91f3c5a">
+      <Output>
+        <StdOut>aggregate=False: first command reported failure with 1 committed event; retry produced balance 20 from deposit 10.</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="c4a3bf89-c9d2-43bf-bb41-131f65841331" testId="d17803d7-bf9d-fdb8-9bb2-bf531f59d35e" testName="Snapshot_only_command_must_preserve_existing_stream_revision" computerName="neal-XPS" duration="00:00:00.1490228" startTime="2026-10-09T02:06:01.5708907+00:00" endTime="2026-10-09T02:06:01.7199135+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Failed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="c4a3bf89-c9d2-43bf-bb41-131f65841331">
+      <Output>
+        <ErrorInfo>
+          <Message>PostgresException: 23514: new row for relation "snapshots" violates check constraint "ck_revision_gte_zero"
+
+DETAIL: Detail redacted as it may contain sensitive data. Specify 'Include Error Detail' in the connection string to include this information.</Message>
+          <StackTrace>   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource&lt;TResult&gt;.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteNonQuery(Boolean async, CancellationToken cancellationToken)
+   at Eventuous.Postgresql.Snapshots.PostgresSnapshotStore.Write(StreamName streamName, Snapshot snapshot, CancellationToken cancellationToken) in /home/nmummau/code/eventuous-snapshot-tests/src/Postgres/src/Eventuous.Postgresql/Snapshots/PostgresSnapshotStore.cs:line 85
+   at Eventuous.Postgresql.Snapshots.PostgresSnapshotStore.Write(StreamName streamName, Snapshot snapshot, CancellationToken cancellationToken) in /home/nmummau/code/eventuous-snapshot-tests/src/Postgres/src/Eventuous.Postgresql/Snapshots/PostgresSnapshotStore.cs:line 85
+   at Eventuous.Postgresql.Snapshots.PostgresSnapshotStore.Write(StreamName streamName, Snapshot snapshot, CancellationToken cancellationToken) in /home/nmummau/code/eventuous-snapshot-tests/src/Postgres/src/Eventuous.Postgresql/Snapshots/PostgresSnapshotStore.cs:line 85
+   at Eventuous.CommandService`1.HandleSnapshots(StreamName streamName, ProposedEvent[] snapshotEvents, Int64 streamRevision, SnapshotStorageStrategy strategy, IEventWriter writer, CancellationToken cancellationToken) in /home/nmummau/code/eventuous-snapshot-tests/src/Core/src/Eventuous.Application/FunctionalService/CommandService.cs:line 243
+   at Eventuous.CommandService`1.Handle[TCommand](TCommand command, CancellationToken cancellationToken) in /home/nmummau/code/eventuous-snapshot-tests/src/Core/src/Eventuous.Application/FunctionalService/CommandService.cs:line 139
+   at Eventuous.Result`1.ThrowIfError() in /home/nmummau/code/eventuous-snapshot-tests/src/Core/src/Eventuous.Application/Result.cs:line 99
+   at Eventuous.Tests.Snapshots.CommandServiceTests.Snapshot_only_command_must_preserve_existing_stream_revision() in /home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/CommandServiceTests.cs:line 127</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="2e0de46a-43e1-4cf3-934f-c79c89283090" testId="eefafb10-1827-675b-f678-294c397dbde3" testName="Snapshot_write_failure_reports_error_after_commit_and_retry_duplicates_business_event(True)" computerName="neal-XPS" duration="00:00:00.3073487" startTime="2026-10-09T02:06:01.4165299+00:00" endTime="2026-10-09T02:06:01.7238786+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="2e0de46a-43e1-4cf3-934f-c79c89283090">
+      <Output>
+        <StdOut>aggregate=True: first command reported failure with 1 committed event; retry produced balance 20 from deposit 10.</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="1ef2cf2e-35e1-4767-a611-2a182fdfd428" testId="c83a836d-44ce-0647-e2e5-55b31c6f0953" testName="Repeated_commands_snapshot_every_three_events_and_preserve_state(Postgres, False)" computerName="neal-XPS" duration="00:00:00.3422205" startTime="2026-10-09T02:06:01.4165357+00:00" endTime="2026-10-09T02:06:01.7587562+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="1ef2cf2e-35e1-4767-a611-2a182fdfd428" />
+    <UnitTestResult executionId="56e1d583-2d00-4210-97f2-9829573a32a0" testId="76b75cba-1425-7320-8f57-fff099566303" testName="Explicit_snapshot_inside_batch_must_not_skip_following_domain_event" computerName="neal-XPS" duration="00:00:00.3383396" startTime="2026-10-09T02:06:01.4166223+00:00" endTime="2026-10-09T02:06:01.7549619+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Failed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="56e1d583-2d00-4210-97f2-9829573a32a0">
+      <Output>
+        <StdOut>[testcontainers.org 00:00:00.25] Connected to Docker:
+  Host: unix:///var/run/docker.sock
+  Server Version: 28.1.1
+  Kernel Version: 6.8.0-146-generic
+  API Version: 1.49
+  Operating System: Ubuntu 24.04.5 LTS
+  Total Memory: 30.97 GB
+[testcontainers.org 00:00:00.66] Docker container aa56179b9027 created
+[testcontainers.org 00:00:00.70] Start Docker container aa56179b9027
+[testcontainers.org 00:00:00.89] Wait for Docker container aa56179b9027 to complete readiness checks
+[testcontainers.org 00:00:00.89] Docker container aa56179b9027 ready
+[testcontainers.org 00:00:02.92] Docker config "/home/nmummau/.docker/config.json" not found
+[testcontainers.org 00:00:02.92] Searching Docker registry credential in Auths
+[testcontainers.org 00:00:02.92] Docker registry credential https://index.docker.io/v1/ not found
+[testcontainers.org 00:00:03.08] Docker container 68059761cd66 created
+[testcontainers.org 00:00:03.09] Start Docker container 68059761cd66
+[testcontainers.org 00:00:03.09] Docker container f73d4b244263 created
+[testcontainers.org 00:00:03.09] Start Docker container f73d4b244263
+[testcontainers.org 00:00:03.13] Docker container 295e2160545c created
+[testcontainers.org 00:00:03.13] Start Docker container 295e2160545c
+[testcontainers.org 00:00:03.14] Docker container 54e1eb03cd4b created
+[testcontainers.org 00:00:03.14] Start Docker container 54e1eb03cd4b
+[testcontainers.org 00:00:03.34] Wait for Docker container 68059761cd66 to complete readiness checks
+[testcontainers.org 00:00:03.36] Execute "redis-cli ping" at Docker container 68059761cd66
+[testcontainers.org 00:00:03.39] Wait for Docker container f73d4b244263 to complete readiness checks
+[testcontainers.org 00:00:03.41] Execute "/bin/sh -c find /opt/mssql-tools*/bin/sqlcmd -type f -print -quit" at Docker container f73d4b244263
+[testcontainers.org 00:00:03.42] Wait for Docker container 295e2160545c to complete readiness checks
+[testcontainers.org 00:00:03.43] Execute "pg_isready --host localhost --dbname snapshot_tests --username postgres" at Docker container 295e2160545c
+[testcontainers.org 00:00:03.44] Docker container 68059761cd66 ready
+[testcontainers.org 00:00:03.46] Wait for Docker container 54e1eb03cd4b to complete readiness checks
+[testcontainers.org 00:00:03.47] Execute "/opt/mssql-tools18/bin/sqlcmd -C -Q SELECT 1;" at Docker container f73d4b244263
+[testcontainers.org 00:00:04.56] Execute "pg_isready --host localhost --dbname snapshot_tests --username postgres" at Docker container 295e2160545c
+[testcontainers.org 00:00:05.67] Execute "pg_isready --host localhost --dbname snapshot_tests --username postgres" at Docker container 295e2160545c
+[testcontainers.org 00:00:05.77] Docker container 295e2160545c ready
+[testcontainers.org 00:00:09.49] Docker container 54e1eb03cd4b ready
+[testcontainers.org 00:00:12.57] Execute "/opt/mssql-tools18/bin/sqlcmd -C -Q SELECT 1;" at Docker container f73d4b244263
+[testcontainers.org 00:00:15.18] Execute "/opt/mssql-tools18/bin/sqlcmd -C -Q SELECT 1;" at Docker container f73d4b244263
+[testcontainers.org 00:00:16.27] Execute "/opt/mssql-tools18/bin/sqlcmd -C -Q SELECT 1;" at Docker container f73d4b244263
+[testcontainers.org 00:00:17.78] Execute "/opt/mssql-tools18/bin/sqlcmd -C -Q SELECT 1;" at Docker container f73d4b244263
+[testcontainers.org 00:00:18.85] Execute "/opt/mssql-tools18/bin/sqlcmd -C -Q SELECT 1;" at Docker container f73d4b244263
+[testcontainers.org 00:00:20.02] Execute "/opt/mssql-tools18/bin/sqlcmd -C -Q SELECT 1;" at Docker container f73d4b244263
+[testcontainers.org 00:00:21.09] Execute "/opt/mssql-tools18/bin/sqlcmd -C -Q SELECT 1;" at Docker container f73d4b244263
+[testcontainers.org 00:00:22.15] Execute "/opt/mssql-tools18/bin/sqlcmd -C -Q SELECT 1;" at Docker container f73d4b244263
+[testcontainers.org 00:00:23.22] Execute "/opt/mssql-tools18/bin/sqlcmd -C -Q SELECT 1;" at Docker container f73d4b244263
+[testcontainers.org 00:00:23.28] Docker container f73d4b244263 ready
+[testcontainers.org 00:00:23.71] Docker image mongo:7.0 created
+[testcontainers.org 00:00:34.64] Docker container 2a4b5306257a created
+[testcontainers.org 00:00:34.64] Start Docker container 2a4b5306257a
+[testcontainers.org 00:00:34.91] Wait for Docker container 2a4b5306257a to complete readiness checks
+[testcontainers.org 00:00:39.96] Docker container 2a4b5306257a ready
+Mid-batch snapshot: command result balance=15; reloaded balance=10</StdOut>
+        <ErrorInfo>
+          <Message>ShouldAssertException: loaded.State.Balance
+    should be
+15m
+    but was
+10m
+
+Additional Info:
+    The snapshot precedes the final event and must not claim to include it.</Message>
+          <StackTrace>   at Eventuous.Tests.Snapshots.CommandServiceTests.Explicit_snapshot_inside_batch_must_not_skip_following_domain_event() in /home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/CommandServiceTests.cs:line 144
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="b9a6d001-2fff-4107-984c-324844510ca6" testId="8c5857b6-109b-ea1c-d30c-f91c0a7183ba" testName="Repeated_commands_snapshot_every_three_events_and_preserve_state(Redis, False)" computerName="neal-XPS" duration="00:00:00.1644807" startTime="2026-10-09T02:06:01.7595310+00:00" endTime="2026-10-09T02:06:01.9240117+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="b9a6d001-2fff-4107-984c-324844510ca6" />
+    <UnitTestResult executionId="e4f167c1-a141-422b-8c22-5d95fba097ed" testId="616e26db-1585-caba-4b98-feba2b4e500c" testName="Repeated_commands_snapshot_every_three_events_and_preserve_state(SqlServer, False)" computerName="neal-XPS" duration="00:00:00.2718270" startTime="2026-10-09T02:06:01.7239838+00:00" endTime="2026-10-09T02:06:01.9958108+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="e4f167c1-a141-422b-8c22-5d95fba097ed" />
+    <UnitTestResult executionId="c5e25402-c4f9-4cbe-be0a-8ae9e67029a7" testId="3b4c6f26-b231-4634-2bf3-7eef83996223" testName="Repeated_commands_snapshot_every_three_events_and_preserve_state(SqlServer, True)" computerName="neal-XPS" duration="00:00:00.2809417" startTime="2026-10-09T02:06:01.7179427+00:00" endTime="2026-10-09T02:06:01.9988844+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="c5e25402-c4f9-4cbe-be0a-8ae9e67029a7" />
+    <UnitTestResult executionId="deb3d79e-1e30-456a-b720-cd364790df14" testId="b6b4408b-8de5-fd8e-c49a-c72bb165310e" testName="Repeated_commands_snapshot_every_three_events_and_preserve_state(Postgres, True)" computerName="neal-XPS" duration="00:00:00.0813488" startTime="2026-10-09T02:06:01.9243920+00:00" endTime="2026-10-09T02:06:02.0057408+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="deb3d79e-1e30-456a-b720-cd364790df14" />
+    <UnitTestResult executionId="52e4b3ef-dbf3-4d73-91ae-f525dfed0b06" testId="b2182737-de37-87a8-b602-9f175ec795f0" testName="Same_stream_command_snapshots_share_the_domain_append(True)" computerName="neal-XPS" duration="00:00:00.6252644" startTime="2026-10-09T02:06:01.4165324+00:00" endTime="2026-10-09T02:06:02.0417968+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="52e4b3ef-dbf3-4d73-91ae-f525dfed0b06" />
+    <UnitTestResult executionId="fd00d0a9-b40e-49d3-a27a-cd4c8d53ff61" testId="028b992e-f3d9-a353-a2d2-0d1345409ace" testName="Separate_stream_command_snapshots_record_domain_revision_and_keep_latest(False)" computerName="neal-XPS" duration="00:00:00.8117272" startTime="2026-10-09T02:06:01.4165230+00:00" endTime="2026-10-09T02:06:02.2282502+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="fd00d0a9-b40e-49d3-a27a-cd4c8d53ff61" />
+    <UnitTestResult executionId="bde88717-0450-4a00-b62c-2c085a352e4c" testId="89c3f18d-9cb6-8a82-174e-0c49c4c7eecf" testName="Separate_stream_command_snapshots_record_domain_revision_and_keep_latest(True)" computerName="neal-XPS" duration="00:00:00.8196448" startTime="2026-10-09T02:06:01.4166683+00:00" endTime="2026-10-09T02:06:02.2363131+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="bde88717-0450-4a00-b62c-2c085a352e4c" />
+    <UnitTestResult executionId="92dde6ab-10f3-4550-9cfd-187a948e0133" testId="e8de5ec1-7c9e-1bd3-ac17-49756e275363" testName="Same_stream_command_snapshots_share_the_domain_append(False)" computerName="neal-XPS" duration="00:00:00.2771076" startTime="2026-10-09T02:06:01.9963464+00:00" endTime="2026-10-09T02:06:02.2734540+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="92dde6ab-10f3-4550-9cfd-187a948e0133" />
+    <UnitTestResult executionId="e1c926f7-daf4-4dab-a76d-90fe2eff76c7" testId="92d30dee-687f-2bc5-26b1-0eb56b557250" testName="Snapshot_revision_is_used_when_there_are_no_tail_events" computerName="neal-XPS" duration="00:00:00.1691024" startTime="2026-10-09T02:06:02.2787828+00:00" endTime="2026-10-09T02:06:02.4478852+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="e1c926f7-daf4-4dab-a76d-90fe2eff76c7" />
+    <UnitTestResult executionId="e993d961-45bb-40b4-9ff0-e3cf17726e38" testId="45b64d77-193c-4ec6-0bac-43346393a047" testName="Repeated_commands_snapshot_every_three_events_and_preserve_state(Redis, True)" computerName="neal-XPS" duration="00:00:00.2209941" startTime="2026-10-09T02:06:02.2411598+00:00" endTime="2026-10-09T02:06:02.4621539+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="e993d961-45bb-40b4-9ff0-e3cf17726e38" />
+    <UnitTestResult executionId="0cf111b5-e8b8-4432-bcd2-4a5ea5fc91d5" testId="4447ac9a-3ee3-dd82-72a0-3307c63d37c3" testName="Redis_read_without_replacement_preserves_state_and_revision" computerName="neal-XPS" duration="00:00:00.0113554" startTime="2026-10-09T02:06:02.4626799+00:00" endTime="2026-10-09T02:06:02.4740353+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="0cf111b5-e8b8-4432-bcd2-4a5ea5fc91d5" />
+    <UnitTestResult executionId="1723caeb-c581-4a55-9b03-aedda5257e4a" testId="07f28487-a2d1-766a-59b2-93ebb188926d" testName="Postgres_supports_snapshot_backward_reads(SameStream)" computerName="neal-XPS" duration="00:00:00.0257426" startTime="2026-10-09T02:06:02.4745832+00:00" endTime="2026-10-09T02:06:02.5003258+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Failed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="1723caeb-c581-4a55-9b03-aedda5257e4a">
+      <Output>
+        <ErrorInfo>
+          <Message>ReadFromStreamException: Unable to read events from SnapshotTest-2b10c90e94654e2685686461f6200c8d: Arithmetic operation resulted in an overflow.</Message>
+          <StackTrace>   at Eventuous.Sql.Base.SqlEventStoreBase`2.ReadInternal(DbCommand cmd, StreamName stream, Boolean failIfNotFound, CancellationToken cancellationToken) in /home/nmummau/code/eventuous-snapshot-tests/src/Relational/src/Eventuous.Sql.Base/SqlEventStoreBase.cs:line 130
+   at Eventuous.Sql.Base.SqlEventStoreBase`2.ReadEventsBackwards(StreamName stream, StreamReadPosition start, Int32 count, Boolean failIfNotFound, CancellationToken cancellationToken) in /home/nmummau/code/eventuous-snapshot-tests/src/Relational/src/Eventuous.Sql.Base/SqlEventStoreBase.cs:line 113
+   at Eventuous.Sql.Base.SqlEventStoreBase`2.ReadEventsBackwards(StreamName stream, StreamReadPosition start, Int32 count, Boolean failIfNotFound, CancellationToken cancellationToken) in /home/nmummau/code/eventuous-snapshot-tests/src/Relational/src/Eventuous.Sql.Base/SqlEventStoreBase.cs:line 113
+   at Eventuous.Sql.Base.SqlEventStoreBase`2.ReadEventsBackwards(StreamName stream, StreamReadPosition start, Int32 count, Boolean failIfNotFound, CancellationToken cancellationToken) in /home/nmummau/code/eventuous-snapshot-tests/src/Relational/src/Eventuous.Sql.Base/SqlEventStoreBase.cs:line 113
+   at Eventuous.StoreFunctions.ReadStreamAfterSnapshot(IEventReader eventReader, StreamName streamName, HashSet`1 snapshotTypes, Boolean failIfNotFound, CancellationToken cancellationToken) in /home/nmummau/code/eventuous-snapshot-tests/src/Core/src/Eventuous.Persistence/EventStore/StoreFunctions.cs:line 114
+   at Eventuous.StateStoreFunctions.LoadState[TState](IEventReader reader, StreamName streamName, Boolean failIfNotFound, ISnapshotStore snapshotStore, CancellationToken cancellationToken) in /home/nmummau/code/eventuous-snapshot-tests/src/Core/src/Eventuous.Persistence/StateStore/StateStoreFunctions.cs:line 37
+   at Eventuous.Tests.Snapshots.ReplayTests.Verify[T](EventBackend backend, SnapshotStorageStrategy strategy, Int32 covered, Int32 tail) in /home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/ReplayTests.cs:line 36</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="d6455db1-5a60-4cbf-8f14-3363c7c6433b" testId="deac0b8d-56a4-ee3f-5895-f394cf7f3eb5" testName="Postgres_supports_snapshot_backward_reads(SeparateStream)" computerName="neal-XPS" duration="00:00:00.0204540" startTime="2026-10-09T02:06:02.5038376+00:00" endTime="2026-10-09T02:06:02.5242916+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Failed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="d6455db1-5a60-4cbf-8f14-3363c7c6433b">
+      <Output>
+        <ErrorInfo>
+          <Message>ReadFromStreamException: Unable to read events from SnapshotTestSnapshot-64d7454956a94bbfa3333d8bc92f7569: Arithmetic operation resulted in an overflow.</Message>
+          <StackTrace>   at Eventuous.Sql.Base.SqlEventStoreBase`2.ReadInternal(DbCommand cmd, StreamName stream, Boolean failIfNotFound, CancellationToken cancellationToken) in /home/nmummau/code/eventuous-snapshot-tests/src/Relational/src/Eventuous.Sql.Base/SqlEventStoreBase.cs:line 130
+   at Eventuous.Sql.Base.SqlEventStoreBase`2.ReadEventsBackwards(StreamName stream, StreamReadPosition start, Int32 count, Boolean failIfNotFound, CancellationToken cancellationToken) in /home/nmummau/code/eventuous-snapshot-tests/src/Relational/src/Eventuous.Sql.Base/SqlEventStoreBase.cs:line 113
+   at Eventuous.Sql.Base.SqlEventStoreBase`2.ReadEventsBackwards(StreamName stream, StreamReadPosition start, Int32 count, Boolean failIfNotFound, CancellationToken cancellationToken) in /home/nmummau/code/eventuous-snapshot-tests/src/Relational/src/Eventuous.Sql.Base/SqlEventStoreBase.cs:line 113
+   at Eventuous.Sql.Base.SqlEventStoreBase`2.ReadEventsBackwards(StreamName stream, StreamReadPosition start, Int32 count, Boolean failIfNotFound, CancellationToken cancellationToken) in /home/nmummau/code/eventuous-snapshot-tests/src/Relational/src/Eventuous.Sql.Base/SqlEventStoreBase.cs:line 113
+   at Eventuous.StateStoreFunctions.LoadState[TState](IEventReader reader, StreamName streamName, Boolean failIfNotFound, ISnapshotStore snapshotStore, CancellationToken cancellationToken) in /home/nmummau/code/eventuous-snapshot-tests/src/Core/src/Eventuous.Persistence/StateStore/StateStoreFunctions.cs:line 42
+   at Eventuous.Tests.Snapshots.ReplayTests.Verify[T](EventBackend backend, SnapshotStorageStrategy strategy, Int32 covered, Int32 tail) in /home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/ReplayTests.cs:line 36</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="99d30c82-0eb7-4b42-bf5d-278097687bef" testId="f3b6be1a-5321-839a-e503-27dce41592ca" testName="Repeated_commands_snapshot_every_three_events_and_preserve_state(Mongo, False)" computerName="neal-XPS" duration="00:00:00.7937409" startTime="2026-10-09T02:06:01.7591129+00:00" endTime="2026-10-09T02:06:02.5528538+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="99d30c82-0eb7-4b42-bf5d-278097687bef" />
+    <UnitTestResult executionId="3c531460-0076-436b-babf-39303a457b5e" testId="85ef05e5-cf46-4978-e276-a2a2e08cb14e" testName="Repeated_commands_snapshot_every_three_events_and_preserve_state(Mongo, True)" computerName="neal-XPS" duration="00:00:00.8362569" startTime="2026-10-09T02:06:01.7241248+00:00" endTime="2026-10-09T02:06:02.5603817+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="3c531460-0076-436b-babf-39303a457b5e" />
+    <UnitTestResult executionId="e6c1c5a7-a19f-48f3-9a0c-0ed48409a1c9" testId="6158fb2f-b822-85fc-9161-5188713d364d" testName="Concurrent_replacement_must_not_mix_revision_and_payload_or_double_replay" computerName="neal-XPS" duration="00:00:00.1395802" startTime="2026-10-09T02:06:02.4486781+00:00" endTime="2026-10-09T02:06:02.5882583+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Failed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="e6c1c5a7-a19f-48f3-9a0c-0ed48409a1c9">
+      <Output>
+        <StdOut>Redis interleaving: expected applied=11, balance=5.00; actual applied=12, balance=6.25</StdOut>
+        <ErrorInfo>
+          <Message>ShouldAssertException: actual.State.Applied
+    should be
+11
+    but was
+12
+
+Additional Info:
+    Snapshot revision 9 must not be paired with revision-10 state, replaying event 10 twice.</Message>
+          <StackTrace>   at Eventuous.Tests.Snapshots.RedisConsistencyTests.Concurrent_replacement_must_not_mix_revision_and_payload_or_double_replay() in /home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/RedisConsistencyTests.cs:line 25
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="d340efc8-c610-4e7d-b276-74e33a7f8bcd" testId="890b6d59-ba03-ba90-7e75-d73d76d47d25" testName="No_snapshot_must_fall_back_to_complete_multi_page_replay(501)" computerName="neal-XPS" duration="00:00:01.5485833" startTime="2026-10-09T02:06:02.5263744+00:00" endTime="2026-10-09T02:06:04.0749577+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Failed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="d340efc8-c610-4e7d-b276-74e33a7f8bcd">
+      <Output>
+        <ErrorInfo>
+          <Message>InvalidOperationException: Backward read budget exceeded. Cursors: 9223372036854775807, 9223372036854775307, 9223372036854774807, 9223372036854774307, 9223372036854773807</Message>
+          <StackTrace>   at Eventuous.Tests.Snapshots.BoundedReader.ReadEventsBackwards(StreamName stream, StreamReadPosition start, Int32 count, Boolean failIfNotFound, CancellationToken cancellationToken) in /home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/TestDoubles.cs:line 15
+   at Eventuous.StoreFunctions.ReadStreamAfterSnapshot(IEventReader eventReader, StreamName streamName, HashSet`1 snapshotTypes, Boolean failIfNotFound, CancellationToken cancellationToken) in /home/nmummau/code/eventuous-snapshot-tests/src/Core/src/Eventuous.Persistence/EventStore/StoreFunctions.cs:line 114
+   at Eventuous.StateStoreFunctions.LoadState[TState](IEventReader reader, StreamName streamName, Boolean failIfNotFound, ISnapshotStore snapshotStore, CancellationToken cancellationToken) in /home/nmummau/code/eventuous-snapshot-tests/src/Core/src/Eventuous.Persistence/StateStore/StateStoreFunctions.cs:line 37
+   at Eventuous.Tests.Snapshots.ReplayTests.No_snapshot_must_fall_back_to_complete_multi_page_replay(Int32 count) in /home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/ReplayTests.cs:line 130</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="55fffd13-018b-46f1-b980-e0056a876c35" testId="b227a456-6a61-08e0-b9a9-c12f5a4c9768" testName="Same_stream_snapshot_beyond_first_page_must_replay_without_repeating_pages(500)" computerName="neal-XPS" duration="00:00:01.5202999" startTime="2026-10-09T02:06:02.5607716+00:00" endTime="2026-10-09T02:06:04.0810715+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Failed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="55fffd13-018b-46f1-b980-e0056a876c35">
+      <Output>
+        <ErrorInfo>
+          <Message>InvalidOperationException: Backward read budget exceeded. Cursors: 9223372036854775807, 9223372036854775307, 9223372036854774807, 9223372036854774307, 9223372036854773807</Message>
+          <StackTrace>   at Eventuous.Tests.Snapshots.BoundedReader.ReadEventsBackwards(StreamName stream, StreamReadPosition start, Int32 count, Boolean failIfNotFound, CancellationToken cancellationToken) in /home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/TestDoubles.cs:line 15
+   at Eventuous.StoreFunctions.ReadStreamAfterSnapshot(IEventReader eventReader, StreamName streamName, HashSet`1 snapshotTypes, Boolean failIfNotFound, CancellationToken cancellationToken) in /home/nmummau/code/eventuous-snapshot-tests/src/Core/src/Eventuous.Persistence/EventStore/StoreFunctions.cs:line 114
+   at Eventuous.StateStoreFunctions.LoadState[TState](IEventReader reader, StreamName streamName, Boolean failIfNotFound, ISnapshotStore snapshotStore, CancellationToken cancellationToken) in /home/nmummau/code/eventuous-snapshot-tests/src/Core/src/Eventuous.Persistence/StateStore/StateStoreFunctions.cs:line 37
+   at Eventuous.Tests.Snapshots.ReplayTests.Same_stream_snapshot_beyond_first_page_must_replay_without_repeating_pages(Int32 tail) in /home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/ReplayTests.cs:line 117</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="c8de0999-d3e6-4be1-8ec0-6e0508d5be5f" testId="a7bcbe03-f664-ecf8-8033-2099127934ed" testName="Same_stream_snapshot_beyond_first_page_must_replay_without_repeating_pages(1000)" computerName="neal-XPS" duration="00:00:01.5534888" startTime="2026-10-09T02:06:02.5534642+00:00" endTime="2026-10-09T02:06:04.1069530+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Failed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="c8de0999-d3e6-4be1-8ec0-6e0508d5be5f">
+      <Output>
+        <ErrorInfo>
+          <Message>InvalidOperationException: Backward read budget exceeded. Cursors: 9223372036854775807, 9223372036854775307, 9223372036854774807, 9223372036854774307, 9223372036854773807</Message>
+          <StackTrace>   at Eventuous.Tests.Snapshots.BoundedReader.ReadEventsBackwards(StreamName stream, StreamReadPosition start, Int32 count, Boolean failIfNotFound, CancellationToken cancellationToken) in /home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/TestDoubles.cs:line 15
+   at Eventuous.StoreFunctions.ReadStreamAfterSnapshot(IEventReader eventReader, StreamName streamName, HashSet`1 snapshotTypes, Boolean failIfNotFound, CancellationToken cancellationToken) in /home/nmummau/code/eventuous-snapshot-tests/src/Core/src/Eventuous.Persistence/EventStore/StoreFunctions.cs:line 114
+   at Eventuous.StateStoreFunctions.LoadState[TState](IEventReader reader, StreamName streamName, Boolean failIfNotFound, ISnapshotStore snapshotStore, CancellationToken cancellationToken) in /home/nmummau/code/eventuous-snapshot-tests/src/Core/src/Eventuous.Persistence/StateStore/StateStoreFunctions.cs:line 37
+   at Eventuous.Tests.Snapshots.ReplayTests.Same_stream_snapshot_beyond_first_page_must_replay_without_repeating_pages(Int32 tail) in /home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/ReplayTests.cs:line 117</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="4cdc3ee2-948b-44b6-bad6-cad64579a609" testId="65e03001-777b-976c-d6cc-4097fd0f10b1" testName="Same_stream_selects_latest_snapshot_and_keeps_tail_order" computerName="neal-XPS" duration="00:00:00.0412616" startTime="2026-10-09T02:06:04.0771094+00:00" endTime="2026-10-09T02:06:04.1183710+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="4cdc3ee2-948b-44b6-bad6-cad64579a609" />
+    <UnitTestResult executionId="29cd818f-5428-4f9f-bbcb-54138ec437e2" testId="67e6df2c-b04e-cf5a-e2e4-32150224235d" testName="Same_stream_snapshot_beyond_first_page_must_replay_without_repeating_pages(501)" computerName="neal-XPS" duration="00:00:01.5561249" startTime="2026-10-09T02:06:02.5897088+00:00" endTime="2026-10-09T02:06:04.1458337+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Failed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="29cd818f-5428-4f9f-bbcb-54138ec437e2">
+      <Output>
+        <ErrorInfo>
+          <Message>InvalidOperationException: Backward read budget exceeded. Cursors: 9223372036854775807, 9223372036854775307, 9223372036854774807, 9223372036854774307, 9223372036854773807</Message>
+          <StackTrace>   at Eventuous.Tests.Snapshots.BoundedReader.ReadEventsBackwards(StreamName stream, StreamReadPosition start, Int32 count, Boolean failIfNotFound, CancellationToken cancellationToken) in /home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/TestDoubles.cs:line 15
+   at Eventuous.StoreFunctions.ReadStreamAfterSnapshot(IEventReader eventReader, StreamName streamName, HashSet`1 snapshotTypes, Boolean failIfNotFound, CancellationToken cancellationToken) in /home/nmummau/code/eventuous-snapshot-tests/src/Core/src/Eventuous.Persistence/EventStore/StoreFunctions.cs:line 114
+   at Eventuous.StateStoreFunctions.LoadState[TState](IEventReader reader, StreamName streamName, Boolean failIfNotFound, ISnapshotStore snapshotStore, CancellationToken cancellationToken) in /home/nmummau/code/eventuous-snapshot-tests/src/Core/src/Eventuous.Persistence/StateStore/StateStoreFunctions.cs:line 37
+   at Eventuous.Tests.Snapshots.ReplayTests.Same_stream_snapshot_beyond_first_page_must_replay_without_repeating_pages(Int32 tail) in /home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/ReplayTests.cs:line 117</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="361cdd29-0acf-4545-b153-851fd10d3295" testId="13cfdc00-c19e-1e19-5665-52f9feb5b2ba" testName="Missing_stream_and_missing_snapshot_respect_fail_if_not_found(Kurrent)" computerName="neal-XPS" duration="00:00:00.0814845" startTime="2026-10-09T02:06:04.1205094+00:00" endTime="2026-10-09T02:06:04.2019939+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="361cdd29-0acf-4545-b153-851fd10d3295" />
+    <UnitTestResult executionId="51d898dc-96a4-4611-95de-a25ec1e3ed37" testId="1c91fcc3-0be3-f3af-79f7-62e0d9615689" testName="Missing_stream_and_missing_snapshot_respect_fail_if_not_found(Postgres)" computerName="neal-XPS" duration="00:00:00.0113219" startTime="2026-10-09T02:06:04.2027871+00:00" endTime="2026-10-09T02:06:04.2141090+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="51d898dc-96a4-4611-95de-a25ec1e3ed37" />
+    <UnitTestResult executionId="9813fc81-1e53-44c8-8f7d-eb41cc6ff77d" testId="9fdbc164-115e-dccc-e9d5-6f2e51ac8147" testName="Snapshot_plus_tail_matches_full_replay_and_revision(Kurrent, SeparateStream, 1, 0)" computerName="neal-XPS" duration="00:00:00.2709217" startTime="2026-10-09T02:06:04.2144706+00:00" endTime="2026-10-09T02:06:04.4853923+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="9813fc81-1e53-44c8-8f7d-eb41cc6ff77d" />
+    <UnitTestResult executionId="04229690-7db9-4f16-9b3b-1f9382a8e731" testId="bf478a18-fa15-2ce5-6b25-d2bfd56b56ae" testName="Snapshot_plus_tail_matches_full_replay_and_revision(Kurrent, SameStream, 1200, 498)" computerName="neal-XPS" duration="00:00:00.9876019" startTime="2026-10-09T02:06:04.1472107+00:00" endTime="2026-10-09T02:06:05.1348126+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="04229690-7db9-4f16-9b3b-1f9382a8e731" />
+    <UnitTestResult executionId="20cc5494-b9d4-4eb0-9aa3-630cb340e9e2" testId="adf0ec8b-ad20-a6d2-8584-c049207a758f" testName="Snapshot_plus_tail_matches_full_replay_and_revision(Kurrent, SameStream, 1, 0)" computerName="neal-XPS" duration="00:00:00.0925533" startTime="2026-10-09T02:06:05.1353464+00:00" endTime="2026-10-09T02:06:05.2278997+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="20cc5494-b9d4-4eb0-9aa3-630cb340e9e2" />
+    <UnitTestResult executionId="5525551d-de7e-493c-bcbf-dfc4d73f219b" testId="43fec681-8440-bcff-99f4-743a780d2d27" testName="No_snapshot_must_fall_back_to_complete_multi_page_replay(500)" computerName="neal-XPS" duration="00:00:01.1684310" startTime="2026-10-09T02:06:04.1128143+00:00" endTime="2026-10-09T02:06:05.2812453+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Failed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="5525551d-de7e-493c-bcbf-dfc4d73f219b">
+      <Output>
+        <ErrorInfo>
+          <Message>InvalidOperationException: Backward read budget exceeded. Cursors: 9223372036854775807, 9223372036854775307, 9223372036854774807, 9223372036854774307, 9223372036854773807</Message>
+          <StackTrace>   at Eventuous.Tests.Snapshots.BoundedReader.ReadEventsBackwards(StreamName stream, StreamReadPosition start, Int32 count, Boolean failIfNotFound, CancellationToken cancellationToken) in /home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/TestDoubles.cs:line 15
+   at Eventuous.StoreFunctions.ReadStreamAfterSnapshot(IEventReader eventReader, StreamName streamName, HashSet`1 snapshotTypes, Boolean failIfNotFound, CancellationToken cancellationToken) in /home/nmummau/code/eventuous-snapshot-tests/src/Core/src/Eventuous.Persistence/EventStore/StoreFunctions.cs:line 114
+   at Eventuous.StateStoreFunctions.LoadState[TState](IEventReader reader, StreamName streamName, Boolean failIfNotFound, ISnapshotStore snapshotStore, CancellationToken cancellationToken) in /home/nmummau/code/eventuous-snapshot-tests/src/Core/src/Eventuous.Persistence/StateStore/StateStoreFunctions.cs:line 37
+   at Eventuous.Tests.Snapshots.ReplayTests.No_snapshot_must_fall_back_to_complete_multi_page_replay(Int32 count) in /home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/ReplayTests.cs:line 130</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="34f5ecc8-f073-4d49-ae09-67fbba148a35" testId="35c00849-1cf9-fbef-74d3-19b3f9c893a4" testName="No_snapshot_must_fall_back_to_complete_multi_page_replay(1001)" computerName="neal-XPS" duration="00:00:01.2395853" startTime="2026-10-09T02:06:04.0823063+00:00" endTime="2026-10-09T02:06:05.3218916+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Failed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="34f5ecc8-f073-4d49-ae09-67fbba148a35">
+      <Output>
+        <ErrorInfo>
+          <Message>InvalidOperationException: Backward read budget exceeded. Cursors: 9223372036854775807, 9223372036854775307, 9223372036854774807, 9223372036854774307, 9223372036854773807</Message>
+          <StackTrace>   at Eventuous.Tests.Snapshots.BoundedReader.ReadEventsBackwards(StreamName stream, StreamReadPosition start, Int32 count, Boolean failIfNotFound, CancellationToken cancellationToken) in /home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/TestDoubles.cs:line 15
+   at Eventuous.StoreFunctions.ReadStreamAfterSnapshot(IEventReader eventReader, StreamName streamName, HashSet`1 snapshotTypes, Boolean failIfNotFound, CancellationToken cancellationToken) in /home/nmummau/code/eventuous-snapshot-tests/src/Core/src/Eventuous.Persistence/EventStore/StoreFunctions.cs:line 114
+   at Eventuous.StateStoreFunctions.LoadState[TState](IEventReader reader, StreamName streamName, Boolean failIfNotFound, ISnapshotStore snapshotStore, CancellationToken cancellationToken) in /home/nmummau/code/eventuous-snapshot-tests/src/Core/src/Eventuous.Persistence/StateStore/StateStoreFunctions.cs:line 37
+   at Eventuous.Tests.Snapshots.ReplayTests.No_snapshot_must_fall_back_to_complete_multi_page_replay(Int32 count) in /home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/ReplayTests.cs:line 130</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="e104d09a-f094-4f65-aec2-2c397d222fcd" testId="19e530dc-fca3-af58-8977-46a347992b97" testName="Snapshot_plus_tail_matches_full_replay_and_revision(Kurrent, SameStream, 1200, 499)" computerName="neal-XPS" duration="00:00:01.7845267" startTime="2026-10-09T02:06:04.4859090+00:00" endTime="2026-10-09T02:06:06.2704357+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="e104d09a-f094-4f65-aec2-2c397d222fcd" />
+    <UnitTestResult executionId="0455ceee-68d0-48ec-ae04-6c62192437e7" testId="f89934b1-1ee6-972c-2757-91e68183557e" testName="Snapshot_plus_tail_matches_full_replay_and_revision(Postgres, SeparateStore, 1, 0)" computerName="neal-XPS" duration="00:00:00.0131595" startTime="2026-10-09T02:06:06.2882655+00:00" endTime="2026-10-09T02:06:06.3014250+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="0455ceee-68d0-48ec-ae04-6c62192437e7" />
+    <UnitTestResult executionId="cc44b8fb-5c1f-4bce-bf66-5b48eeda1576" testId="8e97ec62-7588-edf5-984c-1ee949cacfdb" testName="Snapshot_plus_tail_matches_full_replay_and_revision(Kurrent, SameStream, 1200, 1)" computerName="neal-XPS" duration="00:00:01.2470575" startTime="2026-10-09T02:06:05.2867470+00:00" endTime="2026-10-09T02:06:06.5338045+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="cc44b8fb-5c1f-4bce-bf66-5b48eeda1576" />
+    <UnitTestResult executionId="93a7c468-e093-44d1-91ff-fd9ac396b4fb" testId="450a4eac-1189-ca53-7c41-854c37d55ee9" testName="External_store_replays_tail_and_rebuilds_after_snapshot_deleted(Redis)" computerName="neal-XPS" duration="00:00:00.3049191" startTime="2026-10-09T02:06:06.3020409+00:00" endTime="2026-10-09T02:06:06.6069600+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="93a7c468-e093-44d1-91ff-fd9ac396b4fb" />
+    <UnitTestResult executionId="52e7a7a5-148c-4306-bb19-c0f7e1cc671c" testId="448820e3-b948-53f0-b651-b6a9fe3ee146" testName="External_store_replays_tail_and_rebuilds_after_snapshot_deleted(Postgres)" computerName="neal-XPS" duration="00:00:00.1583203" startTime="2026-10-09T02:06:06.6073994+00:00" endTime="2026-10-09T02:06:06.7657197+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="52e7a7a5-148c-4306-bb19-c0f7e1cc671c" />
+    <UnitTestResult executionId="57fb0f59-5d0a-4519-8afd-e00e26cbcd98" testId="0662e499-75b5-3bf6-ebc4-60cef66d53b9" testName="External_store_replays_tail_and_rebuilds_after_snapshot_deleted(Mongo)" computerName="neal-XPS" duration="00:00:00.3658072" startTime="2026-10-09T02:06:06.5343026+00:00" endTime="2026-10-09T02:06:06.9001098+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="57fb0f59-5d0a-4519-8afd-e00e26cbcd98" />
+    <UnitTestResult executionId="36632a24-fc0a-415a-ae78-f73546366274" testId="52f83155-e08e-00c5-4f68-888fac597e20" testName="External_store_replays_tail_and_rebuilds_after_snapshot_deleted(SqlServer)" computerName="neal-XPS" duration="00:00:00.1625986" startTime="2026-10-09T02:06:06.7661607+00:00" endTime="2026-10-09T02:06:06.9287593+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="36632a24-fc0a-415a-ae78-f73546366274" />
+    <UnitTestResult executionId="d7be6dfc-1742-446b-8e77-589707d14ab7" testId="55f55e18-27bd-5d2a-9e41-9535ace1e6c4" testName="Same_revision_write_is_idempotent(SqlServer)" computerName="neal-XPS" duration="00:00:00.0691602" startTime="2026-10-09T02:06:06.9019597+00:00" endTime="2026-10-09T02:06:06.9711199+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="d7be6dfc-1742-446b-8e77-589707d14ab7" />
+    <UnitTestResult executionId="bed129b4-fd80-44db-a4ec-d8c475cfdd46" testId="532cf268-97e0-0d4a-4758-aba99e13ce56" testName="Delete_is_idempotent_and_does_not_delete_other_streams(Mongo)" computerName="neal-XPS" duration="00:00:00.0311434" startTime="2026-10-09T02:06:06.9720216+00:00" endTime="2026-10-09T02:06:07.0031650+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="bed129b4-fd80-44db-a4ec-d8c475cfdd46" />
+    <UnitTestResult executionId="954e2ecc-e34c-49d9-bc45-a2a90e67e9bf" testId="57bd8c2b-3f51-356d-42cf-ebb346b7e580" testName="Delete_is_idempotent_and_does_not_delete_other_streams(Postgres)" computerName="neal-XPS" duration="00:00:00.0449807" startTime="2026-10-09T02:06:07.0035255+00:00" endTime="2026-10-09T02:06:07.0485062+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="954e2ecc-e34c-49d9-bc45-a2a90e67e9bf" />
+    <UnitTestResult executionId="36d5aa98-8fee-4324-ad0f-c1f7d4fe2139" testId="6aa3c03d-a559-b78a-91f0-42659b7d73cb" testName="Snapshot_plus_tail_matches_full_replay_and_revision(Kurrent, SeparateStore, 1000, 501)" computerName="neal-XPS" duration="00:00:01.7454940" startTime="2026-10-09T02:06:05.3234207+00:00" endTime="2026-10-09T02:06:07.0689147+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="36d5aa98-8fee-4324-ad0f-c1f7d4fe2139" />
+    <UnitTestResult executionId="4df3416e-d93a-44d4-9b6d-0e6249f45145" testId="35969036-7d21-873c-1a94-f3936b6165fb" testName="Null_payload_is_rejected_without_creating_snapshot(Redis)" computerName="neal-XPS" duration="00:00:00.0379779" startTime="2026-10-09T02:06:07.0699018+00:00" endTime="2026-10-09T02:06:07.1078797+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="4df3416e-d93a-44d4-9b6d-0e6249f45145" />
+    <UnitTestResult executionId="aab7e62c-d1fc-47c1-8b30-0a4697edd14e" testId="6ac0a08a-5b07-a80b-3009-b524d1de7cd3" testName="Null_payload_is_rejected_without_creating_snapshot(Mongo)" computerName="neal-XPS" duration="00:00:00.0029093" startTime="2026-10-09T02:06:07.1087865+00:00" endTime="2026-10-09T02:06:07.1116958+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="aab7e62c-d1fc-47c1-8b30-0a4697edd14e" />
+    <UnitTestResult executionId="3007b412-75e1-4d14-a498-5d8277e95c44" testId="bce78dc7-ecdd-005d-db96-676cd7884da4" testName="Snapshot_plus_tail_matches_full_replay_and_revision(Kurrent, SeparateStream, 1000, 501)" computerName="neal-XPS" duration="00:00:01.8710438" startTime="2026-10-09T02:06:05.2418052+00:00" endTime="2026-10-09T02:06:07.1128490+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="3007b412-75e1-4d14-a498-5d8277e95c44" />
+    <UnitTestResult executionId="84cc0371-527c-4802-9932-eb2211f6986d" testId="d1a75388-6819-0446-58c3-2dfa15b4d8b0" testName="Delete_is_idempotent_and_does_not_delete_other_streams(Redis)" computerName="neal-XPS" duration="00:00:00.0072040" startTime="2026-10-09T02:06:07.1121545+00:00" endTime="2026-10-09T02:06:07.1193585+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="84cc0371-527c-4802-9932-eb2211f6986d" />
+    <UnitTestResult executionId="fa9f9dfc-3435-467c-8a56-b233e18be58d" testId="e413a1fb-baa2-2802-f297-86421ae0303a" testName="Delete_is_idempotent_and_does_not_delete_other_streams(SqlServer)" computerName="neal-XPS" duration="00:00:00.0706766" startTime="2026-10-09T02:06:07.0489035+00:00" endTime="2026-10-09T02:06:07.1195801+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="fa9f9dfc-3435-467c-8a56-b233e18be58d" />
+    <UnitTestResult executionId="e50daecd-10b2-4281-9bed-5e55f45e64ce" testId="dd87e153-e2c0-4cba-0259-5f9be1974617" testName="Null_payload_is_rejected_without_creating_snapshot(SqlServer)" computerName="neal-XPS" duration="00:00:00.0062071" startTime="2026-10-09T02:06:07.1196707+00:00" endTime="2026-10-09T02:06:07.1258778+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="e50daecd-10b2-4281-9bed-5e55f45e64ce" />
+    <UnitTestResult executionId="7535c5e4-1a52-46d3-814a-2236fd3f28b3" testId="cc28feae-f795-1c64-83e7-054c40596ee0" testName="Same_revision_write_is_idempotent(Mongo)" computerName="neal-XPS" duration="00:00:00.0098783" startTime="2026-10-09T02:06:07.1198401+00:00" endTime="2026-10-09T02:06:07.1297184+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="7535c5e4-1a52-46d3-814a-2236fd3f28b3" />
+    <UnitTestResult executionId="20d912e0-72c6-436a-aca1-914338ec1ef4" testId="554056b7-d0c6-e066-7f96-45adaf421e06" testName="Null_payload_is_rejected_without_creating_snapshot(Postgres)" computerName="neal-XPS" duration="00:00:00.0408124" startTime="2026-10-09T02:06:07.1301264+00:00" endTime="2026-10-09T02:06:07.1709388+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="20d912e0-72c6-436a-aca1-914338ec1ef4" />
+    <UnitTestResult executionId="7140d576-7d3a-4c10-b4b2-3d32af83dee0" testId="62e2f065-c00a-c2b3-ffad-9635f9711f02" testName="Same_revision_write_is_idempotent(Redis)" computerName="neal-XPS" duration="00:00:00.0126041" startTime="2026-10-09T02:06:07.1715849+00:00" endTime="2026-10-09T02:06:07.1841890+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="7140d576-7d3a-4c10-b4b2-3d32af83dee0" />
+    <UnitTestResult executionId="929a132a-8dc4-470a-8b05-1421ca3382db" testId="cb3a2d76-640b-3aa7-530c-ea6aa6c9c665" testName="Delayed_older_writer_must_not_replace_newer_snapshot(Redis)" computerName="neal-XPS" duration="00:00:00.0593535" startTime="2026-10-09T02:06:07.1261883+00:00" endTime="2026-10-09T02:06:07.1855418+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Failed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="929a132a-8dc4-470a-8b05-1421ca3382db">
+      <Output>
+        <StdOut>Redis: newer revision 110 committed before delayed revision 100; stored revision=100</StdOut>
+        <ErrorInfo>
+          <Message>ShouldAssertException: loaded.Revision
+    should be
+110L
+    but was
+100L
+
+Additional Info:
+    Snapshot writes should be monotonic in represented stream revision.</Message>
+          <StackTrace>   at Eventuous.Tests.Snapshots.SnapshotStoreTests.Delayed_older_writer_must_not_replace_newer_snapshot(Backend backend) in /home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/SnapshotStoreTests.cs:line 109
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="68849783-7095-4a92-ad0e-7857582504ba" testId="87265575-2c09-146d-0fe8-86fa99e1239c" testName="Roundtrip_preserves_payload_type_unicode_decimal_and_large_revision(Mongo)" computerName="neal-XPS" duration="00:00:00.0075225" startTime="2026-10-09T02:06:07.1847691+00:00" endTime="2026-10-09T02:06:07.1922916+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="68849783-7095-4a92-ad0e-7857582504ba" />
+    <UnitTestResult executionId="070ca053-58e4-47ed-b4c9-d7806d24a8d0" testId="9292f03e-43cd-644b-352f-183b892742cb" testName="Delayed_older_writer_must_not_replace_newer_snapshot(Postgres)" computerName="neal-XPS" duration="00:00:00.0655275" startTime="2026-10-09T02:06:07.1134947+00:00" endTime="2026-10-09T02:06:07.1790222+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Failed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="070ca053-58e4-47ed-b4c9-d7806d24a8d0">
+      <Output>
+        <StdOut>Postgres: newer revision 110 committed before delayed revision 100; stored revision=100</StdOut>
+        <ErrorInfo>
+          <Message>ShouldAssertException: loaded.Revision
+    should be
+110L
+    but was
+100L
+
+Additional Info:
+    Snapshot writes should be monotonic in represented stream revision.</Message>
+          <StackTrace>   at Eventuous.Tests.Snapshots.SnapshotStoreTests.Delayed_older_writer_must_not_replace_newer_snapshot(Backend backend) in /home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/SnapshotStoreTests.cs:line 109
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="31fd6c5c-6dcf-4aa9-beab-de86a7a54a10" testId="2f66adfb-688b-cba3-76d8-e13f7094eb5d" testName="Roundtrip_preserves_payload_type_unicode_decimal_and_large_revision(SqlServer)" computerName="neal-XPS" duration="00:00:00.0355215" startTime="2026-10-09T02:06:07.1926016+00:00" endTime="2026-10-09T02:06:07.2281231+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="31fd6c5c-6dcf-4aa9-beab-de86a7a54a10" />
+    <UnitTestResult executionId="4593c3a7-fa7b-42ef-a727-53609881356b" testId="85277adb-be17-bc17-d264-20ad3f30d4c0" testName="Snapshot_plus_tail_matches_full_replay_and_revision(Postgres, SeparateStore, 1000, 501)" computerName="neal-XPS" duration="00:00:00.3201017" startTime="2026-10-09T02:06:06.9291909+00:00" endTime="2026-10-09T02:06:07.2492926+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="4593c3a7-fa7b-42ef-a727-53609881356b" />
+    <UnitTestResult executionId="b9e7ac0a-73a8-4b91-b590-0d8d84fe975b" testId="0b3b4de6-efc8-b7ad-9170-2b6e4814d20d" testName="Newer_snapshot_replaces_old_snapshot_as_one_record(Postgres)" computerName="neal-XPS" duration="00:00:00.0631570" startTime="2026-10-09T02:06:07.1869369+00:00" endTime="2026-10-09T02:06:07.2500939+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="b9e7ac0a-73a8-4b91-b590-0d8d84fe975b" />
+    <UnitTestResult executionId="650f8b7e-c76a-457f-a757-e92f3f2b2423" testId="5428b75f-a046-e5c8-06cd-fd24674a2d2b" testName="Roundtrip_preserves_payload_type_unicode_decimal_and_large_revision(Postgres)" computerName="neal-XPS" duration="00:00:00.0022573" startTime="2026-10-09T02:06:07.2508417+00:00" endTime="2026-10-09T02:06:07.2530990+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="650f8b7e-c76a-457f-a757-e92f3f2b2423" />
+    <UnitTestResult executionId="c7d64c36-0d53-4516-87b1-392006a28d43" testId="fadbf51b-c8c3-ce67-a28f-90a71d58fb65" testName="Roundtrip_preserves_payload_type_unicode_decimal_and_large_revision(Redis)" computerName="neal-XPS" duration="00:00:00.0281591" startTime="2026-10-09T02:06:07.2285517+00:00" endTime="2026-10-09T02:06:07.2567108+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="c7d64c36-0d53-4516-87b1-392006a28d43" />
+    <UnitTestResult executionId="4d5ea589-2391-4aba-8ac7-cea5f651f876" testId="557878a2-0189-1864-1a3f-a44ccab7674e" testName="Missing_snapshot_returns_null(SqlServer)" computerName="neal-XPS" duration="00:00:00.0104157" startTime="2026-10-09T02:06:07.2507245+00:00" endTime="2026-10-09T02:06:07.2611402+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="4d5ea589-2391-4aba-8ac7-cea5f651f876" />
+    <UnitTestResult executionId="8464a022-9e7a-4d8b-85c5-5289ec032cb7" testId="793012f3-f7a6-071e-c311-f4bd19c0c0fb" testName="Missing_snapshot_returns_null(Postgres)" computerName="neal-XPS" duration="00:00:00.0010935" startTime="2026-10-09T02:06:07.2614802+00:00" endTime="2026-10-09T02:06:07.2625737+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="8464a022-9e7a-4d8b-85c5-5289ec032cb7" />
+    <UnitTestResult executionId="262f652e-be29-4a8c-bf2a-45653b5832ca" testId="76027e79-52d1-8528-a2b1-876eafd78ce0" testName="Missing_snapshot_returns_null(Mongo)" computerName="neal-XPS" duration="00:00:00.0112987" startTime="2026-10-09T02:06:07.2534702+00:00" endTime="2026-10-09T02:06:07.2647689+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="262f652e-be29-4a8c-bf2a-45653b5832ca" />
+    <UnitTestResult executionId="e7767451-4389-4aca-8759-4660a67e8f03" testId="b2220d42-2132-4fe5-8026-7a852ea8d655" testName="Newer_snapshot_replaces_old_snapshot_as_one_record(SqlServer)" computerName="neal-XPS" duration="00:00:00.0768301" startTime="2026-10-09T02:06:07.1932899+00:00" endTime="2026-10-09T02:06:07.2701200+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="e7767451-4389-4aca-8759-4660a67e8f03" />
+    <UnitTestResult executionId="e4032626-d07e-4de2-bcc7-46eec494302f" testId="b5adbccc-d4d6-37c1-6347-d21738ae5963" testName="Delayed_older_writer_must_not_replace_newer_snapshot(Mongo)" computerName="neal-XPS" duration="00:00:00.0113949" startTime="2026-10-09T02:06:07.2628953+00:00" endTime="2026-10-09T02:06:07.2742902+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Failed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="e4032626-d07e-4de2-bcc7-46eec494302f">
+      <Output>
+        <StdOut>Mongo: newer revision 110 committed before delayed revision 100; stored revision=100</StdOut>
+        <ErrorInfo>
+          <Message>ShouldAssertException: loaded.Revision
+    should be
+110L
+    but was
+100L
+
+Additional Info:
+    Snapshot writes should be monotonic in represented stream revision.</Message>
+          <StackTrace>   at Eventuous.Tests.Snapshots.SnapshotStoreTests.Delayed_older_writer_must_not_replace_newer_snapshot(Backend backend) in /home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/SnapshotStoreTests.cs:line 109
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="df65c754-cfa6-403f-98d9-1e0360e3bcea" testId="03e5bc1b-618c-3842-cdd5-de3f63ecc31e" testName="Missing_snapshot_returns_null(Redis)" computerName="neal-XPS" duration="00:00:00.0276817" startTime="2026-10-09T02:06:07.2570450+00:00" endTime="2026-10-09T02:06:07.2847267+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="df65c754-cfa6-403f-98d9-1e0360e3bcea" />
+    <UnitTestResult executionId="c38eadac-3d34-40fa-a6b3-8b6eb4de97c7" testId="01cbc9af-e2c2-e727-c508-ad2fe6660a20" testName="Same_revision_write_is_idempotent(Postgres)" computerName="neal-XPS" duration="00:00:00.0073626" startTime="2026-10-09T02:06:07.2850418+00:00" endTime="2026-10-09T02:06:07.2924044+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="c38eadac-3d34-40fa-a6b3-8b6eb4de97c7" />
+    <UnitTestResult executionId="67874325-d0ee-4219-afa0-f98012df0398" testId="5924765f-4a4d-ad59-af04-d38d57f40018" testName="Newer_snapshot_replaces_old_snapshot_as_one_record(Mongo)" computerName="neal-XPS" duration="00:00:00.0093922" startTime="2026-10-09T02:06:07.2841231+00:00" endTime="2026-10-09T02:06:07.2935153+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="67874325-d0ee-4219-afa0-f98012df0398" />
+    <UnitTestResult executionId="9938f551-222a-4641-879b-fc745e7b04a8" testId="20344b96-9ed2-8951-6d08-d05bcb9a72ca" testName="Newer_snapshot_replaces_old_snapshot_as_one_record(Redis)" computerName="neal-XPS" duration="00:00:00.0353085" startTime="2026-10-09T02:06:07.2704897+00:00" endTime="2026-10-09T02:06:07.3057982+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="9938f551-222a-4641-879b-fc745e7b04a8" />
+    <UnitTestResult executionId="64a0e625-e498-44ee-99d2-e829a93887e8" testId="881b5ea5-76a2-ff9f-cd90-154f01b1bcd9" testName="Delayed_older_writer_must_not_replace_newer_snapshot(SqlServer)" computerName="neal-XPS" duration="00:00:01.1768517" startTime="2026-10-09T02:06:07.2650696+00:00" endTime="2026-10-09T02:06:08.4419213+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Failed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="64a0e625-e498-44ee-99d2-e829a93887e8">
+      <Output>
+        <StdOut>SqlServer: newer revision 110 committed before delayed revision 100; stored revision=100
+[testcontainers.org 00:00:47.05] Delete Docker container 295e2160545c
+[testcontainers.org 00:00:47.07] Delete Docker container 68059761cd66
+[testcontainers.org 00:00:47.07] Delete Docker container f73d4b244263
+[testcontainers.org 00:00:47.08] Delete Docker container 2a4b5306257a
+[testcontainers.org 00:00:47.08] Delete Docker container 54e1eb03cd4b</StdOut>
+        <ErrorInfo>
+          <Message>ShouldAssertException: loaded.Revision
+    should be
+110L
+    but was
+100L
+
+Additional Info:
+    Snapshot writes should be monotonic in represented stream revision.</Message>
+          <StackTrace>   at Eventuous.Tests.Snapshots.SnapshotStoreTests.Delayed_older_writer_must_not_replace_newer_snapshot(Backend backend) in /home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/SnapshotStoreTests.cs:line 109
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="c2b76467-66ed-4e9c-84cc-161d9b8beb84" testId="f87e4a4b-c642-fc02-68c3-e8e6be48b4ca" testName="Multiple_snapshot_contract_versions_are_registered" computerName="neal-XPS" duration="00:00:14.4258187" startTime="2026-10-09T02:06:02.0480195+00:00" endTime="2026-10-09T02:06:16.4738382+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="c2b76467-66ed-4e9c-84cc-161d9b8beb84" />
+    <UnitTestResult executionId="e8e8f67b-bcf8-4ad3-a286-5ed99fdd64f5" testId="467e5077-cdc6-18be-20c2-afc807b7a897" testName="Non_generic_attribute_registers_snapshot_and_storage_strategy" computerName="neal-XPS" duration="00:00:14.4675797" startTime="2026-10-09T02:06:02.0065306+00:00" endTime="2026-10-09T02:06:16.4741103+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Passed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="e8e8f67b-bcf8-4ad3-a286-5ed99fdd64f5" />
+    <UnitTestResult executionId="7b455f1a-7cbf-46d1-873b-32f6af333bd0" testId="cc18297f-baac-4497-5b81-22975a8b11a3" testName="Generic_attribute_used_by_banking_sample_must_register_snapshot_type" computerName="neal-XPS" duration="00:00:14.4728351" startTime="2026-10-09T02:06:02.0006435+00:00" endTime="2026-10-09T02:06:16.4734786+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Failed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="7b455f1a-7cbf-46d1-873b-32f6af333bd0">
+      <Output>
+        <ErrorInfo>
+          <Message>ShouldAssertException: generated
+    should contain (case insensitive comparison)
+"SnapshotTypeMap.Register(typeof(global::Example.MyState), typeof(global::Example.MySnapshot), SnapshotStorageStrategy.SeparateStore)"
+    but was actually
+"// &lt;auto-generated/&gt;
+#pragma warning disable CS8019
+#nullable enable
+
+using System;
+using System.Run..."</Message>
+          <StackTrace>   at Eventuous.Tests.Snapshots.GeneratorTests.Generic_attribute_used_by_banking_sample_must_register_snapshot_type() in /home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/GeneratorTests.cs:line 18</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="3fd8707f-547c-450d-b007-9537456f5f2a" testId="f9e65ac9-fa40-23a8-28a4-f7b45f98d424" testName="Generic_attribute_constructor_strategy_must_be_respected" computerName="neal-XPS" duration="00:00:14.2732449" startTime="2026-10-09T02:06:02.2352414+00:00" endTime="2026-10-09T02:06:16.5084863+00:00" testType="13CDC9D9-DDB5-4fa4-A97D-D965CCFC6D4B" outcome="Failed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" relativeResultsDirectory="3fd8707f-547c-450d-b007-9537456f5f2a">
+      <Output>
+        <ErrorInfo>
+          <Message>ShouldAssertException: generated
+    should contain (case insensitive comparison)
+"SnapshotTypeMap.Register(typeof(global::Example.MyState), typeof(global::Example.MySnapshot), SnapshotStorageStrategy.SeparateStream)"
+    but was actually
+"// &lt;auto-generated/&gt;
+#pragma warning disable CS8019
+#nullable enable
+
+using System;
+using System.Run..."</Message>
+          <StackTrace>   at Eventuous.Tests.Snapshots.GeneratorTests.Generic_attribute_constructor_strategy_must_be_respected() in /home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/GeneratorTests.cs:line 24</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Missing_external_store_fails_before_any_event_is_committed" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="b426caf9-196a-34f1-710f-f07de147e2cf">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="bbf0b808-ac33-4300-a7f5-603b39defeef" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.CommandServiceTests" name="Missing_external_store_fails_before_any_event_is_committed" />
+    </UnitTest>
+    <UnitTest name="Snapshot_write_failure_reports_error_after_commit_and_retry_duplicates_business_event(False)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="a6aa62a2-2625-24a7-9a39-601ee22e4758">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Reproduction" />
+      </TestCategory>
+      <Execution id="4e9d8864-ca8b-4206-bce0-d125b91f3c5a" />
+      <Properties>
+        <Property>
+          <Key>Reproduction</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.CommandServiceTests" name="Snapshot_write_failure_reports_error_after_commit_and_retry_duplicates_business_event(False)" />
+    </UnitTest>
+    <UnitTest name="Snapshot_only_command_must_preserve_existing_stream_revision" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="d17803d7-bf9d-fdb8-9bb2-bf531f59d35e">
+      <TestCategory>
+        <TestCategoryItem TestCategory="KnownDefect" />
+      </TestCategory>
+      <Execution id="c4a3bf89-c9d2-43bf-bb41-131f65841331" />
+      <Properties>
+        <Property>
+          <Key>KnownDefect</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.CommandServiceTests" name="Snapshot_only_command_must_preserve_existing_stream_revision" />
+    </UnitTest>
+    <UnitTest name="Snapshot_write_failure_reports_error_after_commit_and_retry_duplicates_business_event(True)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="eefafb10-1827-675b-f678-294c397dbde3">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Reproduction" />
+      </TestCategory>
+      <Execution id="2e0de46a-43e1-4cf3-934f-c79c89283090" />
+      <Properties>
+        <Property>
+          <Key>Reproduction</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.CommandServiceTests" name="Snapshot_write_failure_reports_error_after_commit_and_retry_duplicates_business_event(True)" />
+    </UnitTest>
+    <UnitTest name="Repeated_commands_snapshot_every_three_events_and_preserve_state(Postgres, False)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="c83a836d-44ce-0647-e2e5-55b31c6f0953">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="1ef2cf2e-35e1-4767-a611-2a182fdfd428" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.CommandServiceTests" name="Repeated_commands_snapshot_every_three_events_and_preserve_state(Postgres, False)" />
+    </UnitTest>
+    <UnitTest name="Explicit_snapshot_inside_batch_must_not_skip_following_domain_event" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="76b75cba-1425-7320-8f57-fff099566303">
+      <TestCategory>
+        <TestCategoryItem TestCategory="KnownDefect" />
+      </TestCategory>
+      <Execution id="56e1d583-2d00-4210-97f2-9829573a32a0" />
+      <Properties>
+        <Property>
+          <Key>KnownDefect</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.CommandServiceTests" name="Explicit_snapshot_inside_batch_must_not_skip_following_domain_event" />
+    </UnitTest>
+    <UnitTest name="Repeated_commands_snapshot_every_three_events_and_preserve_state(Redis, False)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="8c5857b6-109b-ea1c-d30c-f91c0a7183ba">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="b9a6d001-2fff-4107-984c-324844510ca6" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.CommandServiceTests" name="Repeated_commands_snapshot_every_three_events_and_preserve_state(Redis, False)" />
+    </UnitTest>
+    <UnitTest name="Repeated_commands_snapshot_every_three_events_and_preserve_state(SqlServer, False)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="616e26db-1585-caba-4b98-feba2b4e500c">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="e4f167c1-a141-422b-8c22-5d95fba097ed" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.CommandServiceTests" name="Repeated_commands_snapshot_every_three_events_and_preserve_state(SqlServer, False)" />
+    </UnitTest>
+    <UnitTest name="Repeated_commands_snapshot_every_three_events_and_preserve_state(SqlServer, True)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="3b4c6f26-b231-4634-2bf3-7eef83996223">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="c5e25402-c4f9-4cbe-be0a-8ae9e67029a7" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.CommandServiceTests" name="Repeated_commands_snapshot_every_three_events_and_preserve_state(SqlServer, True)" />
+    </UnitTest>
+    <UnitTest name="Repeated_commands_snapshot_every_three_events_and_preserve_state(Postgres, True)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="b6b4408b-8de5-fd8e-c49a-c72bb165310e">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="deb3d79e-1e30-456a-b720-cd364790df14" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.CommandServiceTests" name="Repeated_commands_snapshot_every_three_events_and_preserve_state(Postgres, True)" />
+    </UnitTest>
+    <UnitTest name="Same_stream_command_snapshots_share_the_domain_append(True)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="b2182737-de37-87a8-b602-9f175ec795f0">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="52e4b3ef-dbf3-4d73-91ae-f525dfed0b06" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.CommandServiceTests" name="Same_stream_command_snapshots_share_the_domain_append(True)" />
+    </UnitTest>
+    <UnitTest name="Separate_stream_command_snapshots_record_domain_revision_and_keep_latest(False)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="028b992e-f3d9-a353-a2d2-0d1345409ace">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="fd00d0a9-b40e-49d3-a27a-cd4c8d53ff61" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.CommandServiceTests" name="Separate_stream_command_snapshots_record_domain_revision_and_keep_latest(False)" />
+    </UnitTest>
+    <UnitTest name="Separate_stream_command_snapshots_record_domain_revision_and_keep_latest(True)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="89c3f18d-9cb6-8a82-174e-0c49c4c7eecf">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="bde88717-0450-4a00-b62c-2c085a352e4c" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.CommandServiceTests" name="Separate_stream_command_snapshots_record_domain_revision_and_keep_latest(True)" />
+    </UnitTest>
+    <UnitTest name="Same_stream_command_snapshots_share_the_domain_append(False)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="e8de5ec1-7c9e-1bd3-ac17-49756e275363">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="92dde6ab-10f3-4550-9cfd-187a948e0133" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.CommandServiceTests" name="Same_stream_command_snapshots_share_the_domain_append(False)" />
+    </UnitTest>
+    <UnitTest name="Snapshot_revision_is_used_when_there_are_no_tail_events" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="92d30dee-687f-2bc5-26b1-0eb56b557250">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="e1c926f7-daf4-4dab-a76d-90fe2eff76c7" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.ReplayTests" name="Snapshot_revision_is_used_when_there_are_no_tail_events" />
+    </UnitTest>
+    <UnitTest name="Repeated_commands_snapshot_every_three_events_and_preserve_state(Redis, True)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="45b64d77-193c-4ec6-0bac-43346393a047">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="e993d961-45bb-40b4-9ff0-e3cf17726e38" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.CommandServiceTests" name="Repeated_commands_snapshot_every_three_events_and_preserve_state(Redis, True)" />
+    </UnitTest>
+    <UnitTest name="Redis_read_without_replacement_preserves_state_and_revision" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="4447ac9a-3ee3-dd82-72a0-3307c63d37c3">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="0cf111b5-e8b8-4432-bcd2-4a5ea5fc91d5" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.RedisConsistencyTests" name="Redis_read_without_replacement_preserves_state_and_revision" />
+    </UnitTest>
+    <UnitTest name="Postgres_supports_snapshot_backward_reads(SameStream)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="07f28487-a2d1-766a-59b2-93ebb188926d">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="1723caeb-c581-4a55-9b03-aedda5257e4a" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.ReplayTests" name="Postgres_supports_snapshot_backward_reads(SameStream)" />
+    </UnitTest>
+    <UnitTest name="Postgres_supports_snapshot_backward_reads(SeparateStream)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="deac0b8d-56a4-ee3f-5895-f394cf7f3eb5">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="d6455db1-5a60-4cbf-8f14-3363c7c6433b" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.ReplayTests" name="Postgres_supports_snapshot_backward_reads(SeparateStream)" />
+    </UnitTest>
+    <UnitTest name="Repeated_commands_snapshot_every_three_events_and_preserve_state(Mongo, False)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="f3b6be1a-5321-839a-e503-27dce41592ca">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="99d30c82-0eb7-4b42-bf5d-278097687bef" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.CommandServiceTests" name="Repeated_commands_snapshot_every_three_events_and_preserve_state(Mongo, False)" />
+    </UnitTest>
+    <UnitTest name="Repeated_commands_snapshot_every_three_events_and_preserve_state(Mongo, True)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="85ef05e5-cf46-4978-e276-a2a2e08cb14e">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="3c531460-0076-436b-babf-39303a457b5e" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.CommandServiceTests" name="Repeated_commands_snapshot_every_three_events_and_preserve_state(Mongo, True)" />
+    </UnitTest>
+    <UnitTest name="Concurrent_replacement_must_not_mix_revision_and_payload_or_double_replay" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="6158fb2f-b822-85fc-9161-5188713d364d">
+      <TestCategory>
+        <TestCategoryItem TestCategory="KnownDefect" />
+      </TestCategory>
+      <Execution id="e6c1c5a7-a19f-48f3-9a0c-0ed48409a1c9" />
+      <Properties>
+        <Property>
+          <Key>KnownDefect</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.RedisConsistencyTests" name="Concurrent_replacement_must_not_mix_revision_and_payload_or_double_replay" />
+    </UnitTest>
+    <UnitTest name="No_snapshot_must_fall_back_to_complete_multi_page_replay(501)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="890b6d59-ba03-ba90-7e75-d73d76d47d25">
+      <TestCategory>
+        <TestCategoryItem TestCategory="KnownDefect" />
+      </TestCategory>
+      <Execution id="d340efc8-c610-4e7d-b276-74e33a7f8bcd" />
+      <Properties>
+        <Property>
+          <Key>KnownDefect</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.ReplayTests" name="No_snapshot_must_fall_back_to_complete_multi_page_replay(501)" />
+    </UnitTest>
+    <UnitTest name="Same_stream_snapshot_beyond_first_page_must_replay_without_repeating_pages(500)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="b227a456-6a61-08e0-b9a9-c12f5a4c9768">
+      <TestCategory>
+        <TestCategoryItem TestCategory="KnownDefect" />
+      </TestCategory>
+      <Execution id="55fffd13-018b-46f1-b980-e0056a876c35" />
+      <Properties>
+        <Property>
+          <Key>KnownDefect</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.ReplayTests" name="Same_stream_snapshot_beyond_first_page_must_replay_without_repeating_pages(500)" />
+    </UnitTest>
+    <UnitTest name="Same_stream_snapshot_beyond_first_page_must_replay_without_repeating_pages(1000)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="a7bcbe03-f664-ecf8-8033-2099127934ed">
+      <TestCategory>
+        <TestCategoryItem TestCategory="KnownDefect" />
+      </TestCategory>
+      <Execution id="c8de0999-d3e6-4be1-8ec0-6e0508d5be5f" />
+      <Properties>
+        <Property>
+          <Key>KnownDefect</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.ReplayTests" name="Same_stream_snapshot_beyond_first_page_must_replay_without_repeating_pages(1000)" />
+    </UnitTest>
+    <UnitTest name="Same_stream_selects_latest_snapshot_and_keeps_tail_order" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="65e03001-777b-976c-d6cc-4097fd0f10b1">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="4cdc3ee2-948b-44b6-bad6-cad64579a609" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.ReplayTests" name="Same_stream_selects_latest_snapshot_and_keeps_tail_order" />
+    </UnitTest>
+    <UnitTest name="Same_stream_snapshot_beyond_first_page_must_replay_without_repeating_pages(501)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="67e6df2c-b04e-cf5a-e2e4-32150224235d">
+      <TestCategory>
+        <TestCategoryItem TestCategory="KnownDefect" />
+      </TestCategory>
+      <Execution id="29cd818f-5428-4f9f-bbcb-54138ec437e2" />
+      <Properties>
+        <Property>
+          <Key>KnownDefect</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.ReplayTests" name="Same_stream_snapshot_beyond_first_page_must_replay_without_repeating_pages(501)" />
+    </UnitTest>
+    <UnitTest name="Missing_stream_and_missing_snapshot_respect_fail_if_not_found(Kurrent)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="13cfdc00-c19e-1e19-5665-52f9feb5b2ba">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="361cdd29-0acf-4545-b153-851fd10d3295" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.ReplayTests" name="Missing_stream_and_missing_snapshot_respect_fail_if_not_found(Kurrent)" />
+    </UnitTest>
+    <UnitTest name="Missing_stream_and_missing_snapshot_respect_fail_if_not_found(Postgres)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="1c91fcc3-0be3-f3af-79f7-62e0d9615689">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="51d898dc-96a4-4611-95de-a25ec1e3ed37" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.ReplayTests" name="Missing_stream_and_missing_snapshot_respect_fail_if_not_found(Postgres)" />
+    </UnitTest>
+    <UnitTest name="Snapshot_plus_tail_matches_full_replay_and_revision(Kurrent, SeparateStream, 1, 0)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="9fdbc164-115e-dccc-e9d5-6f2e51ac8147">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="9813fc81-1e53-44c8-8f7d-eb41cc6ff77d" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.ReplayTests" name="Snapshot_plus_tail_matches_full_replay_and_revision(Kurrent, SeparateStream, 1, 0)" />
+    </UnitTest>
+    <UnitTest name="Snapshot_plus_tail_matches_full_replay_and_revision(Kurrent, SameStream, 1200, 498)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="bf478a18-fa15-2ce5-6b25-d2bfd56b56ae">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="04229690-7db9-4f16-9b3b-1f9382a8e731" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.ReplayTests" name="Snapshot_plus_tail_matches_full_replay_and_revision(Kurrent, SameStream, 1200, 498)" />
+    </UnitTest>
+    <UnitTest name="Snapshot_plus_tail_matches_full_replay_and_revision(Kurrent, SameStream, 1, 0)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="adf0ec8b-ad20-a6d2-8584-c049207a758f">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="20cc5494-b9d4-4eb0-9aa3-630cb340e9e2" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.ReplayTests" name="Snapshot_plus_tail_matches_full_replay_and_revision(Kurrent, SameStream, 1, 0)" />
+    </UnitTest>
+    <UnitTest name="No_snapshot_must_fall_back_to_complete_multi_page_replay(500)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="43fec681-8440-bcff-99f4-743a780d2d27">
+      <TestCategory>
+        <TestCategoryItem TestCategory="KnownDefect" />
+      </TestCategory>
+      <Execution id="5525551d-de7e-493c-bcbf-dfc4d73f219b" />
+      <Properties>
+        <Property>
+          <Key>KnownDefect</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.ReplayTests" name="No_snapshot_must_fall_back_to_complete_multi_page_replay(500)" />
+    </UnitTest>
+    <UnitTest name="No_snapshot_must_fall_back_to_complete_multi_page_replay(1001)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="35c00849-1cf9-fbef-74d3-19b3f9c893a4">
+      <TestCategory>
+        <TestCategoryItem TestCategory="KnownDefect" />
+      </TestCategory>
+      <Execution id="34f5ecc8-f073-4d49-ae09-67fbba148a35" />
+      <Properties>
+        <Property>
+          <Key>KnownDefect</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.ReplayTests" name="No_snapshot_must_fall_back_to_complete_multi_page_replay(1001)" />
+    </UnitTest>
+    <UnitTest name="Snapshot_plus_tail_matches_full_replay_and_revision(Kurrent, SameStream, 1200, 499)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="19e530dc-fca3-af58-8977-46a347992b97">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="e104d09a-f094-4f65-aec2-2c397d222fcd" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.ReplayTests" name="Snapshot_plus_tail_matches_full_replay_and_revision(Kurrent, SameStream, 1200, 499)" />
+    </UnitTest>
+    <UnitTest name="Snapshot_plus_tail_matches_full_replay_and_revision(Postgres, SeparateStore, 1, 0)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="f89934b1-1ee6-972c-2757-91e68183557e">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="0455ceee-68d0-48ec-ae04-6c62192437e7" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.ReplayTests" name="Snapshot_plus_tail_matches_full_replay_and_revision(Postgres, SeparateStore, 1, 0)" />
+    </UnitTest>
+    <UnitTest name="Snapshot_plus_tail_matches_full_replay_and_revision(Kurrent, SameStream, 1200, 1)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="8e97ec62-7588-edf5-984c-1ee949cacfdb">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="cc44b8fb-5c1f-4bce-bf66-5b48eeda1576" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.ReplayTests" name="Snapshot_plus_tail_matches_full_replay_and_revision(Kurrent, SameStream, 1200, 1)" />
+    </UnitTest>
+    <UnitTest name="External_store_replays_tail_and_rebuilds_after_snapshot_deleted(Redis)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="450a4eac-1189-ca53-7c41-854c37d55ee9">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="93a7c468-e093-44d1-91ff-fd9ac396b4fb" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.ReplayTests" name="External_store_replays_tail_and_rebuilds_after_snapshot_deleted(Redis)" />
+    </UnitTest>
+    <UnitTest name="External_store_replays_tail_and_rebuilds_after_snapshot_deleted(Postgres)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="448820e3-b948-53f0-b651-b6a9fe3ee146">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="52e7a7a5-148c-4306-bb19-c0f7e1cc671c" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.ReplayTests" name="External_store_replays_tail_and_rebuilds_after_snapshot_deleted(Postgres)" />
+    </UnitTest>
+    <UnitTest name="External_store_replays_tail_and_rebuilds_after_snapshot_deleted(Mongo)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="0662e499-75b5-3bf6-ebc4-60cef66d53b9">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="57fb0f59-5d0a-4519-8afd-e00e26cbcd98" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.ReplayTests" name="External_store_replays_tail_and_rebuilds_after_snapshot_deleted(Mongo)" />
+    </UnitTest>
+    <UnitTest name="External_store_replays_tail_and_rebuilds_after_snapshot_deleted(SqlServer)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="52f83155-e08e-00c5-4f68-888fac597e20">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="36632a24-fc0a-415a-ae78-f73546366274" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.ReplayTests" name="External_store_replays_tail_and_rebuilds_after_snapshot_deleted(SqlServer)" />
+    </UnitTest>
+    <UnitTest name="Same_revision_write_is_idempotent(SqlServer)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="55f55e18-27bd-5d2a-9e41-9535ace1e6c4">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="d7be6dfc-1742-446b-8e77-589707d14ab7" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.SnapshotStoreTests" name="Same_revision_write_is_idempotent(SqlServer)" />
+    </UnitTest>
+    <UnitTest name="Delete_is_idempotent_and_does_not_delete_other_streams(Mongo)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="532cf268-97e0-0d4a-4758-aba99e13ce56">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="bed129b4-fd80-44db-a4ec-d8c475cfdd46" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.SnapshotStoreTests" name="Delete_is_idempotent_and_does_not_delete_other_streams(Mongo)" />
+    </UnitTest>
+    <UnitTest name="Delete_is_idempotent_and_does_not_delete_other_streams(Postgres)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="57bd8c2b-3f51-356d-42cf-ebb346b7e580">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="954e2ecc-e34c-49d9-bc45-a2a90e67e9bf" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.SnapshotStoreTests" name="Delete_is_idempotent_and_does_not_delete_other_streams(Postgres)" />
+    </UnitTest>
+    <UnitTest name="Snapshot_plus_tail_matches_full_replay_and_revision(Kurrent, SeparateStore, 1000, 501)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="6aa3c03d-a559-b78a-91f0-42659b7d73cb">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="36d5aa98-8fee-4324-ad0f-c1f7d4fe2139" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.ReplayTests" name="Snapshot_plus_tail_matches_full_replay_and_revision(Kurrent, SeparateStore, 1000, 501)" />
+    </UnitTest>
+    <UnitTest name="Null_payload_is_rejected_without_creating_snapshot(Redis)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="35969036-7d21-873c-1a94-f3936b6165fb">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="4df3416e-d93a-44d4-9b6d-0e6249f45145" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.SnapshotStoreTests" name="Null_payload_is_rejected_without_creating_snapshot(Redis)" />
+    </UnitTest>
+    <UnitTest name="Null_payload_is_rejected_without_creating_snapshot(Mongo)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="6ac0a08a-5b07-a80b-3009-b524d1de7cd3">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="aab7e62c-d1fc-47c1-8b30-0a4697edd14e" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.SnapshotStoreTests" name="Null_payload_is_rejected_without_creating_snapshot(Mongo)" />
+    </UnitTest>
+    <UnitTest name="Snapshot_plus_tail_matches_full_replay_and_revision(Kurrent, SeparateStream, 1000, 501)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="bce78dc7-ecdd-005d-db96-676cd7884da4">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="3007b412-75e1-4d14-a498-5d8277e95c44" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.ReplayTests" name="Snapshot_plus_tail_matches_full_replay_and_revision(Kurrent, SeparateStream, 1000, 501)" />
+    </UnitTest>
+    <UnitTest name="Delete_is_idempotent_and_does_not_delete_other_streams(Redis)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="d1a75388-6819-0446-58c3-2dfa15b4d8b0">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="84cc0371-527c-4802-9932-eb2211f6986d" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.SnapshotStoreTests" name="Delete_is_idempotent_and_does_not_delete_other_streams(Redis)" />
+    </UnitTest>
+    <UnitTest name="Delete_is_idempotent_and_does_not_delete_other_streams(SqlServer)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="e413a1fb-baa2-2802-f297-86421ae0303a">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="fa9f9dfc-3435-467c-8a56-b233e18be58d" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.SnapshotStoreTests" name="Delete_is_idempotent_and_does_not_delete_other_streams(SqlServer)" />
+    </UnitTest>
+    <UnitTest name="Null_payload_is_rejected_without_creating_snapshot(SqlServer)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="dd87e153-e2c0-4cba-0259-5f9be1974617">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="e50daecd-10b2-4281-9bed-5e55f45e64ce" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.SnapshotStoreTests" name="Null_payload_is_rejected_without_creating_snapshot(SqlServer)" />
+    </UnitTest>
+    <UnitTest name="Same_revision_write_is_idempotent(Mongo)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="cc28feae-f795-1c64-83e7-054c40596ee0">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="7535c5e4-1a52-46d3-814a-2236fd3f28b3" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.SnapshotStoreTests" name="Same_revision_write_is_idempotent(Mongo)" />
+    </UnitTest>
+    <UnitTest name="Null_payload_is_rejected_without_creating_snapshot(Postgres)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="554056b7-d0c6-e066-7f96-45adaf421e06">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="20d912e0-72c6-436a-aca1-914338ec1ef4" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.SnapshotStoreTests" name="Null_payload_is_rejected_without_creating_snapshot(Postgres)" />
+    </UnitTest>
+    <UnitTest name="Same_revision_write_is_idempotent(Redis)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="62e2f065-c00a-c2b3-ffad-9635f9711f02">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="7140d576-7d3a-4c10-b4b2-3d32af83dee0" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.SnapshotStoreTests" name="Same_revision_write_is_idempotent(Redis)" />
+    </UnitTest>
+    <UnitTest name="Delayed_older_writer_must_not_replace_newer_snapshot(Redis)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="cb3a2d76-640b-3aa7-530c-ea6aa6c9c665">
+      <TestCategory>
+        <TestCategoryItem TestCategory="KnownDefect" />
+      </TestCategory>
+      <Execution id="929a132a-8dc4-470a-8b05-1421ca3382db" />
+      <Properties>
+        <Property>
+          <Key>KnownDefect</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.SnapshotStoreTests" name="Delayed_older_writer_must_not_replace_newer_snapshot(Redis)" />
+    </UnitTest>
+    <UnitTest name="Roundtrip_preserves_payload_type_unicode_decimal_and_large_revision(Mongo)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="87265575-2c09-146d-0fe8-86fa99e1239c">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="68849783-7095-4a92-ad0e-7857582504ba" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.SnapshotStoreTests" name="Roundtrip_preserves_payload_type_unicode_decimal_and_large_revision(Mongo)" />
+    </UnitTest>
+    <UnitTest name="Delayed_older_writer_must_not_replace_newer_snapshot(Postgres)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="9292f03e-43cd-644b-352f-183b892742cb">
+      <TestCategory>
+        <TestCategoryItem TestCategory="KnownDefect" />
+      </TestCategory>
+      <Execution id="070ca053-58e4-47ed-b4c9-d7806d24a8d0" />
+      <Properties>
+        <Property>
+          <Key>KnownDefect</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.SnapshotStoreTests" name="Delayed_older_writer_must_not_replace_newer_snapshot(Postgres)" />
+    </UnitTest>
+    <UnitTest name="Roundtrip_preserves_payload_type_unicode_decimal_and_large_revision(SqlServer)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="2f66adfb-688b-cba3-76d8-e13f7094eb5d">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="31fd6c5c-6dcf-4aa9-beab-de86a7a54a10" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.SnapshotStoreTests" name="Roundtrip_preserves_payload_type_unicode_decimal_and_large_revision(SqlServer)" />
+    </UnitTest>
+    <UnitTest name="Snapshot_plus_tail_matches_full_replay_and_revision(Postgres, SeparateStore, 1000, 501)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="85277adb-be17-bc17-d264-20ad3f30d4c0">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="4593c3a7-fa7b-42ef-a727-53609881356b" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.ReplayTests" name="Snapshot_plus_tail_matches_full_replay_and_revision(Postgres, SeparateStore, 1000, 501)" />
+    </UnitTest>
+    <UnitTest name="Newer_snapshot_replaces_old_snapshot_as_one_record(Postgres)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="0b3b4de6-efc8-b7ad-9170-2b6e4814d20d">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="b9e7ac0a-73a8-4b91-b590-0d8d84fe975b" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.SnapshotStoreTests" name="Newer_snapshot_replaces_old_snapshot_as_one_record(Postgres)" />
+    </UnitTest>
+    <UnitTest name="Roundtrip_preserves_payload_type_unicode_decimal_and_large_revision(Postgres)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="5428b75f-a046-e5c8-06cd-fd24674a2d2b">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="650f8b7e-c76a-457f-a757-e92f3f2b2423" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.SnapshotStoreTests" name="Roundtrip_preserves_payload_type_unicode_decimal_and_large_revision(Postgres)" />
+    </UnitTest>
+    <UnitTest name="Roundtrip_preserves_payload_type_unicode_decimal_and_large_revision(Redis)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="fadbf51b-c8c3-ce67-a28f-90a71d58fb65">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="c7d64c36-0d53-4516-87b1-392006a28d43" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.SnapshotStoreTests" name="Roundtrip_preserves_payload_type_unicode_decimal_and_large_revision(Redis)" />
+    </UnitTest>
+    <UnitTest name="Missing_snapshot_returns_null(SqlServer)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="557878a2-0189-1864-1a3f-a44ccab7674e">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="4d5ea589-2391-4aba-8ac7-cea5f651f876" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.SnapshotStoreTests" name="Missing_snapshot_returns_null(SqlServer)" />
+    </UnitTest>
+    <UnitTest name="Missing_snapshot_returns_null(Postgres)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="793012f3-f7a6-071e-c311-f4bd19c0c0fb">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="8464a022-9e7a-4d8b-85c5-5289ec032cb7" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.SnapshotStoreTests" name="Missing_snapshot_returns_null(Postgres)" />
+    </UnitTest>
+    <UnitTest name="Missing_snapshot_returns_null(Mongo)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="76027e79-52d1-8528-a2b1-876eafd78ce0">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="262f652e-be29-4a8c-bf2a-45653b5832ca" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.SnapshotStoreTests" name="Missing_snapshot_returns_null(Mongo)" />
+    </UnitTest>
+    <UnitTest name="Newer_snapshot_replaces_old_snapshot_as_one_record(SqlServer)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="b2220d42-2132-4fe5-8026-7a852ea8d655">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="e7767451-4389-4aca-8759-4660a67e8f03" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.SnapshotStoreTests" name="Newer_snapshot_replaces_old_snapshot_as_one_record(SqlServer)" />
+    </UnitTest>
+    <UnitTest name="Delayed_older_writer_must_not_replace_newer_snapshot(Mongo)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="b5adbccc-d4d6-37c1-6347-d21738ae5963">
+      <TestCategory>
+        <TestCategoryItem TestCategory="KnownDefect" />
+      </TestCategory>
+      <Execution id="e4032626-d07e-4de2-bcc7-46eec494302f" />
+      <Properties>
+        <Property>
+          <Key>KnownDefect</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.SnapshotStoreTests" name="Delayed_older_writer_must_not_replace_newer_snapshot(Mongo)" />
+    </UnitTest>
+    <UnitTest name="Missing_snapshot_returns_null(Redis)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="03e5bc1b-618c-3842-cdd5-de3f63ecc31e">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="df65c754-cfa6-403f-98d9-1e0360e3bcea" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.SnapshotStoreTests" name="Missing_snapshot_returns_null(Redis)" />
+    </UnitTest>
+    <UnitTest name="Same_revision_write_is_idempotent(Postgres)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="01cbc9af-e2c2-e727-c508-ad2fe6660a20">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="c38eadac-3d34-40fa-a6b3-8b6eb4de97c7" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.SnapshotStoreTests" name="Same_revision_write_is_idempotent(Postgres)" />
+    </UnitTest>
+    <UnitTest name="Newer_snapshot_replaces_old_snapshot_as_one_record(Mongo)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="5924765f-4a4d-ad59-af04-d38d57f40018">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="67874325-d0ee-4219-afa0-f98012df0398" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.SnapshotStoreTests" name="Newer_snapshot_replaces_old_snapshot_as_one_record(Mongo)" />
+    </UnitTest>
+    <UnitTest name="Newer_snapshot_replaces_old_snapshot_as_one_record(Redis)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="20344b96-9ed2-8951-6d08-d05bcb9a72ca">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="9938f551-222a-4641-879b-fc745e7b04a8" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.SnapshotStoreTests" name="Newer_snapshot_replaces_old_snapshot_as_one_record(Redis)" />
+    </UnitTest>
+    <UnitTest name="Delayed_older_writer_must_not_replace_newer_snapshot(SqlServer)" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="881b5ea5-76a2-ff9f-cd90-154f01b1bcd9">
+      <TestCategory>
+        <TestCategoryItem TestCategory="KnownDefect" />
+      </TestCategory>
+      <Execution id="64a0e625-e498-44ee-99d2-e829a93887e8" />
+      <Properties>
+        <Property>
+          <Key>KnownDefect</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.SnapshotStoreTests" name="Delayed_older_writer_must_not_replace_newer_snapshot(SqlServer)" />
+    </UnitTest>
+    <UnitTest name="Multiple_snapshot_contract_versions_are_registered" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="f87e4a4b-c642-fc02-68c3-e8e6be48b4ca">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="c2b76467-66ed-4e9c-84cc-161d9b8beb84" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.GeneratorTests" name="Multiple_snapshot_contract_versions_are_registered" />
+    </UnitTest>
+    <UnitTest name="Non_generic_attribute_registers_snapshot_and_storage_strategy" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="467e5077-cdc6-18be-20c2-afc807b7a897">
+      <TestCategory>
+        <TestCategoryItem TestCategory="Contract" />
+      </TestCategory>
+      <Execution id="e8e8f67b-bcf8-4ad3-a286-5ed99fdd64f5" />
+      <Properties>
+        <Property>
+          <Key>Contract</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.GeneratorTests" name="Non_generic_attribute_registers_snapshot_and_storage_strategy" />
+    </UnitTest>
+    <UnitTest name="Generic_attribute_used_by_banking_sample_must_register_snapshot_type" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="cc18297f-baac-4497-5b81-22975a8b11a3">
+      <TestCategory>
+        <TestCategoryItem TestCategory="KnownDefect" />
+      </TestCategory>
+      <Execution id="7b455f1a-7cbf-46d1-873b-32f6af333bd0" />
+      <Properties>
+        <Property>
+          <Key>KnownDefect</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.GeneratorTests" name="Generic_attribute_used_by_banking_sample_must_register_snapshot_type" />
+    </UnitTest>
+    <UnitTest name="Generic_attribute_constructor_strategy_must_be_respected" storage="/home/nmummau/code/eventuous-snapshot-tests/src/testing/test/eventuous.tests.snapshots/bin/debug/net10.0/eventuous.tests.snapshots.dll" id="f9e65ac9-fa40-23a8-28a4-f7b45f98d424">
+      <TestCategory>
+        <TestCategoryItem TestCategory="KnownDefect" />
+      </TestCategory>
+      <Execution id="3fd8707f-547c-450d-b007-9537456f5f2a" />
+      <Properties>
+        <Property>
+          <Key>KnownDefect</Key>
+          <Value></Value>
+        </Property>
+      </Properties>
+      <TestMethod codeBase="/home/nmummau/code/eventuous-snapshot-tests/src/Testing/test/Eventuous.Tests.Snapshots/bin/Debug/net10.0/Eventuous.Tests.Snapshots.dll" adapterTypeName="executor://TUnitExtension/0.77.3.0" className="Eventuous.Tests.Snapshots.GeneratorTests" name="Generic_attribute_constructor_strategy_must_be_respected" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="b426caf9-196a-34f1-710f-f07de147e2cf" executionId="bbf0b808-ac33-4300-a7f5-603b39defeef" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="a6aa62a2-2625-24a7-9a39-601ee22e4758" executionId="4e9d8864-ca8b-4206-bce0-d125b91f3c5a" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="d17803d7-bf9d-fdb8-9bb2-bf531f59d35e" executionId="c4a3bf89-c9d2-43bf-bb41-131f65841331" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="eefafb10-1827-675b-f678-294c397dbde3" executionId="2e0de46a-43e1-4cf3-934f-c79c89283090" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="c83a836d-44ce-0647-e2e5-55b31c6f0953" executionId="1ef2cf2e-35e1-4767-a611-2a182fdfd428" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="76b75cba-1425-7320-8f57-fff099566303" executionId="56e1d583-2d00-4210-97f2-9829573a32a0" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="8c5857b6-109b-ea1c-d30c-f91c0a7183ba" executionId="b9a6d001-2fff-4107-984c-324844510ca6" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="616e26db-1585-caba-4b98-feba2b4e500c" executionId="e4f167c1-a141-422b-8c22-5d95fba097ed" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="3b4c6f26-b231-4634-2bf3-7eef83996223" executionId="c5e25402-c4f9-4cbe-be0a-8ae9e67029a7" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="b6b4408b-8de5-fd8e-c49a-c72bb165310e" executionId="deb3d79e-1e30-456a-b720-cd364790df14" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="b2182737-de37-87a8-b602-9f175ec795f0" executionId="52e4b3ef-dbf3-4d73-91ae-f525dfed0b06" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="028b992e-f3d9-a353-a2d2-0d1345409ace" executionId="fd00d0a9-b40e-49d3-a27a-cd4c8d53ff61" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="89c3f18d-9cb6-8a82-174e-0c49c4c7eecf" executionId="bde88717-0450-4a00-b62c-2c085a352e4c" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="e8de5ec1-7c9e-1bd3-ac17-49756e275363" executionId="92dde6ab-10f3-4550-9cfd-187a948e0133" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="92d30dee-687f-2bc5-26b1-0eb56b557250" executionId="e1c926f7-daf4-4dab-a76d-90fe2eff76c7" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="45b64d77-193c-4ec6-0bac-43346393a047" executionId="e993d961-45bb-40b4-9ff0-e3cf17726e38" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="4447ac9a-3ee3-dd82-72a0-3307c63d37c3" executionId="0cf111b5-e8b8-4432-bcd2-4a5ea5fc91d5" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="07f28487-a2d1-766a-59b2-93ebb188926d" executionId="1723caeb-c581-4a55-9b03-aedda5257e4a" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="deac0b8d-56a4-ee3f-5895-f394cf7f3eb5" executionId="d6455db1-5a60-4cbf-8f14-3363c7c6433b" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="f3b6be1a-5321-839a-e503-27dce41592ca" executionId="99d30c82-0eb7-4b42-bf5d-278097687bef" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="85ef05e5-cf46-4978-e276-a2a2e08cb14e" executionId="3c531460-0076-436b-babf-39303a457b5e" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="6158fb2f-b822-85fc-9161-5188713d364d" executionId="e6c1c5a7-a19f-48f3-9a0c-0ed48409a1c9" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="890b6d59-ba03-ba90-7e75-d73d76d47d25" executionId="d340efc8-c610-4e7d-b276-74e33a7f8bcd" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="b227a456-6a61-08e0-b9a9-c12f5a4c9768" executionId="55fffd13-018b-46f1-b980-e0056a876c35" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="a7bcbe03-f664-ecf8-8033-2099127934ed" executionId="c8de0999-d3e6-4be1-8ec0-6e0508d5be5f" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="65e03001-777b-976c-d6cc-4097fd0f10b1" executionId="4cdc3ee2-948b-44b6-bad6-cad64579a609" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="67e6df2c-b04e-cf5a-e2e4-32150224235d" executionId="29cd818f-5428-4f9f-bbcb-54138ec437e2" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="13cfdc00-c19e-1e19-5665-52f9feb5b2ba" executionId="361cdd29-0acf-4545-b153-851fd10d3295" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="1c91fcc3-0be3-f3af-79f7-62e0d9615689" executionId="51d898dc-96a4-4611-95de-a25ec1e3ed37" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="9fdbc164-115e-dccc-e9d5-6f2e51ac8147" executionId="9813fc81-1e53-44c8-8f7d-eb41cc6ff77d" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="bf478a18-fa15-2ce5-6b25-d2bfd56b56ae" executionId="04229690-7db9-4f16-9b3b-1f9382a8e731" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="adf0ec8b-ad20-a6d2-8584-c049207a758f" executionId="20cc5494-b9d4-4eb0-9aa3-630cb340e9e2" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="43fec681-8440-bcff-99f4-743a780d2d27" executionId="5525551d-de7e-493c-bcbf-dfc4d73f219b" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="35c00849-1cf9-fbef-74d3-19b3f9c893a4" executionId="34f5ecc8-f073-4d49-ae09-67fbba148a35" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="19e530dc-fca3-af58-8977-46a347992b97" executionId="e104d09a-f094-4f65-aec2-2c397d222fcd" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="f89934b1-1ee6-972c-2757-91e68183557e" executionId="0455ceee-68d0-48ec-ae04-6c62192437e7" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="8e97ec62-7588-edf5-984c-1ee949cacfdb" executionId="cc44b8fb-5c1f-4bce-bf66-5b48eeda1576" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="450a4eac-1189-ca53-7c41-854c37d55ee9" executionId="93a7c468-e093-44d1-91ff-fd9ac396b4fb" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="448820e3-b948-53f0-b651-b6a9fe3ee146" executionId="52e7a7a5-148c-4306-bb19-c0f7e1cc671c" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="0662e499-75b5-3bf6-ebc4-60cef66d53b9" executionId="57fb0f59-5d0a-4519-8afd-e00e26cbcd98" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="52f83155-e08e-00c5-4f68-888fac597e20" executionId="36632a24-fc0a-415a-ae78-f73546366274" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="55f55e18-27bd-5d2a-9e41-9535ace1e6c4" executionId="d7be6dfc-1742-446b-8e77-589707d14ab7" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="532cf268-97e0-0d4a-4758-aba99e13ce56" executionId="bed129b4-fd80-44db-a4ec-d8c475cfdd46" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="57bd8c2b-3f51-356d-42cf-ebb346b7e580" executionId="954e2ecc-e34c-49d9-bc45-a2a90e67e9bf" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="6aa3c03d-a559-b78a-91f0-42659b7d73cb" executionId="36d5aa98-8fee-4324-ad0f-c1f7d4fe2139" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="35969036-7d21-873c-1a94-f3936b6165fb" executionId="4df3416e-d93a-44d4-9b6d-0e6249f45145" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="6ac0a08a-5b07-a80b-3009-b524d1de7cd3" executionId="aab7e62c-d1fc-47c1-8b30-0a4697edd14e" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="bce78dc7-ecdd-005d-db96-676cd7884da4" executionId="3007b412-75e1-4d14-a498-5d8277e95c44" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="d1a75388-6819-0446-58c3-2dfa15b4d8b0" executionId="84cc0371-527c-4802-9932-eb2211f6986d" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="e413a1fb-baa2-2802-f297-86421ae0303a" executionId="fa9f9dfc-3435-467c-8a56-b233e18be58d" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="dd87e153-e2c0-4cba-0259-5f9be1974617" executionId="e50daecd-10b2-4281-9bed-5e55f45e64ce" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="cc28feae-f795-1c64-83e7-054c40596ee0" executionId="7535c5e4-1a52-46d3-814a-2236fd3f28b3" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="554056b7-d0c6-e066-7f96-45adaf421e06" executionId="20d912e0-72c6-436a-aca1-914338ec1ef4" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="62e2f065-c00a-c2b3-ffad-9635f9711f02" executionId="7140d576-7d3a-4c10-b4b2-3d32af83dee0" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="cb3a2d76-640b-3aa7-530c-ea6aa6c9c665" executionId="929a132a-8dc4-470a-8b05-1421ca3382db" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="87265575-2c09-146d-0fe8-86fa99e1239c" executionId="68849783-7095-4a92-ad0e-7857582504ba" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="9292f03e-43cd-644b-352f-183b892742cb" executionId="070ca053-58e4-47ed-b4c9-d7806d24a8d0" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="2f66adfb-688b-cba3-76d8-e13f7094eb5d" executionId="31fd6c5c-6dcf-4aa9-beab-de86a7a54a10" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="85277adb-be17-bc17-d264-20ad3f30d4c0" executionId="4593c3a7-fa7b-42ef-a727-53609881356b" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="0b3b4de6-efc8-b7ad-9170-2b6e4814d20d" executionId="b9e7ac0a-73a8-4b91-b590-0d8d84fe975b" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="5428b75f-a046-e5c8-06cd-fd24674a2d2b" executionId="650f8b7e-c76a-457f-a757-e92f3f2b2423" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="fadbf51b-c8c3-ce67-a28f-90a71d58fb65" executionId="c7d64c36-0d53-4516-87b1-392006a28d43" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="557878a2-0189-1864-1a3f-a44ccab7674e" executionId="4d5ea589-2391-4aba-8ac7-cea5f651f876" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="793012f3-f7a6-071e-c311-f4bd19c0c0fb" executionId="8464a022-9e7a-4d8b-85c5-5289ec032cb7" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="76027e79-52d1-8528-a2b1-876eafd78ce0" executionId="262f652e-be29-4a8c-bf2a-45653b5832ca" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="b2220d42-2132-4fe5-8026-7a852ea8d655" executionId="e7767451-4389-4aca-8759-4660a67e8f03" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="b5adbccc-d4d6-37c1-6347-d21738ae5963" executionId="e4032626-d07e-4de2-bcc7-46eec494302f" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="03e5bc1b-618c-3842-cdd5-de3f63ecc31e" executionId="df65c754-cfa6-403f-98d9-1e0360e3bcea" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="01cbc9af-e2c2-e727-c508-ad2fe6660a20" executionId="c38eadac-3d34-40fa-a6b3-8b6eb4de97c7" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="5924765f-4a4d-ad59-af04-d38d57f40018" executionId="67874325-d0ee-4219-afa0-f98012df0398" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="20344b96-9ed2-8951-6d08-d05bcb9a72ca" executionId="9938f551-222a-4641-879b-fc745e7b04a8" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="881b5ea5-76a2-ff9f-cd90-154f01b1bcd9" executionId="64a0e625-e498-44ee-99d2-e829a93887e8" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="f87e4a4b-c642-fc02-68c3-e8e6be48b4ca" executionId="c2b76467-66ed-4e9c-84cc-161d9b8beb84" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="467e5077-cdc6-18be-20c2-afc807b7a897" executionId="e8e8f67b-bcf8-4ad3-a286-5ed99fdd64f5" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="cc18297f-baac-4497-5b81-22975a8b11a3" executionId="7b455f1a-7cbf-46d1-873b-32f6af333bd0" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestEntry testId="f9e65ac9-fa40-23a8-28a4-f7b45f98d424" executionId="3fd8707f-547c-450d-b007-9537456f5f2a" testListId="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8C84FA94-04C1-424b-9868-57A2D4851A1D" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="76" executed="76" passed="59" failed="17" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <RunInfos>
+      <RunInfo computerName="neal-XPS" outcome="Error" timestamp="2026-10-09T02:06:16.7763261">
+        <Text>Exit code indicates failure: '2'. Please refer to https://aka.ms/testingplatform/exitcodes for more information.</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>
