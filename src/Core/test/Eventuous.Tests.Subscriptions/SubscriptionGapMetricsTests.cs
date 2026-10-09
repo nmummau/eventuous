@@ -122,6 +122,30 @@ public class SubscriptionGapMetricsTests {
         subscriptions.Sum(x => x.Reads).ShouldBe(4);
     }
 
+    [Test]
+    public async Task Shared_source_uses_configured_subscription_ids_for_checkpoints_and_tags() {
+        var registrations = new ServiceCollection();
+        foreach (var id in new[] { "first", "second" })
+            registrations.AddSubscription<MeasuredSubscription, MeasureOptions>(id, builder => builder.Configure(options => {
+                options.SubscriptionId = $"runtime-{id}";
+                options.SourceKey = "shared";
+            }));
+        await using var services = registrations.BuildServiceProvider();
+        using var metrics = new SubscriptionMetrics(services.GetServices<GetSubscriptionEndOfStream>());
+        using var diagnostic = new DiagnosticListener(CheckpointCommitHandler.DiagnosticName);
+        diagnostic.Write(CheckpointCommitHandler.CommitOperation,
+            new CheckpointCommitHandler.CommitEvent("runtime-first", new(3, 0, DateTime.UtcNow), null));
+        diagnostic.Write(CheckpointCommitHandler.CommitOperation,
+            new CheckpointCommitHandler.CommitEvent("runtime-second", new(7, 0, DateTime.UtcNow), null));
+        using var listener = Listen(out var values);
+        listener.RecordObservableInstruments();
+
+        values.Count.ShouldBe(2);
+        values["runtime-first"].ShouldBe(7);
+        values["runtime-second"].ShouldBe(3);
+        services.GetServices<MeasuredSubscription>().Sum(x => x.Reads).ShouldBe(1);
+    }
+
     static ServiceProvider CreateServices(params (string Id, string? Key)[] subscriptions) {
         var services = new ServiceCollection();
         foreach (var (id, key) in subscriptions)
