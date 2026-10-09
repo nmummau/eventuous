@@ -2,14 +2,14 @@
 // Licensed under the Apache License, Version 2.0.
 
 using System.Diagnostics.Metrics;
-using Eventuous.Subscriptions;
-using Eventuous.Subscriptions.Diagnostics;
-using Eventuous.Subscriptions.Filters;
-using Microsoft.Data.Sqlite;
-using Microsoft.Extensions.DependencyInjection;
 using Eventuous.Sqlite.Projections;
 using Eventuous.Sqlite.Subscriptions;
 using Eventuous.Subscriptions.Checkpoints;
+using Eventuous.Subscriptions.Diagnostics;
+using Eventuous.Subscriptions.Filters;
+using Eventuous.Subscriptions;
+using Microsoft.Data.Sqlite;
+using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
 
 namespace Eventuous.Tests.Sqlite.Subscriptions;

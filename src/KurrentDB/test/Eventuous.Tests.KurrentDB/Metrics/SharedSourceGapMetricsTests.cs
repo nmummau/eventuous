@@ -6,6 +6,7 @@ using System.Net.Http;
 using Eventuous.KurrentDB.Subscriptions;
 using Eventuous.Subscriptions.Diagnostics;
 using Eventuous.Subscriptions.Registrations;
+using Eventuous.Tools;
 using global::KurrentDB.Client;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
@@ -112,7 +113,7 @@ public class SharedSourceGapMetricsTests {
             if (request.RequestUri?.AbsolutePath == "/event_store.client.streams.Streams/Read")
                 Interlocked.Increment(ref _count);
             // Count transport attempts, including failures/retries, and forward the actual request unchanged.
-            return await base.SendAsync(request, cancellationToken);
+            return await base.SendAsync(request, cancellationToken).NoContext();
         }
     }
 }

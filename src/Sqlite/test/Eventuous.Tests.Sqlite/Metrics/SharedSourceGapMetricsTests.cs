@@ -30,7 +30,7 @@ public class SharedSourceGapMetricsTests {
             command.CommandText = "SELECT file FROM pragma_database_list WHERE name = 'main'";
             (await command.ExecuteScalarAsync(cancellationToken)).ShouldBe("");
         }
-        using var queries = new TailQueryCounter(connectionString, $"SELECT MAX(global_position) FROM {schema.MessagesTable}");
+        await using var queries = await TailQueryCounter.Create(connectionString, $"SELECT MAX(global_position) FROM {schema.MessagesTable}", cancellationToken);
         await schema.CreateSchema(connectionString, null, cancellationToken);
         var mapper = new TypeMapper();
         mapper.AddType<GapEvent>("shared-gap-event");
@@ -106,35 +106,47 @@ public class SharedSourceGapMetricsTests {
 
     public record GapEvent(int Value);
 
-    sealed class TailQueryCounter : IDisposable {
+    sealed class TailQueryCounter : IAsyncDisposable {
         readonly SqliteConnection _connection;
         readonly sqlite3 _handle;
         int _count;
 
-        public TailQueryCounter(string connectionString, string commandText) {
-            _connection = new(connectionString);
-            _connection.Open();
+        TailQueryCounter(SqliteConnection connection, string commandText) {
+            _connection = connection;
             _handle = _connection.Handle!;
             // SQLitePCLRaw is already a transitive dependency. The native profile callback
             // fires on statement execution completion, not preparation or source callbacks.
             raw.sqlite3_profile(_handle, (strdelegate_profile)((_, sql, _) => {
                 if (sql == commandText) Interlocked.Increment(ref _count);
             }), null);
-            // Production opens/closes connections sequentially and reuses this native handle.
-            _connection.Close();
+        }
+
+        public static async Task<TailQueryCounter> Create(string connectionString, string commandText, CancellationToken cancellationToken) {
+            var connection = new SqliteConnection(connectionString);
+            try {
+                await connection.OpenAsync(cancellationToken);
+                var counter = new TailQueryCounter(connection, commandText);
+                // Production opens/closes connections sequentially and reuses this native handle.
+                await connection.CloseAsync();
+                return counter;
+            } catch {
+                SqliteConnection.ClearPool(connection);
+                await connection.DisposeAsync();
+                throw;
+            }
         }
 
         public int Count => Volatile.Read(ref _count);
 
-        public void Dispose() {
+        public async ValueTask DisposeAsync() {
             try {
-                _connection.Open();
+                await _connection.OpenAsync();
                 _connection.Handle.ShouldBeSameAs(_handle);
                 raw.sqlite3_profile(_handle, (strdelegate_profile)null!, null);
             } finally {
                 // Clear only this test's uniquely named pool, never other tests' pools.
                 SqliteConnection.ClearPool(_connection);
-                _connection.Dispose();
+                await _connection.DisposeAsync();
             }
         }
     }
