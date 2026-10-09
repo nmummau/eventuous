@@ -16,7 +16,9 @@ namespace Eventuous.Tests.Postgres.Metrics;
 [NotInParallel]
 public class SharedSourceGapMetricsTests {
     [Test]
-    public async Task All_stream_subscriptions_read_shared_tail_once_per_collection(CancellationToken cancellationToken) {
+    [Arguments(ServiceLifetime.Singleton)]
+    [Arguments(ServiceLifetime.Transient)]
+    public async Task All_stream_subscriptions_read_shared_tail_once_per_collection(ServiceLifetime dataSourceLifetime, CancellationToken cancellationToken) {
         await using var container = PostgresContainer.Create();
         await container.StartAsync(cancellationToken);
         var connectionString = container.GetConnectionString();
@@ -29,7 +31,7 @@ public class SharedSourceGapMetricsTests {
         mapper.AddType<GapEvent>("shared-gap-event");
         using var queries = new TailQueryCounter($"select max(global_position) from {schema.Name}.messages");
         var services = new ServiceCollection();
-        services.AddEventuousPostgres(connectionString, schema.Name);
+        services.AddEventuousPostgres(connectionString, schema.Name, dataSourceLifetime: dataSourceLifetime);
         foreach (var id in new[] { "first", "second", "caught-up" }) {
             services.AddSubscription<PostgresAllStreamSubscription, PostgresAllStreamSubscriptionOptions>(id, builder => builder
                 .Configure(options => {
