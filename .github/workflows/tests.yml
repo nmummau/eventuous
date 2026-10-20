@@ -79,7 +79,7 @@ jobs:
     #
     # When adding a new integration test project (one that uses Testcontainers), add a suite entry.
     name: "Build and test ${{ matrix.suite.name }}"
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.suite.runner || 'ubuntu-latest' }}
     strategy:
       fail-fast: false
       max-parallel: 4
@@ -93,6 +93,9 @@ jobs:
             project: src/SqlServer/test/Eventuous.Tests.SqlServer/Eventuous.Tests.SqlServer.csproj
           - name: mongo
             project: src/Mongo/test/Eventuous.Tests.Projections.MongoDB/Eventuous.Tests.Projections.MongoDB.csproj
+            # Avoid MongoDB's startup check failure on Ubuntu 26.04 kernels.
+            # https://jira.mongodb.org/browse/SERVER-136848
+            runner: ubuntu-24.04
           - name: kafka
             project: src/Kafka/test/Eventuous.Tests.Kafka/Eventuous.Tests.Kafka.csproj
           - name: rabbitmq
